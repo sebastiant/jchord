@@ -1,0 +1,21 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs24 \cf0 Peer flow:\
+1. Set Id to -1 and start listen for incoming connections \
+\
+If connecting to other peer:\
+2. Update existing id to id assigned from peer.\
+3. Receive map of peers and replace current map.\
+4. Connect to peers in map (after protocol).\
+\
+If some other peer connects to this peer:\
+2A. If this is the first peer connected to this peer, pick an ID for ourself and one for the other peer.\
+2B. propose an ID for the new peer for the other peers.\
+3. Assign the peer the ID and update the current map.\
+4. Send the new map to the all peers (including the new peer).\
+5. Update connections according to the new map.\
+}
