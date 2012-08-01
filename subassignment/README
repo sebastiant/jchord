@@ -1,0 +1,12 @@
+Jchord - the future of NoSQL :-)
+
+Subassignment: To make a message passing middleware that can join a network topology and exchange messages to peers of interest.
+
+API:
+-connectToPeer(PeerInfo)
+-disconnectFromPeer(PeerInfo)
+-sendMessage(PeerInfo, Message)
+-getMessageBuffer()? "Throw" messages instead?
+
+Main Class:
+MessagingPeer - A message passing interface used to create connections and send/receive messages to/from peers.
