@@ -94,8 +94,7 @@ public class Session implements Runnable{
     }
     
     @Override
-    public void run(){
-        
+    public void run(){   
         //First, wait for the sessionId to be set.
         while(sessionNumber==Peer.UNSET){
             try{
@@ -140,6 +139,5 @@ public class Session implements Runnable{
             Peer.notify("Nullpointer Exception in Session, run()");
             closeSession();
         }
-
     }
 }
