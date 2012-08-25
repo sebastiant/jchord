@@ -12,8 +12,6 @@ public class Connection implements Runnable{
 	
 	private Thread thread;
 	private ConnectionCallback callback;
-	private InetAddress inetAddr;
-	private int port;
 	private Socket socket;
 	private boolean connected;
 	private BufferedReader reader;
@@ -22,8 +20,6 @@ public class Connection implements Runnable{
 	//Constructor for new outgoing connection
 	public Connection(InetAddress inetAddr, ConnectionCallback callback, int port) {
 		this.callback = callback;
-		this.inetAddr = inetAddr;
-		this.port = port;
 		try{
 			socket=new Socket(inetAddr, port);
 			start();
@@ -65,6 +61,8 @@ public class Connection implements Runnable{
 	}
 	
 	public void send(String s) {
+		writer.println(s);
+		writer.flush();
 	}
 
 	@Override
