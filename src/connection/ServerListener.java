@@ -1,6 +1,6 @@
 package connection;
 
-public interface ConnectionListener {
+public interface ServerListener {
 	
 	public void receive(String s);
 
