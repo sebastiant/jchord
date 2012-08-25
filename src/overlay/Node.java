@@ -24,7 +24,8 @@ public class Node implements ConnectionCallback{
 	public void join(InetAddress inetAddr, int port){
 		Connection c = new Connection(inetAddr, port, this);
 		connectionTable.put(c);
-		c.send(myId.toString(16));
+		c.send("join#" + myId.toString(16));
+		c.send("join");
 	}
 	public void leave(){
 		

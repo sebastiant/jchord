@@ -9,13 +9,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class Connection implements Runnable{
-	
+	public static final int SOCKET_TIMEOUT_TIME=5000;
+	private Thread keepAliveThread;
 	private Thread thread;
 	private ConnectionCallback callback;
 	private Socket socket;
 	private boolean connected;
 	private BufferedReader reader;
 	private PrintWriter writer;
+	private KeepAlive keepAlive;
 	
 	//Constructor for new outgoing connection
 	public Connection(InetAddress inetAddr, int port, ConnectionCallback callback) {
@@ -42,10 +44,12 @@ public class Connection implements Runnable{
 		try {
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-			
+			this.keepAlive = new KeepAlive(5000,writer);
+			this.keepAliveThread = new Thread(keepAlive);
 			this.thread = new Thread(this);
 			this.connected = true;
 			thread.start();
+			keepAliveThread.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,6 +58,7 @@ public class Connection implements Runnable{
 	
 	public void disconnect() {
 		connected=false;
+		keepAlive.stop();
 	}
 	
 	public void send(String s) {
