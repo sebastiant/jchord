@@ -17,7 +17,7 @@ public class IDGenerator {
 	public BigInteger getId(InetAddress ip, int port) {
 		BigInteger hash = null;
 		byte[] raw = md.digest((ip.toString() + ":" + Integer.toHexString(port)).getBytes());
-		hash = new BigInteger(raw);
+		hash = new BigInteger(1, raw);
 		return hash;
 	}
 	
