@@ -1,36 +1,57 @@
 package connection;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
 public class Connection implements Runnable{
 	
 	private Thread thread;
-	private ConnectionCallback listener;
+	private ConnectionCallback callback;
 	private InetAddress inetAddr;
 	private int port;
 	private Socket socket;
 	private boolean connected;
+	private BufferedReader reader;
+	private PrintWriter writer;
 	
 	//Constructor for new outgoing connection
-	public Connection(InetAddress inetAddr, ConnectionCallback listener, int port) {
-		this.listener = listener;
+	public Connection(InetAddress inetAddr, ConnectionCallback callback, int port) {
+		this.callback = callback;
 		this.inetAddr = inetAddr;
 		this.port = port;
 		try{
 			socket=new Socket(inetAddr, port);
+			start();
 		}catch(IOException e){
 			System.err.println("ioe");
 		}
+		
 	}
 	
 	//Constructor for established connection
-	public Connection(Socket socket, ConnectionCallback listener) {
-		this.thread = new Thread(this);
+	public Connection(Socket socket, ConnectionCallback callback) {
+		this.callback = callback;
 		this.socket = socket;
-		this.connected = true;
-		thread.start();
+		start();
+	}
+	
+	private void start() {
+		try {
+			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+			
+			this.thread = new Thread(this);
+			this.connected = true;
+			thread.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void connect(InetAddress ip) {
@@ -40,7 +61,6 @@ public class Connection implements Runnable{
 	}
 	
 	public void disconnect() {
-		
 		connected=false;
 	}
 	
@@ -49,10 +69,17 @@ public class Connection implements Runnable{
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
+		try {
+			while(connected) {
+				String data = reader.readLine();
+				Message msg = new Message(data, socket.getInetAddress(), socket.getPort());
+				callback.receive(msg);
+			}
+		} catch (IOException e) {
+			connected = false;
+			e.printStackTrace();
+		}
 	}
-	
 }
 
 
