@@ -18,12 +18,7 @@ public class Connection implements Runnable{
 	private PrintWriter writer;
 	
 	//Constructor for new outgoing connection
-<<<<<<< HEAD
-	public Connection(InetAddress inetAddr, ConnectionCallback callback, int port) {
-		this.callback = callback;
-=======
 	public Connection(InetAddress inetAddr, int port, ConnectionCallback callback) {
->>>>>>> bf4bc5ac3c08ba0913d4b8b968ac6fd9c96d80ab
 		try{
 			Socket socket=new Socket(inetAddr, port);
 			start(callback, socket);
@@ -40,6 +35,10 @@ public class Connection implements Runnable{
 	private void start(ConnectionCallback callback, Socket socket) {
 		this.callback = callback;
 		this.socket = socket;
+		start();
+	}
+	
+	private void start() {
 		try {
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
