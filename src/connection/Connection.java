@@ -12,35 +12,29 @@ public class Connection implements Runnable{
 	
 	private Thread thread;
 	private ConnectionCallback callback;
-	private InetAddress inetAddr;
-	private int port;
 	private Socket socket;
 	private boolean connected;
 	private BufferedReader reader;
 	private PrintWriter writer;
 	
 	//Constructor for new outgoing connection
-	public Connection(InetAddress inetAddr, ConnectionCallback callback, int port) {
-		this.callback = callback;
-		this.inetAddr = inetAddr;
-		this.port = port;
+	public Connection(InetAddress inetAddr, int port, ConnectionCallback callback) {
 		try{
-			socket=new Socket(inetAddr, port);
-			start();
+			Socket socket=new Socket(inetAddr, port);
+			start(callback, socket);
 		}catch(IOException e){
 			System.err.println("ioe");
 		}
-		
 	}
 	
 	//Constructor for established connection
 	public Connection(Socket socket, ConnectionCallback callback) {
-		this.callback = callback;
-		this.socket = socket;
-		start();
+		start(callback, socket);
 	}
 	
-	private void start() {
+	private void start(ConnectionCallback callback, Socket socket) {
+		this.callback = callback;
+		this.socket = socket;
 		try {
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -54,17 +48,13 @@ public class Connection implements Runnable{
 		}
 	}
 	
-	public void connect(InetAddress ip) {
-		if(!connected){
-			
-		}
-	}
-	
 	public void disconnect() {
 		connected=false;
 	}
 	
 	public void send(String s) {
+		writer.println(s);
+		writer.flush();
 	}
 
 	@Override
@@ -79,6 +69,14 @@ public class Connection implements Runnable{
 			connected = false;
 			e.printStackTrace();
 		}
+	}
+	
+	public InetAddress getIp() {
+		return socket.getInetAddress();
+	}
+	
+	public int port() {
+		return socket.getPort();
 	}
 }
 
