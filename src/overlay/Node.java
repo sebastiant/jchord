@@ -3,6 +3,7 @@ package overlay;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.StringTokenizer;
 
 import connection.Connection;
 import connection.ConnectionCallback;
@@ -27,9 +28,19 @@ public class Node implements ConnectionCallback{
 	public void leave(){
 		
 	}
-	
+
 	@Override
 	public void receive(Message msg) {
+		StringTokenizer tok = new StringTokenizer(msg.getMsg(), Protocol.DELIMETER);
+		
+		if(!tok.hasMoreTokens()) {
+			return;
+		}
+		switch(Protocol.Command.valueOf(tok.nextToken().toUpperCase())){
+		case JOIN:
+			System.out.println("join");
+		}
+		
 		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());		
 	}
 	@Override
