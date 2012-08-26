@@ -38,7 +38,7 @@ public class Node implements ConnectionCallback{
 	public static void main(String argv[]){
 		try {
 		Node n = new Node(InetAddress.getLocalHost(),8080);
-			n.join(InetAddress.getLocalHost(), 8080);
+			//n.join(InetAddress.getLocalHost(), 8080);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
