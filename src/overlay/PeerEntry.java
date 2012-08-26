@@ -13,8 +13,19 @@ public class PeerEntry {
 	}
 	
 	@Override
-    public int hashCode() {
+	public int hashCode() {
 		return id.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o instanceof PeerEntry) {
+			PeerEntry p = (PeerEntry)o;
+			if(p.id == this.id) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public int getPeerPort() {
