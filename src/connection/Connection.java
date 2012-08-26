@@ -50,14 +50,6 @@ public class Connection implements Runnable{
 			this.keepAliveThread = new Thread(keepAlive);
 			this.thread = new Thread(this);
 			this.connected = true;
-			try{
-				System.out.println("Adding socket with addr: " + socket.getInetAddress().toString());
-				Host host = new Host(socket.getInetAddress(), socket.getPort());
-				callback.register(host);
-			}catch(NullPointerException e){
-				System.out.println("Caught nullptr when trying to add host");
-				
-			}
 			thread.start();
 			keepAliveThread.start();
 		} catch (IOException e) {
@@ -86,13 +78,21 @@ public class Connection implements Runnable{
 					disconnect();
 					break;
 				}
-				Message msg = new Message(data, socket.getInetAddress(), socket.getPort());
+				Message msg = new Message(data, this);
 				callback.receive(msg);
 			}
 		} catch (IOException e) {
 			connected = false;
 			e.printStackTrace();
 		}
+	}
+	
+	public InetAddress getAddr() {
+		return socket.getInetAddress();
+	}
+	
+	public int getPort() {
+		return socket.getPort();
 	}
 }
 

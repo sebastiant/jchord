@@ -8,22 +8,25 @@ import java.net.InetAddress;
 public class Message {
 
 	private String msg;
-	private InetAddress addr;
-	private int port;
+	private Connection con;
 	
-	public Message(String msg, InetAddress addr, int port){
+	public Message(String msg, Connection c){
 		this.msg=msg;
-		this.addr=addr;
-		this.port=port;
+		this.con = c;
 	}
 	
 	public String getMsg(){
 		return msg;
 	}
-	public InetAddress getAddr() {
-		return addr;
+	public Connection getConnection() {
+		return con;
 	}
+	
+	public InetAddress getAddr() {
+		return con.getAddr();
+	}
+	
 	public int getPort() {
-		return port;
+		return con.getPort();
 	}
 }
