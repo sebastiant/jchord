@@ -21,7 +21,7 @@ public class PeerEntry {
 	public boolean equals(Object o) {
 		if(o instanceof PeerEntry) {
 			PeerEntry p = (PeerEntry)o;
-			if(p.id == this.id) {
+			if(p.id.equals(this.id)) {
 				return true;
 			}
 		}
