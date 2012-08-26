@@ -1,5 +1,7 @@
 package connection;
 
+//Godmorgon :)
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,6 +59,7 @@ public class Connection implements Runnable{
 	}
 	
 	public void disconnect() {
+		System.out.println("Disconnecting");
 		connected=false;
 		keepAlive.stop();
 	}
@@ -69,8 +72,13 @@ public class Connection implements Runnable{
 	@Override
 	public void run() {
 		try {
+			String data;
 			while(connected) {
-				String data = reader.readLine();
+				data = reader.readLine();
+				if(data == null) {
+					disconnect();
+					break;
+				}
 				Message msg = new Message(data, socket.getInetAddress(), socket.getPort());
 				callback.receive(msg);
 			}
