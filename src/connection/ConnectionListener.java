@@ -13,12 +13,10 @@ public class ConnectionListener implements Runnable{
 	private boolean running;
 	private Thread thread;
 	private ConnectionCallback cc;
-	private ConnectionTable ct;
-	public ConnectionListener(int port, ConnectionCallback cc, ConnectionTable ct){
+	public ConnectionListener(int port, ConnectionCallback cc){
 		try {
 			serverSocket = new ServerSocket(port);
 			this.cc = cc;
-			this.ct = ct;
 			thread = new Thread(this);
 			running = true;
 			thread.start();
@@ -34,7 +32,6 @@ public class ConnectionListener implements Runnable{
 			try {
 				s = serverSocket.accept();
 				Connection c = new Connection(s, cc);
-				ct.put(c);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -6,21 +6,24 @@ import java.net.UnknownHostException;
 public class SocketTest implements ConnectionCallback {
 
 	private ConnectionListener cl;
-	private ConnectionTable table = new ConnectionTable();
 	
 	public SocketTest(){
-		cl = new ConnectionListener(8080, this, table);
+		cl = new ConnectionListener(8080, this);
 	}
 	
 	@Override
 	public void receive(Message msg) {
 		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());
 	}
+	@Override
+	public void register(Host host){
+		//System.out.println("Added host with ip: " + host.getAddr().toString());
+	}
 	
 	public static void main(String args[]){
 		SocketTest s = new SocketTest();
 		try {
-			Connection c = new Connection(InetAddress.getLocalHost(), 8080, null);
+			Connection c = new Connection(InetAddress.getLocalHost(), 8080, s);
 			c.send("HEJ");
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
