@@ -15,7 +15,7 @@ public class SocketTest implements ConnectionCallback {
 	public void receive(Message msg) {
 		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());
 	}
-	@Override
+	
 	public void register(Host host){
 		//System.out.println("Added host with ip: " + host.getAddr().toString());
 	}
