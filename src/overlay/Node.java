@@ -20,7 +20,7 @@ public class Node implements ConnectionCallback{
 	
 	public Node(InetAddress inetAddr, int port){
 		this.myPort = port;
-		this.listener = new ConnectionListener(port,this);
+		this.listener = new ConnectionListener(port,this); //The "local server"
 		myId=IDGenerator.getInstance().getId(inetAddr, port);
 	}
 
