@@ -8,4 +8,6 @@ Public methods:
 void disconnect()
 	-Used to shut down the connection. No fuzz!
 void send(String s)
-	-Sends a message asynchronously over tcp (!), i.e. no caking is done manually on the overlay.
+	-Sends a message asynchronously over tcp (!), i.e. no acking is done manually on the overlay.
+int getPort()
+	-get port number for current connection
