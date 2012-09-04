@@ -1,0 +1,11 @@
+The Connection class is used to model and implement a two-way channel between two tcp sockets. The channel is kept alive by keep-alive messages sent in a defined interval.
+Method-callbacks are used to receive() messages and to notify that a channel is disconnected().
+
+Constructor:
+Connection(InetAddress inetAddr, int port, ConnectionCallback callback)
+	-Used to initialise a new connection. The connection is started at time of creation in a thread. 	The creating class typically implements ConnectionCallback and sends 'this' as 'callback'.
+Public methods:
+void disconnect()
+	-Used to shut down the connection. No fuzz!
+void send(String s)
+	-Sends a message asynchronously over tcp (!), i.e. no caking is done manually on the overlay.

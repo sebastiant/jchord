@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
 import connection.Connection;
 import connection.ConnectionCallback;
 import connection.ConnectionListener;
-import connection.IDGenerator;
+import connection.Host;
 import connection.Message;
 
 public class Node implements ConnectionCallback{
@@ -53,6 +53,14 @@ public class Node implements ConnectionCallback{
 		}
 	
 		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+ msg.getPort());		
+	}
+	@Override
+	public void register(Host host){
+		System.out.println("Got register from Host: " + host.getAddr().getHostAddress());
+	}
+	@Override
+	public void disconnected(){
+		System.out.println("Connection disconnected!");
 	}
 	
 	public static void main(String argv[]){

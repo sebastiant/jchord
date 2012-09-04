@@ -31,8 +31,8 @@ public class Connection implements Runnable{
 		}
 	}
 	
-	//Constructor for established connection
-	public Connection(Socket socket, ConnectionCallback callback) {
+	//Constructor for established (incoming) connection
+	protected Connection(Socket socket, ConnectionCallback callback) {
 		start(callback, socket);
 	}
 	
@@ -59,6 +59,7 @@ public class Connection implements Runnable{
 	
 	public void disconnect() {
 		System.out.println("Disconnecting");
+		callback.disconnected();
 		connected=false;
 		keepAlive.stop();
 	}

@@ -10,9 +10,9 @@ public class Message {
 	private String msg;
 	private Connection con;
 	
-	public Message(String msg, Connection c){
+	public Message(String msg, Connection con){
 		this.msg=msg;
-		this.con = c;
+		this.con = con;
 	}
 	
 	public String getMsg(){

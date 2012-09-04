@@ -15,9 +15,13 @@ public class SocketTest implements ConnectionCallback {
 	public void receive(Message msg) {
 		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());
 	}
-	
+	@Override
 	public void register(Host host){
 		//System.out.println("Added host with ip: " + host.getAddr().toString());
+	}
+	@Override
+	public void disconnected(){
+		System.out.println("Connection channel is disconnected");
 	}
 	
 	public static void main(String args[]){
@@ -26,7 +30,6 @@ public class SocketTest implements ConnectionCallback {
 			Connection c = new Connection(InetAddress.getLocalHost(), 8080, s);
 			c.send("HEJ");
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

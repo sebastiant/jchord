@@ -31,7 +31,7 @@ public class ConnectionListener implements Runnable{
 		while(running){
 			try {
 				s = serverSocket.accept();
-				Connection c = new Connection(s, cc);
+				new Connection(s, cc);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
