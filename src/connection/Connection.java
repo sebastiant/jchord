@@ -1,7 +1,5 @@
 package connection;
 
-//Godmorgon :)
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,7 +57,7 @@ public class Connection implements Runnable{
 	
 	public void disconnect() {
 		System.out.println("Disconnecting");
-		callback.disconnected();
+		callback.disconnected(this);
 		connected=false;
 		keepAlive.stop();
 	}

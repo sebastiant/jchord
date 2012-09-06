@@ -20,7 +20,7 @@ public class SocketTest implements ConnectionCallback {
 		//System.out.println("Added host with ip: " + host.getAddr().toString());
 	}
 	@Override
-	public void disconnected(){
+	public void disconnected(Connection con){
 		System.out.println("Connection channel is disconnected");
 	}
 	

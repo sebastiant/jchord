@@ -1,0 +1,29 @@
+Constructor:
+Node(InetAddress inetAddr, int port, int overlaySize, int arity): Creates a node for the network overlay. Node will listen for incoming tcp-connections on the passed address and port combination. The specified overlaySize and arity is used to define the overlay structure. The former needs to be equal for all peers in the overlay.
+
+Public methods:
+void  join(InetAddress inetAddr, int port): Connects to a peer and asks to join its overlay network.
+void disconnect(): Disconnects from current overlay network.
+
+
+Behind the curtains:
+
+How we cope with churn and nodes not known to be disconnected:
+All forwards are assured to be to connected nodes. That is, a peer A geting information of peer C about peer B, can rely on that C is connected to B. If B suddenly disconnects in between these moments, A is responsible to get in touch with C again to get a new peer's ip/port.
+As predecessors periodically inform their successors of their existence and requests their predecessor's information, disconnected predecessors are replaced-, and newly joined predecessors are included in the ring in finite time.
+
+Example scenario:
+*A connects to B.
+
+*A asks B to join its network by supplying its listening port and overlay size (JOIN#portNmbr#overlaySize#arity)
+
+If accepted (unknown constraints):
+*B writes back contact information to A's Successor: WELCOME#ip#portNmbr
+
+depending on wether or not B is A's successor A disconnects from B and connects to host C, or not.
+
+*A to assumed successor: SUCC#portNmbr
+
+The successor checks wether or not its current predecessor should be replaced by A or not.
+
+*Periodically every peer requests its successors predecessor to verify that it infact is still the successor's predecessor. If that is not the case, a nother node has joined and has an id in between. That very node should be used as the new successor for the not-updated node in such a case.
