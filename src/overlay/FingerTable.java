@@ -4,7 +4,11 @@ import java.math.BigInteger;
 
 public class FingerTable {
 
-	public static boolean inBetween(long start, long end, long number, long overlaySize) {		
+	/*
+	 * inBetween/3
+	 * returns true if the third argument is in between the first and the second in a logical ring.
+	 */
+	public static boolean inBetween(long start, long end, long number) {		
 		long shiftedNumber = number-start;
 		long shiftedEnd = end-start;
 		

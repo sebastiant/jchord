@@ -1,6 +1,7 @@
 package connection;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -27,9 +28,6 @@ public class ConnectionListener implements Runnable{
 	}
 	public int getPort(){
 		return serverSocket.getLocalPort();
-	}
-	public String getAddr(){
-		return serverSocket.getInetAddress().getHostAddress();
 	}
 	@Override
 	public void run() {

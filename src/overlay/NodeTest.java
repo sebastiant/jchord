@@ -10,9 +10,9 @@ public class NodeTest {
 	
 	public static void main(String args[]) {
 		try {
-			Node a = new Node(InetAddress.getLocalHost(), 9000, 4, 5);
-			Node b = new Node(InetAddress.getLocalHost(), 9001, 4, 5);
-			a.join(InetAddress.getLocalHost(), 9001);
+			Node a = new Node(InetAddress.getByName("localhost"), 9000, 4, 5);
+			Node b = new Node(InetAddress.getByName("localhost"), 9001, 4, 5);
+			a.join(InetAddress.getByName("localhost"), 9001);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		       String name = null;
 		       try {

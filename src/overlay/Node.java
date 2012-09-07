@@ -19,7 +19,7 @@ public class Node implements ConnectionCallback{
 	private long myId;
 	private int myPort;
 	private ConnectionListener listener;
-	private Hashtable<PeerEntry, Connection> connections = new Hashtable<PeerEntry, Connection>();
+	private Hashtable<Connection, PeerEntry> connections = new Hashtable<Connection, PeerEntry>();
 	private Connection successor;
 	private Connection predecessor;
 	
@@ -34,11 +34,12 @@ public class Node implements ConnectionCallback{
 	}
 
 	public void join(InetAddress inetAddr, int port){
-		Connection c = new Connection(inetAddr, port, this);;
-		c.send(Protocol.Command.JOIN + Protocol.DELIMETER + myPort);
+		Connection con = new Connection(inetAddr, port, this);
+		System.out.println("Sending join to: " + inetAddr.getHostAddress().toString());
+		con.send(Protocol.Command.JOIN + Protocol.DELIMETER + myPort);
 		long peerID = IDGenerator.getInstance().getId(inetAddr, port, overlaySize);
-		PeerEntry entry = new PeerEntry(peerID, port);
-		connections.put(entry, c);
+		PeerEntry entry = new PeerEntry(peerID, con, port);
+		connections.put(con,entry);
 	}
 	@Override
 	public void register(Host host){
@@ -62,12 +63,7 @@ public class Node implements ConnectionCallback{
 			try{
 				int peerPort = Integer.parseInt(tok.nextToken());
 				int oSize = Integer.parseInt(tok.nextToken());
-				if(oSize==overlaySize){
-					handleJoin(con, peerPort, oSize);
-				}else{
-					//con.send("overlay size differs, shutting down connection");
-					con.disconnect();
-				}
+				handleJoin(con, peerPort, oSize);
 			}catch(NoSuchElementException e){
 				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
@@ -111,11 +107,29 @@ public class Node implements ConnectionCallback{
 		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
+		if(overlaySize!=this.overlaySize){
+			//con.send("overlay size differs, shutting down connection");
+			con.disconnect();
+		}
 		long peerID = IDGenerator.getInstance().getId(con.getAddr(), con.getPort(), overlaySize);
-		PeerEntry entry = new PeerEntry(peerID, peerPort);
-		connections.put(entry, con);
-		//TODO: send along ip and portnumber to a suitable successor for the node.
-		con.send("WELCOME#123#123"); 
+		PeerEntry entry = new PeerEntry(peerID, con, peerPort);
+		connections.put(con, entry);
+		
+		//Reply with ip and port to a suitable(?) successor for the peer.
+		if(successor!=null) {
+			PeerEntry succPeer= connections.get(successor);
+			
+			if(FingerTable.inBetween(myId, succPeer.getId(), peerID)){
+				//Refer him to our successor.
+				System.out.println("Sending derp");
+				con.send("WELCOME#" + succPeer.getAddr().getHostAddress().toString() + "#"+succPeer.getPeerPort());
+			}
+		}
+		else {
+			System.out.println("Sending derp");
+			//Refer him to ourself. Protocol simplicifacion, we could evolve the protocol to keep this connection instead.
+			con.send("WELCOME#" + con.getAddr().getHostAddress().toString() + "#"+listener.getPort());
+		}
 	}
 	private void handleWelcome(Connection con, String succIp, int succPort){
 		//TODO: handle request and propose successor
@@ -130,11 +144,19 @@ public class Node implements ConnectionCallback{
 	private void handleSuccessorInform(Connection con, int succPort){
 		//TODO: handle inform. Add peer as predecessor accordingly.
 	}
-	private void printOutgoingMessage(String text){
-		System.out.println(listener.getPort() + "@" + listener.getAddr()+ "<< " + text);
+	private void sendMessage(Connection con, String text){
+		try{
+			con.send(text);
+			System.out.println(listener.getPort() + "@" + InetAddress.getLocalHost().getHostAddress().toString()+ "<< " + text);
+		}catch(UnknownHostException e){
+				
+		}
 	}
 	private void printIncomingMessage(String text){
-		System.out.println(listener.getPort() + "@" + listener.getAddr()+ ">> " + text);
+		try{
+			System.out.println(listener.getPort() + "@" + InetAddress.getLocalHost().getHostAddress().toString() + ">> " + text);
+		}catch(UnknownHostException e){
+		}
 	}
 	public static void main(String argv[]){
 		try {

@@ -1,14 +1,18 @@
 package overlay;
 
-import java.math.BigInteger;
+import java.net.InetAddress;
+
+import connection.Connection;
 
 public class PeerEntry {
 	
 	private Long id;
+	private Connection connection;
 	private int peerPort;
 	
-	public PeerEntry(long id, int peerPort) {
+	public PeerEntry(long id, Connection connection, int peerPort) {
 		this.id = id;
+		this.connection = connection;
 		this.peerPort = peerPort;
 	}
 	
@@ -34,5 +38,9 @@ public class PeerEntry {
 	
 	public Long getId() {
 		return id;
+	}
+	
+	public InetAddress getAddr(){
+		return connection.getAddr();
 	}
 }
