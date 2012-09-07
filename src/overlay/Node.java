@@ -148,6 +148,7 @@ public class Node implements ConnectionCallback{
 		assert(peer != null);
 		if(con.getLocalAddress().getHostAddress().toString().equals(succIp) && myPort == succPort) {
 			predecessor = peer;
+			System.out.println("Updated predecessor to " + peer.getAddr().getHostAddress() + ":" + peer.getPeerPort());
 		} else {
 			try {
 				handleWelcome(con, InetAddress.getByName(succIp), succPort); // HAXX
