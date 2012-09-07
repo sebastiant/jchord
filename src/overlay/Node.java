@@ -36,7 +36,7 @@ public class Node implements ConnectionCallback{
 	public void join(InetAddress inetAddr, int port){
 		Connection con = new Connection(inetAddr, port, this);
 		System.out.println("Sending join to: " + inetAddr.getHostAddress().toString());
-		con.send(Protocol.Command.JOIN + Protocol.DELIMETER + myPort);
+		sendMessage(con, Protocol.Command.JOIN + Protocol.DELIMETER + myPort + Protocol.DELIMETER + overlaySize);
 		long peerID = IDGenerator.getInstance().getId(inetAddr, port, overlaySize);
 		PeerEntry entry = new PeerEntry(peerID, con, port);
 		connections.put(con,entry);
@@ -87,7 +87,6 @@ public class Node implements ConnectionCallback{
 				int port = Integer.parseInt(tok.nextToken());
 				handleSuccessorInform(con, port);
 			}catch(NoSuchElementException e){
-				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
@@ -100,19 +99,16 @@ public class Node implements ConnectionCallback{
 				int predPort = Integer.parseInt(tok.nextToken());
 				handlePredecessorInform(con, predIp, predPort);
 			}catch(NoSuchElementException e){
-				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
 		default:
-			//con.send("Unknown request, shutting down connection");
 			con.disconnect();
 		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
-		System.out.println("Handle");
+		System.out.println("handling join");
 		if(overlaySize!=this.overlaySize){
-			//con.send("overlay size differs, shutting down connection");
 			con.disconnect();
 		}
 		long peerID = IDGenerator.getInstance().getId(con.getAddr(), con.getPort(), overlaySize);
@@ -126,13 +122,13 @@ public class Node implements ConnectionCallback{
 			if(FingerTable.inBetween(myId, succPeer.getId(), peerID)){
 				//Refer him to our successor.
 				System.out.println("Sending derp");
-				con.send("WELCOME#" + succPeer.getAddr().getHostAddress().toString() + "#"+succPeer.getPeerPort());
+				sendMessage(con, "WELCOME#" + succPeer.getAddr().getHostAddress().toString() + "#"+succPeer.getPeerPort());
 			}
 		}
 		else {
 			System.out.println("Sending derp");
 			//Refer him to ourself. Protocol simplicifacion, we could evolve the protocol to keep this connection instead.
-			con.send("WELCOME#" + con.getAddr().getHostAddress().toString() + "#"+listener.getPort());
+			sendMessage(con, "WELCOME#" + con.getAddr().getHostAddress().toString() + "#"+listener.getPort());
 		}
 	}
 	private void handleWelcome(Connection con, String succIp, int succPort){
@@ -140,7 +136,7 @@ public class Node implements ConnectionCallback{
 	}
 	private void handlePredecessorRequest(Connection con){
 		//TODO: respond
-		con.send("PRED#");
+		sendMessage(con, "PRED#");
 	}
 	private void handlePredecessorInform(Connection con, String succIp, int succPort){
 		//TODO: handle response
