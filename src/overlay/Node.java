@@ -60,11 +60,13 @@ public class Node implements ConnectionCallback{
 		Connection con = msg.getConnection();
 		switch(Protocol.Command.valueOf(tok.nextToken().toUpperCase())){
 		case JOIN:
+			System.out.println("JOIN");
 			try{
 				int peerPort = Integer.parseInt(tok.nextToken());
 				int oSize = Integer.parseInt(tok.nextToken());
 				handleJoin(con, peerPort, oSize);
 			}catch(NoSuchElementException e){
+				e.printStackTrace();
 				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
@@ -75,6 +77,7 @@ public class Node implements ConnectionCallback{
 				int succPort = Integer.parseInt(tok.nextToken());
 				handleWelcome(con, succIp, succPort);
 			}catch(NoSuchElementException e){
+				e.printStackTrace();
 				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
@@ -107,6 +110,7 @@ public class Node implements ConnectionCallback{
 		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
+		System.out.println("Handle");
 		if(overlaySize!=this.overlaySize){
 			//con.send("overlay size differs, shutting down connection");
 			con.disconnect();
