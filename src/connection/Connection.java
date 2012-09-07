@@ -96,6 +96,10 @@ public class Connection implements Runnable{
 	public int getPort() {
 		return socket.getPort();
 	}
+	
+	public InetAddress getLocalAddress() {
+		return socket.getLocalAddress();
+	}
 }
 
 

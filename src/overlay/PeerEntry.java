@@ -43,4 +43,8 @@ public class PeerEntry {
 	public InetAddress getAddr(){
 		return connection.getAddr();
 	}
+	
+	public Connection getConnection() {
+		return connection;
+	}
 }
