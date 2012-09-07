@@ -15,20 +15,20 @@ import connection.Message;
 
 public class Node implements ConnectionCallback{
 	private int arity;
-	private int overlaySize;
-	private BigInteger myId;
+	private long overlaySize;
+	private long myId;
 	private int myPort;
 	private ConnectionListener listener;
 	private Hashtable<PeerEntry, Connection> connections = new Hashtable<PeerEntry, Connection>();
 	private Connection successor;
 	private Connection predecessor;
 	
-	public Node(InetAddress inetAddr, int port, int overlaySize, int arity){
+	public Node(InetAddress inetAddr, int port, long overlaySize, int arity){
 		this.overlaySize=overlaySize;
 		this.arity=arity;
 		this.myPort = port;
 		this.listener = new ConnectionListener(port,this); //The "local server"
-		this.myId=IDGenerator.getInstance().getId(inetAddr, port);
+		this.myId=IDGenerator.getInstance().getId(inetAddr, port, overlaySize);
 		this.successor = null;
 		this.predecessor = null;
 	}
@@ -36,7 +36,7 @@ public class Node implements ConnectionCallback{
 	public void join(InetAddress inetAddr, int port){
 		Connection c = new Connection(inetAddr, port, this);;
 		c.send(Protocol.Command.JOIN + Protocol.DELIMETER + myPort);
-		BigInteger peerID = IDGenerator.getInstance().getId(inetAddr, port);
+		long peerID = IDGenerator.getInstance().getId(inetAddr, port, overlaySize);
 		PeerEntry entry = new PeerEntry(peerID, port);
 		connections.put(entry, c);
 	}
@@ -111,7 +111,7 @@ public class Node implements ConnectionCallback{
 		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
-		BigInteger peerID = IDGenerator.getInstance().getId(con.getAddr(), con.getPort());
+		long peerID = IDGenerator.getInstance().getId(con.getAddr(), con.getPort(), overlaySize);
 		PeerEntry entry = new PeerEntry(peerID, peerPort);
 		connections.put(entry, con);
 		//TODO: send along ip and portnumber to a suitable successor for the node.

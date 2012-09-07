@@ -4,10 +4,10 @@ import java.math.BigInteger;
 
 public class PeerEntry {
 	
-	private BigInteger id;
+	private Long id;
 	private int peerPort;
 	
-	public PeerEntry(BigInteger id, int peerPort) {
+	public PeerEntry(long id, int peerPort) {
 		this.id = id;
 		this.peerPort = peerPort;
 	}
@@ -32,7 +32,7 @@ public class PeerEntry {
 		return peerPort;
 	}
 	
-	public BigInteger getId() {
+	public Long getId() {
 		return id;
 	}
 }

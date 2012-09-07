@@ -14,11 +14,11 @@ public class IDGenerator {
 		md = MessageDigest.getInstance("SHA-256");
 	}
 
-	public BigInteger getId(InetAddress ip, int port) {
+	public long getId(InetAddress ip, int port, long overlaySize) {
 		BigInteger hash = null;
 		byte[] raw = md.digest((ip.toString() + ":" + Integer.toHexString(port)).getBytes());
 		hash = new BigInteger(1, raw);
-		return hash;
+		return hash.mod(new BigInteger(Long.toString(overlaySize))).longValue();
 	}
 	
 	public static IDGenerator getInstance() {
