@@ -15,7 +15,7 @@ As predecessors periodically inform their successors of their existence and requ
 Example scenario:
 *A connects to B.
 
-*A asks B to join its network by supplying its listening port and overlay size (JOIN#portNmbr#overlaySize#arity)
+*A asks B to join its network by supplying its listening port and overlay size (JOIN#portNmbr#overlaySize)
 
 If accepted (unknown constraints):
 *B writes back contact information to A's Successor: WELCOME#ip#portNmbr
