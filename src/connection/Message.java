@@ -7,16 +7,16 @@ import java.net.InetAddress;
  */
 public class Message {
 
-	private String msg;
+	private String contents;
 	private Connection con;
 	
-	public Message(String msg, Connection con){
-		this.msg=msg;
+	public Message(String contents, Connection con){
+		this.contents=contents;
 		this.con = con;
 	}
 	
-	public String getMsg(){
-		return msg;
+	public String getContents(){
+		return contents;
 	}
 	public Connection getConnection() {
 		return con;

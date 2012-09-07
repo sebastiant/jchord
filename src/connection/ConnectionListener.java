@@ -25,13 +25,20 @@ public class ConnectionListener implements Runnable{
 		}
 		
 	}
+	public int getPort(){
+		return serverSocket.getLocalPort();
+	}
+	public String getAddr(){
+		return serverSocket.getInetAddress().getHostAddress();
+	}
 	@Override
 	public void run() {
 		Socket s;
+		Connection c;
 		while(running){
 			try {
 				s = serverSocket.accept();
-				new Connection(s, cc);
+				c = new Connection(s, cc);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

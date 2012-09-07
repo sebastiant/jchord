@@ -74,11 +74,14 @@ public class Connection implements Runnable{
 			while(connected) {
 				data = reader.readLine();
 				if(data == null) {
+					System.out.println("Data == Null, disconnecting");
 					disconnect();
 					break;
 				}
-				Message msg = new Message(data, this);
-				callback.receive(msg);
+				if(!data.equals("ping")){
+					Message msg = new Message(data, this);
+					callback.receive(msg);
+				}
 			}
 		} catch (IOException e) {
 			connected = false;

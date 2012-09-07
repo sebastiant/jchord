@@ -51,7 +51,8 @@ public class Node implements ConnectionCallback{
 	}
 	@Override
 	public void receive(Message msg) {
-		StringTokenizer tok = new StringTokenizer(msg.getMsg(), Protocol.DELIMETER);
+		printIncomingMessage(msg.getContents());
+		StringTokenizer tok = new StringTokenizer(msg.getContents(), Protocol.DELIMETER);
 		if(!tok.hasMoreTokens()) {
 			return;
 		}
@@ -64,11 +65,11 @@ public class Node implements ConnectionCallback{
 				if(oSize==overlaySize){
 					handleJoin(con, peerPort, oSize);
 				}else{
-					con.send("overlay size differs, shutting down connection");
+					//con.send("overlay size differs, shutting down connection");
 					con.disconnect();
 				}
 			}catch(NoSuchElementException e){
-				con.send("Unknown request, shutting down connection");
+				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
@@ -78,7 +79,7 @@ public class Node implements ConnectionCallback{
 				int succPort = Integer.parseInt(tok.nextToken());
 				handleWelcome(con, succIp, succPort);
 			}catch(NoSuchElementException e){
-				con.send("Unknown request, shutting down connection");
+				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
@@ -87,7 +88,7 @@ public class Node implements ConnectionCallback{
 				int port = Integer.parseInt(tok.nextToken());
 				handleSuccessorInform(con, port);
 			}catch(NoSuchElementException e){
-				con.send("Unknown request, shutting down connection");
+				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
@@ -100,16 +101,14 @@ public class Node implements ConnectionCallback{
 				int predPort = Integer.parseInt(tok.nextToken());
 				handlePredecessorInform(con, predIp, predPort);
 			}catch(NoSuchElementException e){
-				con.send("Unknown request, shutting down connection");
+				//con.send("Unknown request, shutting down connection");
 				con.disconnect();		
 			}
 			break;
 		default:
-			con.send("Unknown request, shutting down connection");
+			//con.send("Unknown request, shutting down connection");
 			con.disconnect();
-		}
-	
-		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+ msg.getPort());		
+		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
 		BigInteger peerID = IDGenerator.getInstance().getId(con.getAddr(), con.getPort());
@@ -130,6 +129,12 @@ public class Node implements ConnectionCallback{
 	}
 	private void handleSuccessorInform(Connection con, int succPort){
 		//TODO: handle inform. Add peer as predecessor accordingly.
+	}
+	private void printOutgoingMessage(String text){
+		System.out.println(listener.getPort() + "@" + listener.getAddr()+ "<< " + text);
+	}
+	private void printIncomingMessage(String text){
+		System.out.println(listener.getPort() + "@" + listener.getAddr()+ ">> " + text);
 	}
 	public static void main(String argv[]){
 		try {

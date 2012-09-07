@@ -13,7 +13,7 @@ public class SocketTest implements ConnectionCallback {
 	
 	@Override
 	public void receive(Message msg) {
-		System.out.println("received: " + msg.getMsg() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());
+		System.out.println("received: " + msg.getContents() + " from: " + msg.getAddr().toString() + ":"+msg.getPort());
 	}
 	@Override
 	public void register(Host host){
