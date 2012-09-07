@@ -60,7 +60,6 @@ public class Node implements ConnectionCallback{
 		Connection con = msg.getConnection();
 		switch(Protocol.Command.valueOf(tok.nextToken().toUpperCase())){
 		case JOIN:
-			System.out.println("JOIN");
 			try{
 				int peerPort = Integer.parseInt(tok.nextToken());
 				int oSize = Integer.parseInt(tok.nextToken());
@@ -68,7 +67,7 @@ public class Node implements ConnectionCallback{
 			}catch(NoSuchElementException e){
 				e.printStackTrace();
 				//con.send("Unknown request, shutting down connection");
-				con.disconnect();		
+				con.disconnect();
 			}
 			break;
 		case WELCOME:
@@ -122,29 +121,30 @@ public class Node implements ConnectionCallback{
 			if(FingerTable.inBetween(myId, succPeer.getId(), peerID)){
 				//Refer him to our successor.
 				System.out.println("Sending derp");
-				sendMessage(con, "WELCOME#" + succPeer.getAddr().getHostAddress().toString() + "#"+succPeer.getPeerPort());
+				sendMessage(con, Protocol.Command.WELCOME + Protocol.DELIMETER + succPeer.getAddr().getHostAddress().toString()
+						+ Protocol.DELIMETER + succPeer.getPeerPort());
 			}
 		}
 		else {
 			System.out.println("Sending derp");
 			//Refer him to ourself. Protocol simplicifacion, we could evolve the protocol to keep this connection instead.
-			sendMessage(con, "WELCOME#" + con.getAddr().getHostAddress().toString() + "#"+listener.getPort());
+			sendMessage(con, Protocol.Command.WELCOME + Protocol.DELIMETER + con.getAddr().getHostAddress().toString() + Protocol.DELIMETER+listener.getPort());
 		}
 	}
-	private void handleWelcome(Connection con, String succIp, int succPort){
+	private void handleWelcome(Connection con, String succIp, int succPort) {
 		//TODO: handle request and propose successor
 	}
-	private void handlePredecessorRequest(Connection con){
+	private void handlePredecessorRequest(Connection con) {
 		//TODO: respond
-		sendMessage(con, "PRED#");
+		sendMessage(con, Protocol.Command.PRED + Protocol.DELIMETER + "...");
 	}
-	private void handlePredecessorInform(Connection con, String succIp, int succPort){
+	private void handlePredecessorInform(Connection con, String succIp, int succPort) {
 		//TODO: handle response
 	}
-	private void handleSuccessorInform(Connection con, int succPort){
+	private void handleSuccessorInform(Connection con, int succPort) {
 		//TODO: handle inform. Add peer as predecessor accordingly.
 	}
-	private void sendMessage(Connection con, String text){
+	private void sendMessage(Connection con, String text) {
 		try{
 			con.send(text);
 			System.out.println(listener.getPort() + "@" + InetAddress.getLocalHost().getHostAddress().toString()+ "<< " + text);
@@ -152,13 +152,13 @@ public class Node implements ConnectionCallback{
 				
 		}
 	}
-	private void printIncomingMessage(String text){
+	private void printIncomingMessage(String text) {
 		try{
 			System.out.println(listener.getPort() + "@" + InetAddress.getLocalHost().getHostAddress().toString() + ">> " + text);
 		}catch(UnknownHostException e){
 		}
 	}
-	public static void main(String argv[]){
+	public static void main(String argv[]) {
 		try {
 		Node n = new Node(InetAddress.getLocalHost(),8080, 4, 5);
 			//n.join(InetAddress.getLocalHost(), 8080);
