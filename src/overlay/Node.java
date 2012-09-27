@@ -59,7 +59,6 @@ public class Node implements ConnectionCallback{
 		Connection con = msg.getConnection();
 		switch(Protocol.Command.valueOf(tok.nextToken().toUpperCase())){
 		case JOIN:
-			System.out.println("JOIN");
 			try{
 				int peerPort = Integer.parseInt(tok.nextToken());
 				int oSize = Integer.parseInt(tok.nextToken());
@@ -111,7 +110,7 @@ public class Node implements ConnectionCallback{
 		}		
 	}
 	private void handleJoin(Connection con, int peerPort, int overlaySize){
-		System.out.println("handling join");
+		System.out.println("handleJoin");
 		if(overlaySize!=this.overlaySize){
 			con.disconnect();
 		}
@@ -135,15 +134,19 @@ public class Node implements ConnectionCallback{
 		}
 	}
 	private void handleWelcome(Connection con, InetAddress succIp, int succPort){
-		System.out.println("Handle welcome");
+		System.out.println("HandleWelcome");
 		con.disconnect();
 		Connection succCon = createConnection(succIp, succPort);
-		succCon.send(Protocol.Command.SUCC + Protocol.DELIMETER + myPort);
+		sendMessage(succCon, Protocol.Command.SUCC + Protocol.DELIMETER + myPort);
 	}
 	private void handlePredecessorRequest(Connection con) {
-		System.out.println("Handle pred request");
+		System.out.println("HandlePredRequest");
+		if(predecessor != null){
+			sendMessage(con, Protocol.Command.PRED + Protocol.DELIMETER + predecessor.getAddr() + Protocol.DELIMETER + predecessor.getPeerPort());
+		}
 	}
 	private void handlePredecessorInform(Connection con, String succIp, int succPort){
+		System.out.println("HandlePredInform");
 		PeerEntry peer = connections.get(con);
 		assert(peer != null);
 		if(con.getLocalAddress().getHostAddress().toString().equals(succIp) && myPort == succPort) {
@@ -161,6 +164,7 @@ public class Node implements ConnectionCallback{
 		//TODO: handle response
 	}
 	private void handleSuccessorInform(Connection con, int port) {
+		System.out.println("HandleSuccInform");
 		PeerEntry peer = connections.get(con);
 		if(peer == null) {
 			long peerId = IDGenerator.getInstance().getId(con.getAddr(), port, overlaySize);
@@ -171,7 +175,7 @@ public class Node implements ConnectionCallback{
 		if(predecessor != null) {
 			if(!FingerTable.inBetween(predecessor.getId(), myId, peer.getId())) {
 				// Keep current predecessor
-				con.send(Protocol.Command.PRED + 
+				sendMessage(con, Protocol.Command.PRED + 
 				Protocol.DELIMETER + 
 				predecessor.getAddr().getHostAddress() + 
 				Protocol.DELIMETER +
@@ -180,7 +184,7 @@ public class Node implements ConnectionCallback{
 			} 
 		} 
 		// Set node as predecessor
-		con.send(Protocol.Command.PRED + 
+		sendMessage(con, Protocol.Command.PRED + 
 		Protocol.DELIMETER + 
 		peer.getAddr().getHostAddress() + 
 		Protocol.DELIMETER +
@@ -189,10 +193,10 @@ public class Node implements ConnectionCallback{
 	}
 	private void sendMessage(Connection con, String text){
 		con.send(text);
-		System.out.println(listener.getPort() + "@" + con.getLocalAddress().getHostAddress().toString() + " << " + text);
+		System.out.println(listener.getPort() + "@" + con.getLocalAddress().getHostAddress().toString() + " <tx< " + text);
 	}
 	private void printIncomingMessage(Message msg){
-		System.out.println(listener.getPort() + "@" + msg.getConnection().getLocalAddress().getHostAddress().toString() + " >> " + msg.getContents());
+		System.out.println(listener.getPort() + "@" + msg.getConnection().getLocalAddress().getHostAddress().toString() + " >rx> " + msg.getContents());
 	}
 	
 	private Connection createConnection(InetAddress inetAddr, int port) {
@@ -203,13 +207,4 @@ public class Node implements ConnectionCallback{
 		return con;
 	}
 
-	public static void main(String argv[]){
-		try {
-		Node n = new Node(InetAddress.getLocalHost(), 8080, 4, 5);
-			//n.join(InetAddress.getLocalHost(), 8080);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }

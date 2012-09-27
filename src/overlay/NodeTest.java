@@ -12,7 +12,9 @@ public class NodeTest {
 		try {
 			Node a = new Node(InetAddress.getByName("localhost"), 9000, 4, 5);
 			Node b = new Node(InetAddress.getByName("localhost"), 9001, 4, 5);
+			Node c = new Node(InetAddress.getByName("localhost"), 9002, 4, 5);
 			a.join(InetAddress.getByName("localhost"), 9001);
+			c.join(InetAddress.getByName("localhost"), 9000);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		       String name = null;
 		       try {
