@@ -1,16 +1,13 @@
 package network;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-
-<<<<<<< HEAD
-=======
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
->>>>>>> 0543ae6f281a5d998213e2ca7c79dda3dab91e81
 
 public class ConnectionHandler {
 	
@@ -20,7 +17,6 @@ public class ConnectionHandler {
 	private ConcreteObserver<ControlEvent> eventObserver;
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
-	
 	
 	public ConnectionHandler(Server server) {
 		this.server = server;
@@ -71,12 +67,17 @@ public class ConnectionHandler {
 	
 	private Connection getConnection(Address address) {
 		 if(!cons.containsKey(address)) {
-			Connection con = new Connection(address);
-			Address remote = con.getRemoteAddress();
-			con.registerMessageObserver(messageObserver);
-			con.registerEventObserver(eventObserver);
-			con.start();
-			cons.put(remote, con);
+			Connection con;
+			try {
+				con = new Connection(address, server.getPort());
+				con.registerMessageObserver(messageObserver);
+				con.registerEventObserver(eventObserver);
+				con.start();
+				cons.put(address, con);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
 		} 
 		return cons.get(address);
 	}

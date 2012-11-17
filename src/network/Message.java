@@ -64,7 +64,9 @@ public class Message {
 	public String getId() {
 		String ret = null;
 		try {
-			ret = (String) this.json.get("_Id");
+			if(this.json.has("_Id")) {
+				ret = (String) this.json.get("_Id");
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

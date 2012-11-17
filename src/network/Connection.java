@@ -31,34 +31,24 @@ public class Connection {
 	private Address address;
 	private long lastPing = 0L;
 	
-	public Connection(Address address) {
-		try {
-			Socket socket = new Socket(address.getInetAddress(), address.getPort());
-			setup(socket);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public Connection(Address address, int publicPort) throws IOException {
+		Socket socket = new Socket(address.getInetAddress(), address.getPort());
+		setup(socket);
+		
+		Message msg = new Message();
+		msg.setId("control");
+		msg.setKey("port", publicPort);
+		this.send(msg);
 	}
 	
-	public Connection(String address) {
-		String[] split = address.split(":");
-		try {
-			InetAddress inet =  InetAddress.getByName(split[0]);	
-			int port = Integer.valueOf(split[1]);
-			this.address = new Address(inet, port);
-			setup(new Socket(inet, port));
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 	
 	public Connection(Socket s) {
 		setup(s);
+		Message msg;
+		do {
+			msg = recieve();
+		} while (!(msg.getId().equals("control") && msg.hasKey("port")));
+		this.address.setPort((Integer)msg.getKey("port"));
 	}
 	
 	private void setup(Socket s) {
@@ -70,7 +60,7 @@ public class Connection {
 			reciever = new Service() {
 				public void service() {
 					Message ret = recieve();
-					if(ret.hasKey("type") && ret.getKey("type").equals("_Ping")) {
+					if(ret.getId().equals("ping")) {
 						Connection.this.lastPing  = System.currentTimeMillis();
 					} else {
 						msgObs.notifyObservers(ret);
@@ -81,7 +71,7 @@ public class Connection {
 				@Override
 				public void service() {
 					Message msg = new Message();
-					msg.setKey("type", "_Ping");
+					msg.setId("ping");
 					send(msg);
 					try {
 						Thread.sleep(KEEPALIVE_FEQ);
@@ -105,7 +95,6 @@ public class Connection {
 					}
 				}
 			};
-			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

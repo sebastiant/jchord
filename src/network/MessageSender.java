@@ -23,6 +23,7 @@ public class MessageSender {
 	}
 	
 	public void send(Message m) {
+		m.setId("app");
 		handler.send(m);
 	}
 	
