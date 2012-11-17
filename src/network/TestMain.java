@@ -26,9 +26,10 @@ public class TestMain {
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
 		msg.setKey("text", "Hello 1");
 		node2.send(msg);
-		/*msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
-		msg.setKey("text", "Hello 2");
-		node1.send(msg);*/
+		Message msg2 = new Message();
+		msg2.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
+		msg2.setKey("text", "Hello 2");
+		node1.send(msg2);
 	}
 
 }

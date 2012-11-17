@@ -65,8 +65,8 @@ public class Connection {
 	}
 	
 	private void setup(Socket s) {
-		this.address = new Address(s.getInetAddress(), s.getPort());
 		this.socket = s;
+		this.address = new Address(s.getInetAddress(), s.getPort());
 		try {
 			this.in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			this.out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
