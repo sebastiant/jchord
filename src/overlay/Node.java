@@ -46,12 +46,22 @@ public class Node {
 		System.out.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getRemoteAddress());
 	}
 	public void handleMessage(Message msg) {
-		System.out.println("Received Message: " + msg.getKey("text") + " from: " + msg.getSourceAddress() + " with id: "
+		String contents = (String)msg.getKey("text");
+		Address src = msg.getSourceAddress();
+		System.out.println("Received Message: " + contents + " from: " + src + " with id: "
 				+ msg.getId());
-		if(peers.get(msg.getSourceAddress()) == null){
+		if(peers.get(msg.getSourceAddress()) != null){ //Connected node
 			
+		} else //New connection
+		{
+			if(contents.startsWith("JOIN"))
+			{
+				peers.put(src, new PeerEntry(src, src.hashCode()));
+			} else //Probably caused by churn -we've disconnected from the node due to timeout.
+			{
+				//Reply with msg that the sender is dead to us.
+			}
 		}
-			
 	}
 	public void send(Message msg) {
 		mySender.send(msg);
