@@ -1,5 +1,7 @@
 package network;
 
+import network.events.ControlEvent;
+
 public class MessageSender {
 	
 	private Server server;

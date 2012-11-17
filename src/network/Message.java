@@ -60,6 +60,17 @@ public class Message {
 		}
 		return ret;
 	}
+
+	public String getId() {
+		String ret = null;
+		try {
+			ret = (String) this.json.get("_Id");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ret;
+	}
 	
 	public void setSourceAddress(Address address) {
 		this.setSourceAddress(address.toString());
@@ -68,6 +79,15 @@ public class Message {
 	public void setSourceAddress(String source) {
 		try {
 			this.json.put("_Src_address", source);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void setId(String id) {
+		try {
+			this.json.put("_Id", id);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

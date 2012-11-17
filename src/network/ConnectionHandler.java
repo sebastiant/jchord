@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import network.events.ControlEvent;
+
 public class ConnectionHandler {
 	
 	private ConcurrentHashMap<Address, Connection> cons = new ConcurrentHashMap<Address, Connection>();
