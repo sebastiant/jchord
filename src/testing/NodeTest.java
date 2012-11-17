@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 
 import overlay.Node;
 
+import network.Address;
 import network.Message;
 
 public class NodeTest {
@@ -15,12 +16,17 @@ public class NodeTest {
 		Message msg = new Message();
 		try {
 			msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":8080");
-			msg.setKey("text", "jak er json");
+			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
+			msg.setKey(Node.PROTOCOL_JOIN_ID, 123);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		n1.send(msg);
+		try{
+			n1.send(new Address(InetAddress.getLocalHost(), 8080), msg);
+		} catch(Exception e){
+			System.out.println("exception elo ;D");
+		}
 	}
 	
 }

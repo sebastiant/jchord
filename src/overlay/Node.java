@@ -33,11 +33,15 @@ public class Node {
 	private MessageSender mySender;
 	private Map<Address, PeerEntry> peers = Collections.synchronizedMap(new HashMap<Address, PeerEntry>());
 	
+	private int localId;
+	private boolean connected;
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	
 	public Node(int port) {
+		localId = port;
 		predecessor = successor = null;
+		connected = false;
 		peers = new HashMap<Address, PeerEntry>();
 		mySender = new MessageSender(port);
 		mySender.registerMessageObserver(new ConcreteObserver<Message>() {
@@ -73,12 +77,12 @@ public class Node {
 		}
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
 		Address src = msg.getSourceAddress();
-		System.out.println("Received message from: " + src + " with id: " + msg.getId());
+		System.out.println("Received message from: " + src);
 		Message response = new Message();
 		if(peers.get(msg.getSourceAddress()) != null){ //Connected node
-			if(command.equals(PROTOCOL_JOIN)) //Not expected!
+			if(command.equals(PROTOCOL_JOIN)) //Expected when receiving back join ID
 			{
-				
+				send(src,handleJoin(msg, true));
 			} else if(command.equals(PROTOCOL_DISCONNECT)){
 				
 			} else if(command.equals(PROTOCOL_DENIED)){
@@ -94,15 +98,7 @@ public class Node {
 		{
 			if(command.equals(PROTOCOL_JOIN))
 			{
-				if(msg.hasKey(PROTOCOL_JOIN_ID)){
-					peers.put(src, new PeerEntry(src, Integer.parseInt((String)msg.getKey(PROTOCOL_JOIN_ID))));
-					response.setKey(PROTOCOL_COMMAND, PROTOCOL_GRANTED);
-					send(src, response);
-				} else //Denied!
-				{
-					response.setKey(PROTOCOL_COMMAND, PROTOCOL_DENIED);
-					send(src, response);
-				}
+				send(src, handleJoin(msg, false));
 			} else //Probably caused by churn -we've disconnected from the node due to timeout.
 			{
 				response.setKey(PROTOCOL_COMMAND, PROTOCOL_CLOSEDCONNECTION);
@@ -110,7 +106,32 @@ public class Node {
 			}
 		}
 	}
-	public void send(Address addr, Message msg) {
+	
+	public Message handleJoin(Message msg, boolean connected){
+		Message response = new Message();
+		Address src = msg.getSourceAddress();
+		if(connected){
+			System.out.println("Finally connected! :)");
+		}
+		else{
+				System.out.println("Got join ");
+				if(msg.hasKey(PROTOCOL_JOIN_ID)){
+					peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
+					response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
+					response.setKey(PROTOCOL_JOIN_ID, localId);
+					send(src, response);
+					if(!connected)
+						connected = true;
+				} else //Denied!
+				{
+					response.setKey(PROTOCOL_COMMAND, PROTOCOL_DENIED);
+					send(src, response);
+				}
+			}
+		return null;
+	}
+	
+	public void send(Address addr, Message msg){
 		msg.setDestinationAddress(addr.getInetAddress().getHostAddress() + ":" + addr.getPort());
 		mySender.send(msg);
 	}
