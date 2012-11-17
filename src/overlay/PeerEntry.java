@@ -2,49 +2,14 @@ package overlay;
 
 import java.net.InetAddress;
 
-import connection.Connection;
+import network.Address;
 
-public class PeerEntry {
-	
-	private Long id;
-	private Connection connection;
-	private int peerPort;
-	
-	public PeerEntry(long id, Connection connection, int peerPort) {
+public class PeerEntry{
+	int id;
+	private Address addr;
+	public PeerEntry(Address addr, int id){
+		this.addr = addr;
 		this.id = id;
-		this.connection = connection;
-		this.peerPort = peerPort;
 	}
-	
-	@Override
-	public int hashCode() {
-		return id.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if(o instanceof PeerEntry) {
-			PeerEntry p = (PeerEntry)o;
-			if(p.id.equals(this.id)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public int getPeerPort() {
-		return peerPort;
-	}
-	
-	public Long getId() {
-		return id;
-	}
-	
-	public InetAddress getAddr(){
-		return connection.getAddr();
-	}
-	
-	public Connection getConnection() {
-		return connection;
-	}
+
 }

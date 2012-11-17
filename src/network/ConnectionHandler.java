@@ -5,6 +5,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import network.events.ControlEvent;
+
 public class ConnectionHandler {
 	
 	private ConcurrentHashMap<String, Connection> cons = new ConcurrentHashMap<String, Connection>();
