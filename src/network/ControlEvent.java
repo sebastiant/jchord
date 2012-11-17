@@ -1,5 +1,5 @@
 package network;
 
-public class ControlEvent {
-
+public interface ControlEvent {
+	
 }
