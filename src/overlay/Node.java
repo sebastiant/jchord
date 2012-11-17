@@ -2,8 +2,10 @@ package overlay;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
+import network.Address;
 import network.ConcreteObserver;
 import network.ControlEvent;
 import network.DisconnectEvent;
@@ -38,12 +40,9 @@ public class Node {
 		System.out.println("Received DisconnectEvent from some host!");
 	}
 	public void handleMessage(Message msg) {
-		System.out.println("Received Control Message: " + msg.getKey("control") + " from: " + msg.getSourceAddress());
+		System.out.println("Received Message: " + msg.getKey("text") + " from: " + msg.getSourceAddress());
 	}
-	public void sendMessage(Message msg){
-		
-	}
-	public static void main(String[] args){
-		Node n1 = new Node(79797);
+	public void send(Message msg) {
+		mySender.send(msg);
 	}
 }
