@@ -29,7 +29,7 @@ public class Connection {
 	private Observable<Message> msgObs = new Observable<Message>();
 	private Observable<ControlEvent> eventObs = new Observable<ControlEvent>();
 	private Address address;
-	private long lastPing = 0L;
+	private long lastPing = Long.MAX_VALUE;
 	
 	public Connection(Address address, int publicPort) throws IOException {
 		Socket socket = new Socket(address.getInetAddress(), address.getPort());
@@ -144,7 +144,7 @@ public class Connection {
 	
 	public void start() {
 		reciever.start();
-		//keepAliveSender.start();
+		keepAliveSender.start();
 		//keepAliveNotifier.start();
 	}
 	
