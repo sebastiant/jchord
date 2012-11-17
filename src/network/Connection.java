@@ -12,22 +12,31 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-public class Connection extends Observable<Message>{
+public class Connection {
 	
+	private final long KEEPALIVE_FEQ = 5000L;
+	private final long KEEPALIVE_TIMEOUT = 10000L;
 	private Socket socket;
 	private BufferedReader in;
 	private BufferedWriter out;
-	private Service service;
+	private Service reciever;
+	private Service keepAliveSender;
+	private Service keepAliveNotifier;
+	private Observable<Message> msgObs = new Observable<Message>();
+	private Observable<ControlEvent> eventObs = new Observable<ControlEvent>();
+	private Address address;
+	private long lastPing = 0L;
 	
-	public Connection(InetAddress address, int port) {
+	public Connection(Address address) {
 		try {
-			Socket socket = new Socket(address, port);
-			socket.setKeepAlive(true);
+			Socket socket = new Socket(address.getInetAddress(), address.getPort());
 			setup(socket);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -40,6 +49,7 @@ public class Connection extends Observable<Message>{
 		try {
 			InetAddress inet =  InetAddress.getByName(split[0]);	
 			int port = Integer.valueOf(split[1]);
+			this.address = new Address(inet, port);
 			setup(new Socket(inet, port));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -55,15 +65,50 @@ public class Connection extends Observable<Message>{
 	}
 	
 	private void setup(Socket s) {
+		this.address = new Address(s.getInetAddress(), s.getPort());
 		this.socket = s;
 		try {
 			this.in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			this.out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-			service = new Service() {
+			reciever = new Service() {
 				public void service() {
-					notifyObservers(recieve());
+					Message ret = recieve();
+					if(ret.hasKey("type") && ret.getKey("type").equals("_Ping")) {
+						Connection.this.lastPing  = System.currentTimeMillis();
+					} else {
+						msgObs.notifyObservers(ret);
+					}
 				}
 			};
+			keepAliveSender = new Service() {
+				@Override
+				public void service() {
+					Message msg = new Message();
+					msg.setKey("type", "_Ping");
+					send(msg);
+					try {
+						Thread.sleep(KEEPALIVE_FEQ);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			keepAliveNotifier = new Service() {
+				@Override
+				public void service() {
+					if(System.currentTimeMillis() - lastPing > KEEPALIVE_TIMEOUT) { 
+						eventObs.notifyObservers(new DisconnectEvent(Connection.this.address));
+					}
+					try {
+						Thread.sleep(KEEPALIVE_TIMEOUT);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -72,7 +117,6 @@ public class Connection extends Observable<Message>{
 	
 	public void send(Message message) {
 		try {
-			message.setSourceAddress(socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
 			out.write(message.getContent().toString() + "\n");
 			out.flush();
 		} catch (IOException e) {
@@ -84,7 +128,7 @@ public class Connection extends Observable<Message>{
 	private Message recieve() {
 		Message ret = null;
 		try {
-			ret = new Message(new JSONObject(in.readLine()));
+			ret = new Message(new JSONObject(in.readLine()));		
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,23 +139,17 @@ public class Connection extends Observable<Message>{
 		return ret;
 	}
 	
-	public InetAddress getRemoteAddress() {
-		return socket.getInetAddress();
+	public Address getRemoteAddress() {
+		return address;
 	}
-	
-	public int getRemotePort() {
-		return socket.getPort();
-	}
-	
-	public String getAddressString() {
-		return getRemoteAddress().getHostAddress() + ":" + getRemotePort();
-	}
-	
+
 	public void disconnect() {
 		try {
+			keepAliveNotifier.stop();
+			keepAliveSender.stop();
+			reciever.stop();
 			out.flush();
 			socket.close();
-			service.stop();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -119,6 +157,15 @@ public class Connection extends Observable<Message>{
 	}
 	
 	public void start() {
-		service.start();
+		reciever.start();
+		//keepAliveSender.start();
+		//keepAliveNotifier.start();
+	}
+	
+	public void registerMessageObserver(Observer<Message> obs) {
+		msgObs.register(obs);
+	}
+	public void registerEventObserver(Observer<ControlEvent> obs) {
+		eventObs.register(obs);
 	}
 }

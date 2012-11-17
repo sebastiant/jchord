@@ -1,11 +1,23 @@
 package network;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class Address {
 	private InetAddress ip;
 	private int port;
 	
+	public Address(String address) {
+		String[] split = address.split(":");
+		try {
+			this.ip =  InetAddress.getByName(split[0]);
+			this.port = Integer.valueOf(split[1]);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
+ 	
 	public Address(InetAddress ip, int port) {
 		this.ip = ip;
 		this.port = port;
@@ -31,6 +43,14 @@ public class Address {
 	}
 	
 	public String toString() {
-		return ip.toString() + ":" + port;
+		return ip.getHostAddress() + ":" + port;
+	}
+	
+	public InetAddress getInetAddress() {
+		return ip;
+	}
+	
+	public int getPort() {
+		return port;
 	}
 }

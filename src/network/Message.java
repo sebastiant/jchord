@@ -39,10 +39,10 @@ public class Message {
 		}
 	}
 	
-	public String getDestinationAddress() {
-		String ret = null;
+	public Address getDestinationAddress() {
+		Address ret = null;
 		try {
-			ret =(String)this.json.get("_Dst_address");
+			ret = new Address((String)this.json.get("_Dst_address"));		
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -50,15 +50,19 @@ public class Message {
 		return ret;
 	}
 	
-	public String getSourceAddress() {
-		String ret = null;
+	public Address getSourceAddress() {
+		Address ret = null;
 		try {
-			ret = (String) this.json.get("_Src_address");
+			ret = new Address((String)this.json.get("_Src_address"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ret;
+	}
+	
+	public void setSourceAddress(Address address) {
+		this.setSourceAddress(address.toString());
 	}
 	
 	public void setSourceAddress(String source) {
@@ -92,6 +96,10 @@ public class Message {
 			e.printStackTrace();
 		}
 		return ret;
+	}
+	
+	public boolean hasKey(String key) {
+		return json.has(key);
 	}
 	
 	public JSONObject getContent() {

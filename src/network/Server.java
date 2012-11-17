@@ -48,6 +48,10 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		service = null;
 	}
 	
+	public int getPort() {
+		return serverSocket.getLocalPort();		
+	}
+	
 	public String toString() {
 		return "network.Server#" + serverSocket.getLocalPort();
 	}
