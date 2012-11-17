@@ -23,10 +23,12 @@ public class Connection extends Observable<Message>{
 	private BufferedReader in;
 	private BufferedWriter out;
 	private Service service;
-
+	
 	public Connection(InetAddress address, int port) {
 		try {
-			setup(new Socket(address, port));
+			Socket socket = new Socket(address, port);
+			socket.setKeepAlive(true);
+			setup(socket);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -83,7 +85,6 @@ public class Connection extends Observable<Message>{
 		Message ret = null;
 		try {
 			ret = new Message(new JSONObject(in.readLine()));
-			System.out.println("recieved:" + ret.getContent());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

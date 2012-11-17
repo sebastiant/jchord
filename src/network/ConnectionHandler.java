@@ -5,15 +5,19 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionHandler extends Observable<Message> {
+public class ConnectionHandler {
 	
 	private ConcurrentHashMap<String, Connection> cons = new ConcurrentHashMap<String, Connection>();
 	private Observable<Socket> server;
 	private ConcreteObserver<Message> connectionObserver;
+	private Observable<Message> messageObservable;
+	private Observable<ControlEvent> eventObservable;
 	
 	
 	public ConnectionHandler(Observable<Socket> server) {
 		this.server = server;
+		messageObservable =  new Observable<Message>();
+		eventObservable = new Observable<ControlEvent>();
 		
 		if(server != null) {
 			this.server.register(new ConcreteObserver<Socket>() {
@@ -27,7 +31,7 @@ public class ConnectionHandler extends Observable<Message> {
 		connectionObserver = new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message m) {
-				notifyObservers(m);
+				messageObservable.notifyObservers(m);
 			}
 		};
 	}
@@ -54,5 +58,13 @@ public class ConnectionHandler extends Observable<Message> {
 	public void send(Message m) {
 		Connection c = getConnection(m.getDestinationAddress());
 		c.send(m);
+	}
+	
+	public void registerMessageObserver(Observer<Message> obs) {
+		this.messageObservable.register(obs);
+	}
+	
+	public void registerControlObserver(Observer<ControlEvent> evt) {
+		this.eventObservable.register(evt);
 	}
 }

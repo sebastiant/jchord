@@ -1,6 +1,6 @@
 package network;
 
-public class MessageSender extends Observable<Message> {
+public class MessageSender {
 	
 	private Server server;
 	private ConnectionHandler handler;
@@ -8,12 +8,16 @@ public class MessageSender extends Observable<Message> {
 	public MessageSender(int port) {
 		server = new Server(port);
 		handler = new ConnectionHandler(server);
-		handler.register(new ConcreteObserver<Message>(){
-			@Override
-			public void notifyObserver(Message m) {
-				MessageSender.this.notifyObservers(m);
-			}
-		});
+	}
+	
+	public void registerMessageObserver(Observer<Message> mobs) 
+	{
+		handler.registerMessageObserver(mobs);
+	}
+	
+	public void registerControlObserver(Observer<ControlEvent> evt) 
+	{
+		handler.registerControlObserver(evt);
 	}
 	
 	public void send(Message m) {

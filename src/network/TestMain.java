@@ -21,6 +21,7 @@ public class TestMain {
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
 		msg.setKey("text", "Hello 1");
 		node2.send(msg);
+		msg.setDestinationAddress("127.0.0.1" + ":9009");
 		msg.setKey("text", "Hello 2");
 		node2.send(msg);
 	}
