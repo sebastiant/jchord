@@ -172,4 +172,7 @@ public class Message {
 		return l;
 	}
 	
+	public String toString() {
+		return this.json.toString();
+	}
 }
