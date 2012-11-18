@@ -27,7 +27,9 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 								socket.getPort());
 			notifyObservers(socket);
 		} catch(SocketException e) {
-			// Silent ignore
+			if(e.getMessage().equals("Socket closed")) {
+				// Silent ignore
+			}
 		}catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
