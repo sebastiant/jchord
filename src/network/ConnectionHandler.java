@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.json.JSONException;
+
 import network.events.ConnectionMessageEvent;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
@@ -46,7 +48,7 @@ public class ConnectionHandler {
 				Message msg = m.getMessage();
 				Connection c = m.getConnection();
 				if(msg.getId().equals("control")) {
-					if(msg.hasKey("port")) {
+					if(msg.has("port")) {
 						Address addr = new Address(c.getInetAddress().getHostAddress() + ":" + msg.getKey("port"));
 						c.setAddress(addr); // Update address
 						if(cons.contains(addr)) {
@@ -62,7 +64,7 @@ public class ConnectionHandler {
 						response.setKey("accept", true);
 						c.send(response);
 					}
-					if(msg.hasKey("accept")) {
+					if(msg.has("accept")) {
 						Address addr  = c.getAddress();
 						if(cons.contains(addr)) {
 							cons.get(addr).disconnect();
@@ -116,11 +118,14 @@ public class ConnectionHandler {
 				con.start();
 				Message msg = new Message();
 				msg.setId("control");
-				msg.setKey("port", server.getPort());
+				msg.put("port", server.getPort());
 				con.send(msg);
 			} catch (java.net.ConnectException e) {
 				eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

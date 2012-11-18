@@ -102,7 +102,7 @@ public class Connection {
 	
 	public void send(Message message) {
 		try {
-			out.write(message.getContent().toString() + "\n");
+			out.write(message.toString() + "\n");
 			out.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -115,7 +115,7 @@ public class Connection {
 		try {
 			String line = in.readLine();
 			if(line != null) {
-				ret = new Message(new JSONObject(line));	
+				ret = new Message(line);	
 			} else {
 				eventObs.notifyObservers(new DisconnectEvent(address, Connection.this));
 			}

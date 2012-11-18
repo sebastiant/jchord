@@ -21,5 +21,4 @@ public class IDGenerator {
 		hash = new BigInteger(1, raw);
 		return hash.mod(new BigInteger(Long.toString(overlaySize))).longValue();
 	}
-
 }

@@ -11,21 +11,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-public class Message {
-
-	private JSONObject json;
+public class Message extends JSONObject{
 		
 	public Message() {
-		json = new JSONObject();
+		super();
 	}
 	
-	public Message(JSONObject json) {
-		this.json = json;
+	public Message(String json) throws JSONException {
+		super(json);
 	}
 	
 	public void setDestinationAddress(InetAddress addr, int port) {
 		try {
-			this.json.put("_Dst_address", addr.getHostAddress() + ":" + port);
+			this.put("_Dst_address", addr.getHostAddress() + ":" + port);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -34,7 +32,7 @@ public class Message {
 	
 	public void setDestinationAddress(String addr) {
 		try {
-			this.json.put("_Dst_address", addr);
+			this.put("_Dst_address", addr);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,7 +42,7 @@ public class Message {
 	public Address getDestinationAddress() {
 		Address ret = null;
 		try {
-			ret = new Address((String)this.json.get("_Dst_address"));		
+			ret = new Address((String)this.get("_Dst_address"));		
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -55,7 +53,7 @@ public class Message {
 	public Address getSourceAddress() {
 		Address ret = null;
 		try {
-			ret = new Address((String)this.json.get("_Src_address"));
+			ret = new Address((String)this.get("_Src_address"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,8 +64,8 @@ public class Message {
 	public String getId() {
 		String ret = null;
 		try {
-			if(this.json.has("_Id")) {
-				ret = (String) this.json.get("_Id");
+			if(this.has("_Id")) {
+				ret = (String) this.get("_Id");
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -76,13 +74,33 @@ public class Message {
 		return ret;
 	}
 	
+	public Object getKey(String key) {
+		Object o = null;
+		try {
+			o = this.get(key);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return o;
+	}
+	
+	public void setKey(String key, Object o) {
+		try {
+			o = this.put(key, o);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void setSourceAddress(Address address) {
 		this.setSourceAddress(address.toString());
 	}
 	
 	public void setSourceAddress(String source) {
 		try {
-			this.json.put("_Src_address", source);
+			this.put("_Src_address", source);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -91,46 +109,10 @@ public class Message {
 	
 	public void setId(String id) {
 		try {
-			this.json.put("_Id", id);
+			this.put("_Id", id);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	public void setContent(JSONObject json) {
-		this.json = json;
-	}
-	
-	public void setKey(String key, Object value) {
-		try {
-			this.json.put(key, value);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public Object getKey(String key) {
-		Object ret = null;
-		try {
-			ret = json.get(key);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return ret;
-	}
-	
-	public boolean hasKey(String key) {
-		return json.has(key);
-	}
-	
-	public JSONObject getContent() {
-		return this.json;
-	}
-	
-	public String toString() {
-		return json.toString();
 	}
 }
