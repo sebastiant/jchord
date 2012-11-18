@@ -30,6 +30,7 @@ public class TestMain {
 		msg2.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
 		msg2.setKey("text", "Hello 2");
 		node1.send(msg2);
+		Thread.sleep(10000000);
 	}
 
 }

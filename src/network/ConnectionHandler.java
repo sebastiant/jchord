@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import network.events.ConnectionMessageEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
 
@@ -13,10 +15,11 @@ public class ConnectionHandler {
 	
 	private ConcurrentHashMap<Address, Connection> cons = new ConcurrentHashMap<Address, Connection>();
 	private Server server;
-	private ConcreteObserver<Message> messageObserver;
+	private ConcreteObserver<ConnectionMessageEvent> messageObserver;
 	private ConcreteObserver<ControlEvent> eventObserver;
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
+	private Object putCond = new Object();
 	
 	public ConnectionHandler(Server server) {
 		this.server = server;
@@ -32,10 +35,33 @@ public class ConnectionHandler {
 			});
 		}
 		
-		messageObserver = new ConcreteObserver<Message>() {
+		messageObserver = new ConcreteObserver<ConnectionMessageEvent>() {
 			@Override
-			public void notifyObserver(Message m) {
-				messageObservable.notifyObservers(m);
+			public void notifyObserver(ConnectionMessageEvent m) {
+				Message msg = m.getMessage();
+				Connection c = m.getConnection();
+				if(msg.getId().equals("control")) {
+					if(msg.hasKey("port")) {
+						Address addr = new Address(c.getInetAddress().getHostAddress() + ":" + msg.getKey("port"));
+						c.setAddress(addr); // Update address
+						cons.put(addr, c); // accept connection
+						synchronized(putCond) {
+							putCond.notifyAll();
+						}
+						Message response = new Message();
+						response.setId("control");
+						response.setKey("accept", true);
+						c.send(response);
+					}
+					if(msg.hasKey("accept")) {
+						cons.put(c.getAddress() , c); // Connection was accepted
+						synchronized(putCond) {
+							putCond.notifyAll();
+						}
+					} 
+				} else {
+					messageObservable.notifyObservers(m.getMessage());
+				}
 			}
 		};
 		
@@ -44,53 +70,69 @@ public class ConnectionHandler {
 			public void notifyObserver(ControlEvent e) {
 				if(e instanceof DisconnectEvent) {
 					DisconnectEvent de = (DisconnectEvent)e;
-					Address address = de.getSource();
-					Connection con = cons.get(address);
-					if(con != null) {
-						con.disconnect();
+					Connection con =  de.getConnection();
+					con.disconnect();
+					System.err.println("Dissconencted: " + de.getSource());
+					// Don't notify if it was an unaccepted connection
+					// that timed out.
+					Address src = de.getSource();
+					if(cons.contains(src)) {
+						cons.remove(src);
+						eventObservable.notifyObservers(e);
 					}
-					cons.remove(address);
-				}
-				eventObservable.notifyObservers(e);
+				}			
 			}
 		};
 	}
 	
 	private void handleConnection(Socket s) {
 		Connection con  = new Connection(s);
-		Address remote = con.getRemoteAddress();
-		con.registerMessageObserver(messageObserver);
+		con.registerConMsgObserver(messageObserver);
 		con.registerEventObserver(eventObserver);
 		con.start();
-		cons.put(remote, con);
 	}
 	
 	private Connection getConnection(Address address) {
-		 if(!cons.containsKey(address)) {
+		if(!cons.containsKey(address)) {
 			Connection con;
 			try {
-				con = new Connection(address, server.getPort());
-				con.registerMessageObserver(messageObserver);
+				con = new Connection(address);
+				con.registerConMsgObserver(messageObserver);
 				con.registerEventObserver(eventObserver);
 				con.start();
-				cons.put(address, con);
+				Message msg = new Message();
+				msg.setId("control");
+				msg.setKey("port", server.getPort());
+				con.send(msg);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
-		} 
-		return cons.get(address);
+			}
+		}
+		Connection ret = cons.get(address);
+		while(ret == null) {
+			try {
+				synchronized(putCond) {
+					putCond.wait();
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ret = cons.get(address);
+		}
+		return ret;
 	}
 	
 	public void send(Message m) {
 		try {
-			m.setSourceAddress( InetAddress.getLocalHost().getHostAddress() + ":" + server.getPort());
 			Connection c = getConnection(m.getDestinationAddress());
+			m.setSourceAddress(InetAddress.getLocalHost().getHostAddress() +":" + server.getPort());
 			c.send(m);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		};
+		}
 	}
 	
 	public void registerMessageObserver(Observer<Message> obs) {

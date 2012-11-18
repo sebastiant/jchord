@@ -33,9 +33,7 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			service.stop();
-		}
+		} 
 	}
 	
 	public void start() {

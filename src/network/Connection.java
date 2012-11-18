@@ -8,7 +8,9 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ConcurrentHashMap;
 
+import network.events.ConnectionMessageEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
 
@@ -26,44 +28,39 @@ public class Connection {
 	private Service reciever;
 	private Service keepAliveSender;
 	private Service keepAliveNotifier;
-	private Observable<Message> msgObs = new Observable<Message>();
+	private Observable<ConnectionMessageEvent> msgObs = new Observable<ConnectionMessageEvent>();
 	private Observable<ControlEvent> eventObs = new Observable<ControlEvent>();
 	private Address address;
-	private long lastPing = Long.MAX_VALUE;
+	private long lastPing = System.currentTimeMillis();
+	private boolean closed = false;
 	
-	public Connection(Address address, int publicPort) throws IOException {
+	public Connection(Address address) throws IOException {
 		Socket socket = new Socket(address.getInetAddress(), address.getPort());
-		setup(socket);
-		
-		Message msg = new Message();
-		msg.setId("control");
-		msg.setKey("port", publicPort);
-		this.send(msg);
+		setup(socket); 
 	}
 	
 	
 	public Connection(Socket s) {
 		setup(s);
-		Message msg;
-		do {
-			msg = recieve();
-		} while (!(msg.getId().equals("control") && msg.hasKey("port")));
-		this.address.setPort((Integer)msg.getKey("port"));
 	}
 	
 	private void setup(Socket s) {
 		this.socket = s;
-		this.address = new Address(s.getInetAddress(), s.getPort());
+		// Address is changed by the upper layer uppon accept.
+		this.address = new Address(s.getInetAddress().getHostAddress() + ":" + s.getPort());  
 		try {
 			this.in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			this.out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 			reciever = new Service() {
 				public void service() {
 					Message ret = recieve();
-					if(ret.getId().equals("ping")) {
-						Connection.this.lastPing  = System.currentTimeMillis();
-					} else {
-						msgObs.notifyObservers(ret);
+					if(ret != null) {
+						if(ret.getId().equals("ping")) {
+							lastPing = System.currentTimeMillis();
+						} else {
+							ConnectionMessageEvent evt = new ConnectionMessageEvent(ret, Connection.this);
+							msgObs.notifyObservers(evt);
+						}
 					}
 				}
 			};
@@ -84,8 +81,9 @@ public class Connection {
 			keepAliveNotifier = new Service() {
 				@Override
 				public void service() {
+					System.out.println("Lastping: " + lastPing);
 					if(System.currentTimeMillis() - lastPing > KEEPALIVE_TIMEOUT) { 
-						eventObs.notifyObservers(new DisconnectEvent(Connection.this.address));
+						eventObs.notifyObservers(new DisconnectEvent(Connection.this.address, Connection.this));
 					}
 					try {
 						Thread.sleep(KEEPALIVE_TIMEOUT);
@@ -114,19 +112,38 @@ public class Connection {
 	private Message recieve() {
 		Message ret = null;
 		try {
-			ret = new Message(new JSONObject(in.readLine()));		
+			String line = in.readLine();
+			if(line != null) {
+				ret = new Message(new JSONObject(line));	
+			} else {
+				eventObs.notifyObservers(new DisconnectEvent(address, Connection.this));
+			}
+		} catch(java.net.SocketException e) {
+			System.out.println("Socket closed");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
 		return ret;
 	}
 	
-	public Address getRemoteAddress() {
+	public int getPort() {
+		return socket.getPort();
+	}
+	
+	public InetAddress getInetAddress() {
+		return socket.getInetAddress();
+	}
+	
+	public Address getAddress() {
 		return address;
+	}
+	
+	public void setAddress(Address address) {
+		this.address = address;
 	}
 
 	public void disconnect() {
@@ -136,6 +153,7 @@ public class Connection {
 			reciever.stop();
 			out.flush();
 			socket.close();
+			closed = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -143,12 +161,14 @@ public class Connection {
 	}
 	
 	public void start() {
-		reciever.start();
-		keepAliveSender.start();
-		//keepAliveNotifier.start();
+		if(!closed) {
+			reciever.start();
+			keepAliveSender.start();
+			keepAliveNotifier.start();
+		}
 	}
 	
-	public void registerMessageObserver(Observer<Message> obs) {
+	public void registerConMsgObserver(Observer<ConnectionMessageEvent> obs) {
 		msgObs.register(obs);
 	}
 	public void registerEventObserver(Observer<ControlEvent> obs) {
