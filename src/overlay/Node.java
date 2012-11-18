@@ -166,7 +166,7 @@ public class Node implements Protocol {
 						&& ((Integer)msg.getKey(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
 				{
 					//Accept the join!
-					peers.put(src, new PeerEntry(src, (Long)msg.getKey(PROTOCOL_JOIN_ID)));
+					peers.put(src, new PeerEntry(src, msg.getLong(PROTOCOL_JOIN_ID)));
 					response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
 					response.setKey(PROTOCOL_JOIN_ID, localId);
 					response.setKey(PROTOCOL_JOIN_ARITY, arity);
@@ -177,7 +177,7 @@ public class Node implements Protocol {
 					}
 					else //Update predecessor?
 					{
-						if(isBetween((Long)msg.getKey(PROTOCOL_JOIN_ID), localId, 
+						if(isBetween(msg.getLong(PROTOCOL_JOIN_ID), localId, 
 								predecessor.getId()))
 						{
 							System.out.println("My Id: " + localId + ". Changing predecessor from "

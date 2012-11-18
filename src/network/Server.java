@@ -3,6 +3,7 @@ package network;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,9 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 								socket.getPort());
 			notifyObservers(socket);
 		
-		} catch (IOException e) {
+		} catch (SocketException e) {
+			
+		}catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
