@@ -117,7 +117,7 @@ public class Message {
 	
 	public void setKey(String key, Object o) {
 		try {
-			o = this.json.put(key, o);
+			this.json.put(key, o);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

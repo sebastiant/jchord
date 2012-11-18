@@ -26,9 +26,8 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 								":" +
 								socket.getPort());
 			notifyObservers(socket);
-		
-		} catch (SocketException e) {
-			
+		} catch(SocketException e) {
+			// Silent ignore
 		}catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,13 +47,14 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	
 	public void stop() {
 		service.stop();
+		service = null;
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		service = null;
+		
 	}
 	
 	public int getPort() {
