@@ -107,6 +107,15 @@ public class Message extends JSONObject{
 		}
 	}
 	
+	public void setKey(String key, long value) {
+		try {
+			this.put(key, value);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void setId(String id) {
 		try {
 			this.put("_Id", id);
