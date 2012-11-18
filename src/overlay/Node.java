@@ -1,6 +1,5 @@
 package overlay;
 
-import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,20 +18,20 @@ public class Node implements Protocol {
 	private Map<Address, PeerEntry> peers = Collections.synchronizedMap(new HashMap<Address, PeerEntry>());
 	
 	private int arity;
-	private int idSpace;
-	private int localId;
+	private long idSpace;
+	private long localId;
 	private String state;
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	
-	public Node(int port, int idSpace, int arity) {
+	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
 		this.arity = arity;
-		localId = 123; //CHANGE!!
+		localId = IDGenerator.getId(addr, idSpace);
 		predecessor = successor = null;
 		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
-		msgSender = new MessageSender(port);
+		msgSender = new MessageSender(addr.getPort());
 		msgSender.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message msg) {

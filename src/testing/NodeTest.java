@@ -1,12 +1,10 @@
 package testing;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import overlay.Node;
 
 import network.Address;
-import network.Message;
+import network.events.Message;
 
 public class NodeTest {
 	
@@ -25,13 +23,15 @@ public class NodeTest {
 	 */
 	public static boolean testJoin1()
 	{
-		int arity=10;
-		int idspace=1024;
 		boolean result = false;
-		Node n1 = new Node(7979, 1024, 10);
-		Node n2 = new Node(8080, 1024, 10);
-		Message msg = new Message();
-		try {
+		try
+		{
+			int arity=10;
+			int idspace=1024;
+			int n1_port = 7979;
+			int n2_port = 8080;
+			Node n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			Node n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
 			n1.connect(new Address(InetAddress.getLocalHost(), 8080));
 			Thread.sleep(100);
 			if(n2.getPredecessor() != null){
