@@ -1,6 +1,7 @@
 package network;
 
 import network.events.ControlEvent;
+import network.events.Message;
 
 public class MessageSender {
 	

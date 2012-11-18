@@ -6,11 +6,11 @@ import java.util.Map;
 
 import network.Address;
 import network.ConcreteObserver;
-import network.Message;
 import network.MessageSender;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
+import network.events.Message;
 
 public class Node implements Protocol {
 
@@ -115,7 +115,7 @@ public class Node implements Protocol {
      * A Join message is received when the sending node is connecting (requesting to connect) to the receiving
      * node. If the identifier space and the arity is of the same size, and the id of the connecting
      * node is supplied, the node is accepted.
-     * @param Message The message containing the request with all parameters (wrapped JSONObject).
+     * @param msg The message containing the request with all parameters (wrapped JSONObject).
      * @return void
      */
 	private void handleJoin(Message msg){
@@ -145,7 +145,7 @@ public class Node implements Protocol {
      * Handle a received Disconnect message.
      * A Disconnect message is received when the sending node is disconnecting from the receiving.
      * Thus, the node must be removed from the set of active peers.
-     * @param Address The address of the sending node
+     * @param src The address of the sending node
      * @return void
      */
 	private void handleDisconnect(Address src){
@@ -160,7 +160,7 @@ public class Node implements Protocol {
      * its current successor. The receiving node compares its current successor with the sender
      * and makes a decision whether to change predecessor or not (done in silence, no information is sent out
      * regarding a possible change of predecessor).
-     * @param Message The message containing the senders id.
+     * @param msg The message containing the senders id.
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
@@ -177,7 +177,7 @@ public class Node implements Protocol {
      * still is the receiving nodes predecessor. The receiving node simply responds by informing
      * who is its current predecessor. A change of one nodes predecessor is thus made without informing
      * the former predecessor, and the PredecessorRequest messages is the way of detecting it.
-     * @param Address The address of the sending node
+     * @param src The address of the sending node
      * @return void
      */
 	private void handlePredecessorRequest(Address src){
@@ -198,7 +198,7 @@ public class Node implements Protocol {
      * A PredecessorResponse is received as a response to a PredecessorRequest message
      * and contains information of the sending nodes current predecessor.
      * The receiving node is interested in knowing whether or not it is the sending nodes predecessor.
-     * @param Message The message containing the senders predecessor.
+     * @param msg The message containing the senders predecessor.
      * @return void
      */
 	private void handlePredecessorResponse(Message msg){
@@ -212,7 +212,7 @@ public class Node implements Protocol {
      * node. Instead of coping with partial disconnects in the system, this version of the protocol
      * simply disconnects from all nodes when receiving a ClosedConnection. This is to simplify connectivity
      * and states in the system, as if not doing this, nodes in the system can never form a full mesh.
-     * @param Address The address of the sending node.
+     * @param src The address of the sending node.
      * @return void
      */
 	private void handleClosedConnection(Address src){
@@ -229,7 +229,7 @@ public class Node implements Protocol {
 	/**
      * Handle a message with unknown syntax
      * Current version of the protocol just drops it and writes to stdout about it.
-     * @param Message The message containing the senders id.
+     * @param msg The message containing the senders id.
      * @return void
      */
 	private void handleUnknownMessage(Message msg){

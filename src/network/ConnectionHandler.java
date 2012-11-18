@@ -11,6 +11,7 @@ import network.events.ConnectionMessageEvent;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
+import network.events.Message;
 
 
 /* TODO Handle race conditions when two nodes connect to each other.*/

@@ -8,6 +8,7 @@ import org.json.JSONException;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
+import network.events.Message;
 
 public class TestMain {
 	

@@ -1,7 +1,7 @@
 package network.events;
 
 import network.Connection;
-import network.Message;
+import network.events.Message;
 
 public class ConnectionMessageEvent {
 	
