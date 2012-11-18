@@ -26,9 +26,7 @@ public class MessageSender {
 		m.setId("app");
 		handler.send(m);
 	}
-	public void sendToAll(Message m) {
-		//Implement me pls!
-	}
+
 	public void start() {
 		server.start();
 	}

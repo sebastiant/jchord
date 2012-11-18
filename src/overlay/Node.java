@@ -13,7 +13,7 @@ import network.events.ControlEvent;
 import network.events.DisconnectEvent;
 
 public class Node {
-	//Protocol-constants. Lookie lookie, no touchie!
+	//Protocol messaging-constants. Lookie lookie, no touchie!
 	public static final String PROTOCOL_COMMAND = "comm";
 	public static final String PROTOCOL_JOIN = "join";
 	public static final String PROTOCOL_JOIN_ID = "joinid";
@@ -27,7 +27,7 @@ public class Node {
 	public static final String PROTOCOL_PREDECESSOR_RESPONSE = "pred";
 	public static final String PROTOCOL_PREDECESSOR_REQUEST = "predreq";
 	public static final String PROTOCOL_NULL = "null";
-	
+	//Node states.
 	public static final String STATE_DISCONNECTED = "disconnected";
 	public static final String STATE_CONNECTED = "connected";
 	public static final String STATE_CLOSEDCONNECTION = "closed";
@@ -44,7 +44,7 @@ public class Node {
 	public Node(int port) {
 		localId = port;
 		predecessor = successor = null;
-		state = null;
+		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
 		msgSender = new MessageSender(port);
 		msgSender.registerMessageObserver(new ConcreteObserver<Message>() {
@@ -67,7 +67,9 @@ public class Node {
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.out.println("Received DisconnectEvent from some host!");
+		
 	}
+	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
 		System.out.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getRemoteAddress());
 	}
@@ -118,6 +120,9 @@ public class Node {
 		msgSender.send(msg);
 	}
 
+	public void sendToAll(Message msg){
+		//TODO: implement me ;D
+	}
 	/* 
 	 * Protocol specific methods handling implemented protocol messages.
 	 * Methods are passed either the sender's address or if necessary, also the message received.
@@ -178,7 +183,11 @@ public class Node {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
-		
+		if(!msg.hasKey(PROTOCOL_SUCCESSORINFORM))
+				return;
+		if(!msg.getKey(PROTOCOL_SUCCESSORINFORM).equals(predecessor.getId())){
+			//TODO: Change current predecessor?
+		}
 	}
 	
 	/**
@@ -191,7 +200,16 @@ public class Node {
      * @return void
      */
 	private void handlePredecessorRequest(Address src){
+		if(state.equals(STATE_DISCONNECTED))
+			return;
 		
+		Message response = new Message();
+		response.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_RESPONSE);
+		if(predecessor == null)
+			response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, PROTOCOL_NULL);
+		else
+			response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, predecessor.getId());
+		send(src,response);
 	}
 	
 	/**
@@ -203,10 +221,8 @@ public class Node {
      * @return void
      */
 	private void handlePredecessorResponse(Message msg){
-		if(state.equals(STATE_PREDECESSOR_REQUEST))
-		{
-			
-		}
+		if(state.equals(STATE_DISCONNECTED))
+			return;
 	}
 	
 	/**
@@ -219,15 +235,14 @@ public class Node {
      * @return void
      */
 	private void handleClosedConnection(Address src){
-		if(!state.equals(STATE_DISCONNECTED))
-		{
-			//Disconnect from all connected nodes.
-			state = STATE_DISCONNECTED;
-			Message response = new Message();
-			response.setKey(PROTOCOL_COMMAND, PROTOCOL_DISCONNECT);
-			msgSender.sendToAll(response);
-			peers.clear();
-		}
+		if(state.equals(STATE_DISCONNECTED))
+			return;
+		//Disconnect from all connected nodes.
+		state = STATE_DISCONNECTED;
+		Message response = new Message();
+		response.setKey(PROTOCOL_COMMAND, PROTOCOL_DISCONNECT);
+		sendToAll(response);
+		peers.clear();
 	}
 	
 	/**
