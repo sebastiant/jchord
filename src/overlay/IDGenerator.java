@@ -5,8 +5,10 @@ import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import network.Address;
+
 public class IDGenerator {
-	public static long getId(InetAddress ip, int port, long overlaySize) {
+	public static long getId(Address address, long overlaySize) {
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("SHA-256");
@@ -15,7 +17,7 @@ public class IDGenerator {
 			e.printStackTrace();
 		}
 		BigInteger hash = null;
-		byte[] raw = md.digest((ip.toString() + ":" + Integer.toHexString(port)).getBytes());
+		byte[] raw = md.digest((address.toString()).getBytes());
 		hash = new BigInteger(1, raw);
 		return hash.mod(new BigInteger(Long.toString(overlaySize))).longValue();
 	}
