@@ -1,5 +1,6 @@
 package overlay;
 
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +18,17 @@ public class Node implements Protocol {
 	private MessageSender msgSender;
 	private Map<Address, PeerEntry> peers = Collections.synchronizedMap(new HashMap<Address, PeerEntry>());
 	
+	private int arity;
+	private int idSpace;
 	private int localId;
 	private String state;
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	
-	public Node(int port, int identifierSpaceSize, int arity) {
-		localId = port;
+	public Node(int port, int idSpace, int arity) {
+		this.idSpace = idSpace;
+		this.arity = arity;
+		localId = 123; //CHANGE!!
 		predecessor = successor = null;
 		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
@@ -46,6 +51,27 @@ public class Node implements Protocol {
 		msgSender.start();
 	}
 	
+	public void send(Address addr, Message msg){
+		System.out.println("Sending msg: " + msg.getContent().toString() + ", to addr: " + addr.toString());
+		msg.setDestinationAddress(addr.getInetAddress().getHostAddress() + ":" + addr.getPort());
+		msgSender.send(msg);
+	}
+
+	public void sendToAll(Message msg){
+		//TODO: implement me ;D
+	}
+	
+	public void connect(Address addr)
+	{
+		state = STATE_CONNECTING;
+		Message msg = new Message();
+		msg.setDestinationAddress(addr.getInetAddress(), addr.getPort());
+		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
+		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
+		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
+		msg.setKey(Node.PROTOCOL_JOIN_ID, 123);
+		send(addr, msg);
+	}
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.out.println("Received DisconnectEvent from some host!");
 		
@@ -66,7 +92,7 @@ public class Node implements Protocol {
 		System.out.println("Received message from: " + src);
 
 		if(peers.get(msg.getSourceAddress()) != null){ //Connected node
-			if(command.equals(PROTOCOL_JOIN)) //Expected when receiving back join ID
+			if(command.equals(PROTOCOL_JOIN))
 			{
 				handleJoin(msg);
 			} else if(command.equals(PROTOCOL_DISCONNECT)){
@@ -95,15 +121,7 @@ public class Node implements Protocol {
 		}
 	}
 
-	public void send(Address addr, Message msg){
-		System.out.println("Sending msg: " + msg.getContent().toString() + ", to addr: " + addr.toString());
-		msg.setDestinationAddress(addr.getInetAddress().getHostAddress() + ":" + addr.getPort());
-		msgSender.send(msg);
-	}
 
-	public void sendToAll(Message msg){
-		//TODO: implement me ;D
-	}
 	/* 
 	 * Protocol specific methods handling implemented protocol messages.
 	 * Methods are passed either the sender's address or if necessary, also the message received.
@@ -121,23 +139,42 @@ public class Node implements Protocol {
 	private void handleJoin(Message msg){
 		Message response = new Message();
 		Address src = msg.getSourceAddress();
-		if(state.equals(STATE_CONNECTED)){
-			System.out.println("Finally connected! :)");
-		}
-		else{
-			System.out.println("Got join ");
-			if(msg.hasKey(PROTOCOL_JOIN_ID)){
-				peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
-				response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
-				response.setKey(PROTOCOL_JOIN_ID, localId);
-				if(state.equals(STATE_DISCONNECTED))
-					state = STATE_CONNECTED;
-				send(src,response);
-			} else //Denied!
+		if(state.equals(STATE_CONNECTING))
+		{
+			if(msg.hasKey(PROTOCOL_JOIN_ID))
 			{
-				response.setKey(PROTOCOL_COMMAND, PROTOCOL_DENIED);
-				send(src, response);
+				System.out.println("Finally connected! :)");
+				state = STATE_CONNECTED;
+				//Set node as successor and predecessor
+				peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
+				successor = predecessor = peers.get(src);
 			}
+		}
+		else
+		{
+			System.out.println("Got join ");
+			if(msg.hasKey(PROTOCOL_JOIN_ID) && msg.hasKey(PROTOCOL_JOIN_ARITY)
+					&& msg.hasKey(PROTOCOL_JOIN_IDENTIFIERSPACE))
+			{
+				if(((Integer)msg.getKey(PROTOCOL_JOIN_ARITY) == arity)
+						&& ((Integer)msg.getKey(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
+				{
+					//Accept the join!
+					peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
+					response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
+					response.setKey(PROTOCOL_JOIN_ID, localId);
+					response.setKey(PROTOCOL_JOIN_ARITY, arity);
+					if(state.equals(STATE_DISCONNECTED))
+					{
+						state = STATE_CONNECTED;
+						predecessor = successor = peers.get(src);
+					}
+					send(src,response);
+					return;
+				}
+			}
+			response.setKey(PROTOCOL_COMMAND, PROTOCOL_DENIED);
+			send(src, response);
 		}
 	}
 	
@@ -235,5 +272,24 @@ public class Node implements Protocol {
 	private void handleUnknownMessage(Message msg){
 		System.out.println("Received unknown message: " +msg.toString());
 		return;
+	}
+	
+	/*
+	 * Methods to support testing.
+	 */
+	
+	public String getState()
+	{
+		return state;
+	}
+	
+	public PeerEntry getPredecessor()
+	{
+		return predecessor;
+	}
+	
+	public PeerEntry getSuccessor()
+	{
+		return successor;
 	}
 }

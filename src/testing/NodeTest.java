@@ -11,22 +11,39 @@ import network.Message;
 public class NodeTest {
 	
 	public static void main(String[] args){
-		Node n1 = new Node(7979);
-		Node n2 = new Node(8080);
+		System.out.println("Running tests!");
+		System.out.print("TestJoin1: ");
+		if(testJoin1())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
+	}
+	
+	/*
+	 * Make two nodes, try to connect one to the other and check that the resul
+	 * 
+	 */
+	public static boolean testJoin1()
+	{
+		int arity=10;
+		int idspace=1024;
+		boolean result = false;
+		Node n1 = new Node(7979, 1024, 10);
+		Node n2 = new Node(8080, 1024, 10);
 		Message msg = new Message();
 		try {
-			msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":8080");
-			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
-			msg.setKey(Node.PROTOCOL_JOIN_ID, 123);
-		} catch (UnknownHostException e) {
+			n1.connect(new Address(InetAddress.getLocalHost(), 8080));
+			Thread.sleep(100);
+			if(n2.getPredecessor() != null){
+				if((n2.getPredecessor().getId() == 123) && (n2.getSuccessor().getId() == 123)
+						&& (n1.getPredecessor().getId() == 1010) && (n1.getSuccessor().getId() == 1010))
+					result = true;
+			}
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try{
-			n1.send(new Address(InetAddress.getLocalHost(), 8080), msg);
-		} catch(Exception e){
-			System.out.println("exception elo ;D");
-		}
+		return result;
 	}
 	
 }
