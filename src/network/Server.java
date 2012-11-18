@@ -10,14 +10,10 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 
 	private ServerSocket serverSocket;
 	private Service service;
+	private int port;
 
 	public Server(int port) {
-		try {
-			serverSocket = new ServerSocket(port);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.port = port;
 	}
 	
 	public void service() {
@@ -37,12 +33,24 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	}
 	
 	public void start() {
+		try {
+			serverSocket = new ServerSocket(port);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		service = new Service(this);
 		service.start();
 	}
 	
 	public void stop() {
 		service.stop();
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		service = null;
 	}
 	

@@ -15,6 +15,7 @@ public class TestMain {
 	public static void main(String[] args) throws Exception {
 		MessageSender node1 = new MessageSender(9001);
 		MessageSender node2 = new MessageSender(9002);
+		MessageSender node3 = new MessageSender(9002);
 		ConcreteObserver<ControlEvent> controlObs = new ConcreteObserver<ControlEvent>() {
 			@Override
 			public void notifyObserver(ControlEvent e) {
@@ -43,11 +44,15 @@ public class TestMain {
 		
 		node1.registerMessageObserver(messageObs);
 		node2.registerMessageObserver(messageObs);
+		node3.registerMessageObserver(messageObs);
 		node1.registerControlObserver(controlObs);
 		node2.registerControlObserver(controlObs);
+		node3.registerControlObserver(controlObs);
 		
 		node1.start();
 		node2.start();
+		node2.stop();
+		node3.start();
 		
 		Message msg = new Message();
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
@@ -60,7 +65,7 @@ public class TestMain {
 		Message msg3 = new Message();
 		msg3.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9099");
 		msg3.put("text", "Hello 3");
-		node1.send(msg3);
+		node3.send(msg3);
 	}
 
 }

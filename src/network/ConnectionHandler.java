@@ -88,7 +88,7 @@ public class ConnectionHandler {
 					DisconnectEvent de = (DisconnectEvent)e;
 					Connection con =  de.getConnection();
 					con.disconnect();
-					System.err.println("Dissconencted: " + de.getSource());
+					System.err.println("Disconnected: " + de.getSource());
 					// Don't notify if it was an unaccepted connection
 					// that timed out.
 					Address src = de.getSource();
