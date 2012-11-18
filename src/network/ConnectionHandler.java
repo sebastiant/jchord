@@ -118,14 +118,11 @@ public class ConnectionHandler {
 				con.start();
 				Message msg = new Message();
 				msg.setId("control");
-				msg.put("port", server.getPort());
+				msg.setKey("port", server.getPort());
 				con.send(msg);
 			} catch (java.net.ConnectException e) {
 				eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

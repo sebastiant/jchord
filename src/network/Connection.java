@@ -115,7 +115,7 @@ public class Connection {
 		try {
 			String line = in.readLine();
 			if(line != null) {
-				ret = new Message(line);	
+				ret = new Message(new JSONObject(line));	
 			} else {
 				eventObs.notifyObservers(new DisconnectEvent(address, Connection.this));
 			}
