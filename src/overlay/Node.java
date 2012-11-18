@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
+
 import network.Address;
 import network.ConcreteObserver;
 import network.MessageSender;
@@ -50,8 +52,12 @@ public class Node implements Protocol {
 		msgSender.start();
 	}
 	
+	public void shutdown()
+	{
+		msgSender.stop();
+	}
 	public void send(Address addr, Message msg){
-		System.out.println("Sending msg: " + msg.getContent().toString() + ", to addr: " + addr.toString());
+		System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr.toString());
 		msg.setDestinationAddress(addr.getInetAddress().getHostAddress() + ":" + addr.getPort());
 		msgSender.send(msg);
 	}
@@ -68,8 +74,9 @@ public class Node implements Protocol {
 		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
 		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
 		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
-		msg.setKey(Node.PROTOCOL_JOIN_ID, 123);
+		msg.setKey(Node.PROTOCOL_JOIN_ID, localId);
 		send(addr, msg);
+		
 	}
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.out.println("Received DisconnectEvent from some host!");
@@ -81,7 +88,7 @@ public class Node implements Protocol {
 	}
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
-		if(!msg.hasKey(PROTOCOL_COMMAND))
+		if(!msg.has(PROTOCOL_COMMAND))
 		{
 			//Not following protocol, disregard it!
 			handleUnknownMessage(msg);
@@ -140,26 +147,26 @@ public class Node implements Protocol {
 		Address src = msg.getSourceAddress();
 		if(state.equals(STATE_CONNECTING))
 		{
-			if(msg.hasKey(PROTOCOL_JOIN_ID))
+			if(msg.has(PROTOCOL_JOIN_ID))
 			{
 				System.out.println("Finally connected! :)");
 				state = STATE_CONNECTED;
 				//Set node as successor and predecessor
-				peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
+				peers.put(src, new PeerEntry(src, msg.getLong(PROTOCOL_JOIN_ID)));
 				successor = predecessor = peers.get(src);
 			}
 		}
 		else
 		{
 			System.out.println("Got join ");
-			if(msg.hasKey(PROTOCOL_JOIN_ID) && msg.hasKey(PROTOCOL_JOIN_ARITY)
-					&& msg.hasKey(PROTOCOL_JOIN_IDENTIFIERSPACE))
+			if(msg.has(PROTOCOL_JOIN_ID) && msg.has(PROTOCOL_JOIN_ARITY)
+					&& msg.has(PROTOCOL_JOIN_IDENTIFIERSPACE))
 			{
 				if(((Integer)msg.getKey(PROTOCOL_JOIN_ARITY) == arity)
 						&& ((Integer)msg.getKey(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
 				{
 					//Accept the join!
-					peers.put(src, new PeerEntry(src, (Integer)msg.getKey(PROTOCOL_JOIN_ID)));
+					peers.put(src, new PeerEntry(src, (Long)msg.getKey(PROTOCOL_JOIN_ID)));
 					response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
 					response.setKey(PROTOCOL_JOIN_ID, localId);
 					response.setKey(PROTOCOL_JOIN_ARITY, arity);
@@ -167,6 +174,16 @@ public class Node implements Protocol {
 					{
 						state = STATE_CONNECTED;
 						predecessor = successor = peers.get(src);
+					}
+					else //Update predecessor?
+					{
+						if(isBetween((Long)msg.getKey(PROTOCOL_JOIN_ID), localId, 
+								predecessor.getId()))
+						{
+							System.out.println("My Id: " + localId + ". Changing predecessor from "
+									+ predecessor.getId() + ", to: " +(Long)msg.getKey(PROTOCOL_JOIN_ID));
+						}
+						predecessor = peers.get(src);
 					}
 					send(src,response);
 					return;
@@ -200,7 +217,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
-		if(!msg.hasKey(PROTOCOL_SUCCESSORINFORM))
+		if(!msg.has(PROTOCOL_SUCCESSORINFORM))
 				return;
 		if(!msg.getKey(PROTOCOL_SUCCESSORINFORM).equals(predecessor.getId())){
 			//TODO: Change current predecessor?
@@ -290,5 +307,25 @@ public class Node implements Protocol {
 	public PeerEntry getSuccessor()
 	{
 		return successor;
+	}
+	public long getId(){
+		return localId;
+	}
+	
+	/* 
+	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space.
+	 */
+	public static boolean isBetween(long l_1, long l_2, long l_3)
+	{
+		long shifted_l2 = l_2 - l_1;
+		long shifted_l3 = l_3 - l_1;
+		if((shifted_l2 < 0) && (shifted_l3 < 0))
+			return (shifted_l2 < shifted_l3);
+		else if(shifted_l3 < 0)
+			return true;
+		else if(shifted_l2 < 0)
+			return false;
+		else //shifted_l2 > 0 && shifted_l3 > 0
+			return (shifted_l2 < shifted_l3);
 	}
 }

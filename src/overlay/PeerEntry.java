@@ -5,13 +5,13 @@ import java.net.InetAddress;
 import network.Address;
 
 public class PeerEntry{
-	int id;
+	long id;
 	private Address addr;
-	public PeerEntry(Address addr, int id){
+	public PeerEntry(Address addr, long id){
 		this.addr = addr;
 		this.id = id;
 	}
-	public int getId(){
+	public long getId(){
 		return id;
 	}
 
