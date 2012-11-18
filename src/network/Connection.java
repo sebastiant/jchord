@@ -81,7 +81,6 @@ public class Connection {
 			keepAliveNotifier = new Service() {
 				@Override
 				public void service() {
-					System.out.println("Lastping: " + lastPing);
 					if(System.currentTimeMillis() - lastPing > KEEPALIVE_TIMEOUT) { 
 						eventObs.notifyObservers(new DisconnectEvent(Connection.this.address, Connection.this));
 					}

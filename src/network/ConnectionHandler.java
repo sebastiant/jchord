@@ -44,6 +44,10 @@ public class ConnectionHandler {
 					if(msg.hasKey("port")) {
 						Address addr = new Address(c.getInetAddress().getHostAddress() + ":" + msg.getKey("port"));
 						c.setAddress(addr); // Update address
+						if(cons.contains(addr)) {
+							cons.get(addr).disconnect();
+							System.err.println("Connection was already listed, disconnected the old one.. ");
+						}
 						cons.put(addr, c); // accept connection
 						synchronized(putCond) {
 							putCond.notifyAll();
@@ -54,7 +58,12 @@ public class ConnectionHandler {
 						c.send(response);
 					}
 					if(msg.hasKey("accept")) {
-						cons.put(c.getAddress() , c); // Connection was accepted
+						Address addr  = c.getAddress();
+						if(cons.contains(addr)) {
+							cons.get(addr).disconnect();
+							System.err.println("Connection was already listed, disconnected the old one.. ");
+						}
+						cons.put(addr , c); // Connection was accepted
 						synchronized(putCond) {
 							putCond.notifyAll();
 						}
