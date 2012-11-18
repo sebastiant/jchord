@@ -11,5 +11,8 @@ public class PeerEntry{
 		this.addr = addr;
 		this.id = id;
 	}
+	public int getId(){
+		return id;
+	}
 
 }
