@@ -23,7 +23,7 @@ public class TestMain {
 		node2.start();
 		
 		Message msg = new Message();
-		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
+		msg.setDestinationAddress(InetAddress.getByName("130.229.181.219").getHostAddress() + ":9001");
 		msg.setKey("text", "Hello 1");
 		node2.send(msg);
 		Message msg2 = new Message();
