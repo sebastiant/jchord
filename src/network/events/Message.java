@@ -1,9 +1,11 @@
-package network;
+package network.events;
 
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import network.Address;
 
 import org.json.JSONException;
 import org.json.JSONObject;
