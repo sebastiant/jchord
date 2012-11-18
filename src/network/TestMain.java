@@ -31,14 +31,10 @@ public class TestMain {
 		ConcreteObserver<Message> messageObs = new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message e) {
-					try {
 					String text = e.getString("text");
 					Address address = e.getSourceAddress();
 					System.out.println("Receved \"" + text + "\" from " + address.toString());
-				} catch (JSONException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				
 			}	
 		};
 		
@@ -56,15 +52,15 @@ public class TestMain {
 		
 		Message msg = new Message();
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
-		msg.put("text", "Hello 1");
+		msg.setKey("text", "Hello 1");
 		node2.send(msg);
 		Message msg2 = new Message();
 		msg2.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
-		msg2.put("text", "Hello 2");
+		msg2.setKey("text", "Hello 2");
 		node1.send(msg2);
 		Message msg3 = new Message();
 		msg3.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9099");
-		msg3.put("text", "Hello 3");
+		msg3.setKey("text", "Hello 3");
 		node3.send(msg3);
 	}
 
