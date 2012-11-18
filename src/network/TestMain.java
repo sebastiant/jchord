@@ -3,34 +3,63 @@ package network;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.json.JSONException;
+
+import network.events.ConnectionRefusedEvent;
+import network.events.ControlEvent;
+import network.events.DisconnectEvent;
+
 public class TestMain {
 	
 	public static void main(String[] args) throws Exception {
 		MessageSender node1 = new MessageSender(9001);
 		MessageSender node2 = new MessageSender(9002);
+		ConcreteObserver<ControlEvent> controlObs = new ConcreteObserver<ControlEvent>() {
+			@Override
+			public void notifyObserver(ControlEvent e) {
+				if(e instanceof DisconnectEvent) {
+					DisconnectEvent ds = (DisconnectEvent)e;
+					System.out.println("Disconnect event from " + ds.getSource());
+				} else if (e instanceof ConnectionRefusedEvent) {
+					ConnectionRefusedEvent ce = (ConnectionRefusedEvent)e;
+					System.out.println("Connection to " + ce.getRemoteAddress() + " was refused!");
+				}
+ 			}	
+		};
+		ConcreteObserver<Message> messageObs = new ConcreteObserver<Message>() {
+			@Override
+			public void notifyObserver(Message e) {
+					try {
+					String text = e.getContent().getString("text");
+					Address address = e.getSourceAddress();
+					System.out.println("Receved \"" + text + "\" from " + address.toString());
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}	
+		};
 		
-		node1.registerMessageObserver(new ConcreteObserver<Message>() {
-			public void notifyObserver(Message e) {
-				System.out.println("Recieved " + e.getKey("text") + " from " + e.getSourceAddress());
-			}
-		});
-		node2.registerMessageObserver(new ConcreteObserver<Message>() {
-			public void notifyObserver(Message e) {
-				System.out.println("Recieved " + e.getKey("text") + " from " + e.getSourceAddress());
-			}
-		});
+		node1.registerMessageObserver(messageObs);
+		node2.registerMessageObserver(messageObs);
+		node1.registerControlObserver(controlObs);
+		node2.registerControlObserver(controlObs);
+		
 		node1.start();
 		node2.start();
 		
 		Message msg = new Message();
-		msg.setDestinationAddress(InetAddress.getByName("130.229.181.219").getHostAddress() + ":9001");
+		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
 		msg.setKey("text", "Hello 1");
 		node2.send(msg);
 		Message msg2 = new Message();
 		msg2.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
 		msg2.setKey("text", "Hello 2");
 		node1.send(msg2);
-		Thread.sleep(10000000);
+		Message msg3 = new Message();
+		msg3.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9099");
+		msg3.setKey("text", "Hello 3");
+		node1.send(msg3);
 	}
 
 }

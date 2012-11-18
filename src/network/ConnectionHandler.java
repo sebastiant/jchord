@@ -8,8 +8,12 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import network.events.ConnectionMessageEvent;
+import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
+
+
+/* TODO Handle race conditions when two nodes connect to each other.*/
 
 public class ConnectionHandler {
 	
@@ -113,6 +117,8 @@ public class ConnectionHandler {
 				msg.setId("control");
 				msg.setKey("port", server.getPort());
 				con.send(msg);
+			} catch (java.net.ConnectException e) {
+				eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
