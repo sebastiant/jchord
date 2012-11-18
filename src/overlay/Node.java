@@ -12,27 +12,8 @@ import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
 
-public class Node {
-	//Protocol messaging-constants. Lookie lookie, no touchie!
-	public static final String PROTOCOL_COMMAND = "comm";
-	public static final String PROTOCOL_JOIN = "join";
-	public static final String PROTOCOL_JOIN_ID = "joinid";
-	public static final String PROTOCOL_JOIN_ARITY = "joinarity";
-	public static final String PROTOCOL_JOIN_IDENTIFIERSPACE = "joinidspace";
-	public static final String PROTOCOL_DISCONNECT = "disc";
-	public static final String PROTOCOL_CLOSEDCONNECTION = "closed";
-	public static final String PROTOCOL_DENIED = "denied";
-	public static final String PROTOCOL_GRANTED = "granted";
-	public static final String PROTOCOL_SUCCESSORINFORM = "succ";
-	public static final String PROTOCOL_PREDECESSOR_RESPONSE = "pred";
-	public static final String PROTOCOL_PREDECESSOR_REQUEST = "predreq";
-	public static final String PROTOCOL_NULL = "null";
-	//Node states.
-	public static final String STATE_DISCONNECTED = "disconnected";
-	public static final String STATE_CONNECTED = "connected";
-	public static final String STATE_CLOSEDCONNECTION = "closed";
-	public static final String STATE_PREDECESSOR_REQUEST = "predreq";
-	
+public class Node implements Protocol {
+
 	private MessageSender msgSender;
 	private Map<Address, PeerEntry> peers = Collections.synchronizedMap(new HashMap<Address, PeerEntry>());
 	
@@ -41,7 +22,7 @@ public class Node {
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	
-	public Node(int port) {
+	public Node(int port, int identifierSpaceSize, int arity) {
 		localId = port;
 		predecessor = successor = null;
 		state = STATE_DISCONNECTED;
@@ -78,7 +59,7 @@ public class Node {
 		if(!msg.hasKey(PROTOCOL_COMMAND))
 		{
 			//Not following protocol, disregard it!
-			handleUnknownMessage(src);
+			handleUnknownMessage(msg);
 			return;
 		}
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
@@ -100,7 +81,7 @@ public class Node {
 				handlePredecessorResponse(msg);
 			} else
 			{
-				handleUnknownMessage(src);
+				handleUnknownMessage(msg);
 			}
 		} else // peers.get(msg.getSourceAddress() == null
 		{
@@ -151,13 +132,13 @@ public class Node {
 				response.setKey(PROTOCOL_JOIN_ID, localId);
 				if(state.equals(STATE_DISCONNECTED))
 					state = STATE_CONNECTED;
+				send(src,response);
 			} else //Denied!
 			{
 				response.setKey(PROTOCOL_COMMAND, PROTOCOL_DENIED);
 				send(src, response);
 			}
 		}
-		send(src,response);
 	}
 	
 	/**
@@ -251,8 +232,8 @@ public class Node {
      * @param Message The message containing the senders id.
      * @return void
      */
-	private void handleUnknownMessage(Address src){
-		System.out.println("Received unknown message!");
+	private void handleUnknownMessage(Message msg){
+		System.out.println("Received unknown message: " +msg.toString());
 		return;
 	}
 }

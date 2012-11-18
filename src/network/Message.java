@@ -126,5 +126,9 @@ public class Message {
 	
 	public JSONObject getContent() {
 		return this.json;
-	}	
+	}
+	
+	public String toString() {
+		return json.toString();
+	}
 }
