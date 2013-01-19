@@ -9,8 +9,9 @@ import overlay.Node;
 public class NodeTest {
 	
 	public static void main(String[] args){
-	/*
 		System.out.println("Running tests!");
+		
+		//Test ring logic
 		System.out.print("Testinbetween1: ");
 		if(testInBetween1())
 			System.out.println("Success!");
@@ -22,27 +23,32 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		
 		System.out.print("Testinbetween3: ");
 		if(testInBetween3())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		
 		System.out.print("Testinbetween4: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		
 		System.out.print("Testinbetween5: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		
 		System.out.print("Testinbetween6: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		*/
+		
+		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
 			System.out.println("TestJoin2: Success!");
@@ -61,7 +67,7 @@ public class NodeTest {
 		else
 			System.out.println("TestJoin3_disconnect: Failed.");
 	}
-	
+
 	/*
 	 * Make two nodes, try to connect one to the other and check that they have updated their predecessors and successors
 	 * 
