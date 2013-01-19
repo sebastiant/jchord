@@ -104,6 +104,7 @@ public class NodeTest {
 	}
 	public static boolean testJoin3()
 	{
+		Node n1 = null, n2 = null, n3 = null;
 		try
 		{
 			int arity=10;
@@ -111,9 +112,9 @@ public class NodeTest {
 			int n1_port = 7171;
 			int n2_port = 7272;
 			int n3_port = 7373;
-			Node n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
-			Node n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
-			Node n3 = new Node(new Address(InetAddress.getLocalHost(), n3_port), idspace, arity);
+			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
+			n3 = new Node(new Address(InetAddress.getLocalHost(), n3_port), idspace, arity);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
 			long n3_id = n3.getId();
@@ -145,11 +146,16 @@ public class NodeTest {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			n1.shutdown();
+			n2.shutdown();
+			n3.shutdown();
 		}
 		return false;
 	}
 	public static boolean testJoin3_disconnect()
 	{
+		Node n1 = null, n2 = null, n3 = null;
 		try
 		{
 			int arity=10;
@@ -157,9 +163,9 @@ public class NodeTest {
 			int n1_port = 7171;
 			int n2_port = 7272;
 			int n3_port = 7373;
-			Node n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
-			Node n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
-			Node n3 = new Node(new Address(InetAddress.getLocalHost(), n3_port), idspace, arity);
+			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
+			n3 = new Node(new Address(InetAddress.getLocalHost(), n3_port), idspace, arity);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
 			long n3_id = n3.getId();
@@ -202,6 +208,10 @@ public class NodeTest {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			n1.shutdown();
+			n2.shutdown();
+			n3.shutdown();
 		}
 		return false;
 	}
