@@ -1,14 +1,20 @@
 package testing;
 
 import java.net.InetAddress;
+
+import overlay.FingerTable;
 import overlay.Node;
+import overlay.PeerEntry;
+
+import java.lang.Math;
 
 import network.Address;
-import network.events.Message;
-import overlay.Node;
 public class NodeTest {
 	
 	public static void main(String[] args){
+		FingerTable ft = new FingerTable(2, 2048, new PeerEntry(null, 1337));
+		ft.printFt();
+		/*
 		System.out.println("Running tests!");
 		
 		//Test ring logic
@@ -60,6 +66,7 @@ public class NodeTest {
 			System.out.println("TestJoin2_disconnect: Success!");
 		else
 			System.out.println("Failed.");
+			*/
 		/*
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
