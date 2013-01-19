@@ -31,7 +31,7 @@ public class Node implements Protocol {
 	private PeerEntry successor;
 	private boolean running = true;
 	
-	public static final int PRED_REQ_INTERVAL = 10000;
+	public static final int PRED_REQ_INTERVAL = 1000;
 	
 	private Timer predRequestor;
 	

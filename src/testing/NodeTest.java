@@ -12,7 +12,6 @@ public class NodeTest {
 		System.out.println("Running tests!");
 		
 		//Test ring logic
-		/*
 		System.out.print("Testinbetween1: ");
 		if(testInBetween1())
 			System.out.println("Success!");
@@ -55,13 +54,18 @@ public class NodeTest {
 			System.out.println("TestJoin2: Success!");
 		else
 			System.out.println("Failed.");
-		*/
+			
+		System.out.print("TestJoin2_disconnect: ");
+		if(testJoin2_disconnect())
+			System.out.println("TestJoin2_disconnect: Success!");
+		else
+			System.out.println("Failed.");
+		/*
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-		/*
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
@@ -164,9 +168,9 @@ public class NodeTest {
 			long n2_id = n2.getId();
 			long n3_id = n3.getId();
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
-			Thread.sleep(100);
+			Thread.sleep(Node.PRED_REQ_INTERVAL + 1000);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
-			Thread.sleep(100);
+			Thread.sleep(Node.PRED_REQ_INTERVAL + 1000);
 			if(Node.isBetween(n1_id, n2_id, n3_id)){
 				if((n1.getPredecessor().getId() == n2_id)
 						&& (n1.getSuccessor().getId() == n3_id)
