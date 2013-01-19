@@ -1,5 +1,6 @@
 package overlay;
 
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,16 +22,18 @@ public class Node implements Protocol {
 	
 	private int arity;
 	private long idSpace;
-	private long localId;
+	private PeerEntry self;
 	private String state;
+	/* Default value, self */
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
 		this.arity = arity;
-		localId = IDGenerator.getId(addr, idSpace);
-		predecessor = successor = null;
+		long localId = IDGenerator.getId(addr, idSpace);
+		self = new PeerEntry(addr, localId);
+		predecessor = successor = self;
 		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
 		msgSender = new MessageSender(addr.getPort());
@@ -57,8 +60,8 @@ public class Node implements Protocol {
 		msgSender.stop();
 	}
 	public void send(Address addr, Message msg){
-		System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr.toString());
-		msg.setDestinationAddress(addr.getInetAddress().getHostAddress() + ":" + addr.getPort());
+		msg.setDestinationAddress(addr);
+		System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
 		msgSender.send(msg);
 	}
 
@@ -70,13 +73,20 @@ public class Node implements Protocol {
 	{
 		state = STATE_CONNECTING;
 		Message msg = new Message();
-		msg.setDestinationAddress(addr.getInetAddress(), addr.getPort());
 		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
 		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
 		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
-		msg.setKey(Node.PROTOCOL_JOIN_ID, localId);
+		msg.setKey(Node.PROTOCOL_JOIN_ID, self.getId());
 		send(addr, msg);
 		
+	}
+	
+	public void sendPredRequest() {
+		if(successor != null) {
+			Message msg = new Message();
+			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_PREDECESSOR_REQUEST);
+			send(successor.getAddress(), msg);
+		}
 	}
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
@@ -169,7 +179,7 @@ public class Node implements Protocol {
 					//Accept the join!
 					peers.put(src, new PeerEntry(src, msg.getLong(PROTOCOL_JOIN_ID)));
 					response.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
-					response.setKey(PROTOCOL_JOIN_ID, localId);
+					response.setKey(PROTOCOL_JOIN_ID, self.getId());
 					response.setKey(PROTOCOL_JOIN_ARITY, arity);
 					if(state.equals(STATE_DISCONNECTED))
 					{
@@ -178,15 +188,15 @@ public class Node implements Protocol {
 					}
 					else //Update predecessor?
 					{
-						if(isBetween(msg.getLong(PROTOCOL_JOIN_ID), localId, 
+						if(isBetween(msg.getLong(PROTOCOL_JOIN_ID), self.getId(), 
 								predecessor.getId()))
 						{
-							System.out.println("My Id: " + localId + ". Changing predecessor from "
+							System.out.println("My Id: " + self.getId() + ". Changing predecessor from "
 									+ predecessor.getId() + ", to: " +(Long)msg.getLong(PROTOCOL_JOIN_ID));
 						}
 						predecessor = peers.get(src);
 					}
-					send(src,response);
+					send(src, response);
 					return;
 				}
 			}
@@ -240,10 +250,7 @@ public class Node implements Protocol {
 		
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_RESPONSE);
-		if(predecessor == null)
-			response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, PROTOCOL_NULL);
-		else
-			response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, predecessor.getId());
+		response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, predecessor.getId());
 		send(src,response);
 	}
 	
@@ -258,6 +265,8 @@ public class Node implements Protocol {
 	private void handlePredecessorResponse(Message msg){
 		if(state.equals(STATE_DISCONNECTED))
 			return;
+		
+		if(msg.)
 	}
 	
 	/**
@@ -311,23 +320,23 @@ public class Node implements Protocol {
 	}
 	
 	public long getId(){
-		return localId;
+		return self.getId();
 	}
 	
 	/* 
-	 * returns true if l_1 is in between l_2 and l_3 (clockwise) in a ring space.
+	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space.
 	 */
 	public static boolean isBetween(long l_1, long l_2, long l_3)
 	{
 		long shifted_l2 = l_2 - l_1;
 		long shifted_l3 = l_3 - l_1;
 		if((shifted_l2 < 0) && (shifted_l3 < 0))
-			return (shifted_l2 > shifted_l3);
+			return (shifted_l2 < shifted_l3);
 		else if(shifted_l3 < 0)
-			return false;
-		else if(shifted_l2 < 0)
 			return true;
+		else if(shifted_l2 < 0)
+			return false;
 		else //shifted_l2 > 0 && shifted_l3 > 0
-			return (shifted_l2 > shifted_l3);
+			return (shifted_l2 < shifted_l3);
 	}
 }

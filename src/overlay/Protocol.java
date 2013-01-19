@@ -14,7 +14,6 @@ public interface Protocol {
 	public static final String PROTOCOL_SUCCESSORINFORM = "succ";
 	public static final String PROTOCOL_PREDECESSOR_RESPONSE = "pred";
 	public static final String PROTOCOL_PREDECESSOR_REQUEST = "predreq";
-	public static final String PROTOCOL_NULL = "null";
 	//Node states.
 	public static final String STATE_DISCONNECTED = "disconnected";
 	public static final String STATE_CONNECTING = "connecting";

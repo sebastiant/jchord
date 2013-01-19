@@ -32,6 +32,10 @@ public class Message {
 		}
 	}
 	
+	public void setDestinationAddress(Address addr) {
+		 setDestinationAddress(addr.getInetAddress(), addr.getPort());
+	}
+	
 	public void setDestinationAddress(String addr) {
 		try {
 			this.json.put("_Dst_address", addr);

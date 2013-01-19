@@ -14,5 +14,7 @@ public class PeerEntry{
 	public long getId(){
 		return id;
 	}
-
+	public Address getAddress() {
+		return addr;
+	}
 }
