@@ -315,19 +315,19 @@ public class Node implements Protocol {
 	}
 	
 	/* 
-	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space.
+	 * returns true if l_1 is in between l_2 and l_3 (clockwise) in a ring space.
 	 */
 	public static boolean isBetween(long l_1, long l_2, long l_3)
 	{
 		long shifted_l2 = l_2 - l_1;
 		long shifted_l3 = l_3 - l_1;
 		if((shifted_l2 < 0) && (shifted_l3 < 0))
-			return (shifted_l2 < shifted_l3);
+			return (shifted_l2 > shifted_l3);
 		else if(shifted_l3 < 0)
-			return true;
-		else if(shifted_l2 < 0)
 			return false;
+		else if(shifted_l2 < 0)
+			return true;
 		else //shifted_l2 > 0 && shifted_l3 > 0
-			return (shifted_l2 < shifted_l3);
+			return (shifted_l2 > shifted_l3);
 	}
 }

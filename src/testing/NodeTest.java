@@ -9,9 +9,9 @@ import overlay.Node;
 public class NodeTest {
 	
 	public static void main(String[] args){
+	/*
 		System.out.println("Running tests!");
 		System.out.print("Testinbetween1: ");
-/*
 		if(testInBetween1())
 			System.out.println("Success!");
 		else
@@ -27,18 +27,32 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		System.out.print("Testinbetween4: ");
+		if(testInBetween4())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
+		System.out.print("Testinbetween5: ");
+		if(testInBetween4())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
+		System.out.print("Testinbetween6: ");
+		if(testInBetween4())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
 		*/
 		System.out.print("TestJoin1: ");
 		if(testJoin1())
-			System.out.println("TestJoin1, Success!");
+			System.out.println("TestJoin1: Success!");
 		else
-			System.out.println("TestJoin1, Failed.");
+			System.out.println("Failed.");
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
-			System.out.println("TestJoin2, Success!");
+			System.out.println("TestJoin2: Success!");
 		else
-			System.out.println("TestJoin2, Failed.");
-			
+			System.out.println("TestJoin2: Failed.");
 	}
 	
 	/*
@@ -79,7 +93,6 @@ public class NodeTest {
 	}
 	public static boolean testJoin2()
 	{
-		boolean result = false;
 		try
 		{
 			int arity=10;
@@ -97,41 +110,63 @@ public class NodeTest {
 			Thread.sleep(100);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
 			Thread.sleep(100);
-			if(n2.getPredecessor() != null){
-				if((n1.getPredecessor().getId() == n3_id) && (n1.getSuccessor().getId() == n3_id)
-						&& (n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
-						&& (n3.getPredecessor().getId() == n1_id) && (n3.getSuccessor().getId() == n1_id))
-					result = true;
+			if(Node.isBetween(n1_id, n2_id, n3_id)){
+				if((n1.getPredecessor().getId() == n2_id)
+						&& (n2.getPredecessor().getId() == n3_id)
+						&& (n3.getPredecessor().getId() == n1_id))
+				{
+					return true;
+				}
+			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
+			{
+				if(() &&
+						() &&
+						() &&
+						())
+				{
+					
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		return result;
+		return false;
 	}
 
 	public static boolean testInBetween1(){
 		long l_1 = 40;
 		long l_2 = 4;
 		long l_3 = 50;
-		return Node.isBetween(l_1, l_3, l_2); 
+		return Node.isBetween(l_1, l_2, l_3); 
 	}
 	public static boolean testInBetween2(){
 		long l_1 = 3;
 		long l_2 = 8000;
 		long l_3 = 9000;
-		return Node.isBetween(l_1, l_2, l_3); 
+		return !Node.isBetween(l_1, l_2, l_3); 
 	}
 	public static boolean testInBetween3(){
 		long l_1 = 950;
 		long l_2 = 951;
 		long l_3 = 1;
-		return Node.isBetween(l_1, l_2, l_3); 
+		return !Node.isBetween(l_1, l_2, l_3); 
 	}
 	public static boolean testInBetween4(){
 		long l_1 = 77;
 		long l_2 = 4;
 		long l_3 = 90;
+		return Node.isBetween(l_1, l_2, l_3); 
+	}
+	public static boolean testInBetween5(){
+		long l_1 = 1000;
+		long l_2 = 5;
+		long l_3 = 20;
+		return !Node.isBetween(l_1, l_2, l_3); 
+	}
+	public static boolean testInBetween6(){
+		long l_1 = 1000;
+		long l_2 = 20;
+		long l_3 = 5;
 		return Node.isBetween(l_1, l_2, l_3); 
 	}
 }
