@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+
 import network.events.Message;
 
 import org.json.JSONException;
@@ -43,17 +45,14 @@ public class Connection {
 		}
 	}
 	
-	public void send(Message message) {
-		try {
-			out.write(message.toString() + "\n");
-			out.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void send(Message message) throws IOException {
+		socket.isClosed();
+		out.write(message.toString() + "\n");
+		out.flush();
+				
 	}
 	
-	public Message recieve() {
+	public Message recieve() throws SocketException {
 		Message ret = null;
 		try {
 			String line = in.readLine();
@@ -62,8 +61,8 @@ public class Connection {
 			} else {
 				this.disconnect();
 			}
-		} catch(java.net.SocketException e) {
-			System.out.println("Socket closed");
+		} catch(SocketException e) {
+			throw e;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -98,15 +97,10 @@ public class Connection {
 		this.address = address;
 	}
 
-	public void disconnect() {
-		try {
-			out.flush();
-			socket.close();
-			closed = true;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void disconnect() throws IOException {
+		out.flush();
+		socket.close();
+		closed = true;
 	}
 	
 	public boolean isConnected() {

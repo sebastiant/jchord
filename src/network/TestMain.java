@@ -20,7 +20,7 @@ public class TestMain {
 					System.out.println("Disconnect event from " + ds.getSource());
 				} else if (e instanceof ConnectionRefusedEvent) {
 					ConnectionRefusedEvent ce = (ConnectionRefusedEvent)e;
-					System.out.println("Connection to " + ce.getRemoteAddress() + " was refused!");
+					System.out.println("Connection to " + ce.getSource() + " was refused!");
 				}
  			}	
 		};
@@ -45,10 +45,11 @@ public class TestMain {
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
 		msg.setKey("text", "Hello 1");
 		node1.send(msg);
-		msg = new Message();
-		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
-		msg.setKey("text", "Hello 2");
-		node2.send(msg);
+		node2.stop();
+		//msg = new Message();
+		//msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
+		//msg.setKey("text", "Hello 2");
+		//node2.send(msg);
 		
 		/*Timer t1 = new Timer();
 		Timer t2 = new Timer();

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -74,7 +75,11 @@ public class MessageSender {
 				kps.stop();
 				
 				// Disconnect
-				c.disconnect();
+				try {
+					c.disconnect();
+				} catch (IOException e1) {
+					// Don't care
+				}
 				
 				// Clean up tables
 				recievers.remove(c);
@@ -94,11 +99,37 @@ public class MessageSender {
 	
 	public void stop() {
 		server.stop();
+		for(Entry<Connection, KeepAliveService>  k : keepAlives.entrySet()) {
+			k.getValue().stop();
+		}
+		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
+			r.getValue().stop();
+		}
+		for(Entry<Address, Connection> c : cons.entrySet()) {
+			try {
+				c.getValue().disconnect();
+			} catch (IOException e) {
+				// Don't care.
+			}
+		}
+		keepAlives.clear();
+		recievers.clear();
+		cons.clear();
 	}
 	
 	private void handleConnection(Socket s) {
 		Connection con  = new Connection(s);
-		Message msg = con.recieve();
+		Message msg = null;
+		try {
+			msg = con.recieve();
+		} catch (SocketException e1) {
+			try {
+				con.disconnect();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		if(msg.has("port")) {
 			Address addr = con.getAddress();
 			addr.setPort(msg.getInt("port"));
@@ -113,7 +144,12 @@ public class MessageSender {
 				Message rsp = new Message();
 				rsp.setId("con");
 				rsp.setKey("accept", accept);
-				con.send(rsp);
+				try {
+					con.send(rsp);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				addKeepAliveService(addMessageReciever(con));
 			}		
 		} else {
@@ -122,7 +158,6 @@ public class MessageSender {
 	}
 	
 	private Connection getConnection(Address address) {
-		System.out.println("getConnection " + server.getPort());
 		lock.lock();
 		if(cons.containsKey(address)) {
 			lock.unlock();
@@ -147,7 +182,7 @@ public class MessageSender {
 					}	
 				} catch (ConnectException e) {
 					eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
-					break;
+					return null;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -182,8 +217,14 @@ public class MessageSender {
 			Connection c = null;
 			for(;;) {
 				c = getConnection(m.getDestinationAddress());
+				if(c == null) break; // Connection refused
 				if(c.isConnected()) {
-					c.send(m);
+					try {
+						c.send(m);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					break;
 				}
 			}

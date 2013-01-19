@@ -22,51 +22,50 @@ public class NodeTest {
 		if(testInBetween1())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		System.out.print("Testinbetween2: ");
 
 		if(testInBetween2())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween3: ");
 		if(testInBetween3())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween4: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween5: ");
 		if(testInBetween5())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween6: ");
 		if(testInBetween6())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
-			System.out.println("TestJoin2: Success!");
+			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 			
 		System.out.print("TestJoin2_disconnect: ");
 		if(testJoin2_disconnect())
-			System.out.println("TestJoin2_disconnect: Success!");
+			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
-			*/
+			System.err.println("Failed.");
 		/*
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
@@ -145,9 +144,9 @@ public class NodeTest {
 			if(!((n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
 					&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id)))
 				return false;
-			System.out.println("n1 (id: "+ n1.getId() +") shutting down...");
 			n1.shutdown();
-			Thread.sleep(2 * Node.PRED_REQ_INTERVAL);
+			System.out.println("n1 (id: "+ n1 +") shutting down...");
+			Thread.sleep(8 * Node.PRED_REQ_INTERVAL);
 			if((n2.getPredecessor().getId() != n2.getId()) && (n2.getSuccessor().getId() != n2.getId()))
 				return false;
 		} catch (Exception e) {

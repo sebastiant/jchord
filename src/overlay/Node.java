@@ -110,7 +110,7 @@ public class Node implements Protocol {
 	}
 	
 	private void sendPredRequest() {
-		if(successor != null) {
+		if(!successor.equals(self)) {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_PREDECESSOR_REQUEST);
 			send(successor.getAddress(), msg);
@@ -126,12 +126,16 @@ public class Node implements Protocol {
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.err.println("Received DisconnectEvent from some host!");
+		handleDisconnect(e.getSource());
 		
 	}
 	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
-		System.err.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getRemoteAddress());
+		System.err.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
+		handleDisconnect(e.getSource());
 	}
+
+	
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
 		if(!msg.has(PROTOCOL_COMMAND))
@@ -251,6 +255,10 @@ public class Node implements Protocol {
 		peers.remove(src);
 		if(peers.isEmpty())
 			state = STATE_DISCONNECTED;
+		if(successor.getAddress().equals(src)) {
+			//TODO select new successor form fingers
+			successor = self;
+		}
 	}
 	
 	/**
@@ -323,14 +331,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleClosedConnection(Address src){
-		if(state.equals(STATE_DISCONNECTED))
-			return;
-		//Disconnect from all connected nodes.
-		state = STATE_DISCONNECTED;
-		Message response = new Message();
-		response.setKey(PROTOCOL_COMMAND, PROTOCOL_DISCONNECT);
-		sendToAll(response);
-		peers.clear();
+		// Nothing
 	}
 	
 	/**

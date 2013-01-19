@@ -1,5 +1,7 @@
 package network;
 
+import java.io.IOException;
+
 import network.events.DisconnectEvent;
 import network.events.Message;
 
@@ -20,8 +22,7 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 			@Override
 			public void notifyObserver(Message e) {
 				lastHB = System.currentTimeMillis();
-				Message hb = new Message();
-				con.send(hb);
+				System.out.println("Recived hb");
 			}
 		};
 		mr.register(hbObs, "hb");
@@ -32,6 +33,7 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 
 	public void service() {
 		if((System.currentTimeMillis() - lastHB) > KeepAliveService.this.timeout)  {
+			System.err.println("Connection down");
 			this.notifyObservers(new DisconnectEvent(con.getAddress(), con));
 		}
 		try {
@@ -40,9 +42,15 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Message hb = new Message();
-		hb.setId("hb");
-		con.send(hb);
+		if(isRunning()) {
+			Message hb = new Message();
+			hb.setId("hb");
+			try {
+				con.send(hb);
+			} catch (IOException e) {
+				this.notifyObservers(new DisconnectEvent(con.getAddress(), con));
+			}
+		}
 	}
 	
 	public boolean isRunning() {
