@@ -8,7 +8,7 @@ public class ConnectionRefusedEvent implements ControlEvent{
 		this.remoteAddr = remoteAddr;
 	}
 	
-	public Address getRemoteAddress(){
+	public Address getSource(){
 		return remoteAddr;
 	}
 }

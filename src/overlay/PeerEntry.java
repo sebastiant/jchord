@@ -17,4 +17,22 @@ public class PeerEntry{
 	public Address getAddress() {
 		return addr;
 	}
+	
+	public boolean equals(Object o) {
+		boolean ret = false;
+		if(o instanceof PeerEntry) {
+			PeerEntry p = (PeerEntry)o;
+			if(p.id == this.id && p.addr.equals(this.addr)) {
+				return true;
+			}
+		}
+		return ret;
+	}
+	
+	public int hashCode() {
+		int hash = 1;
+		hash *= 31 + id;
+		hash *= 17 + addr.hashCode();
+		return hash;
+	}
 }

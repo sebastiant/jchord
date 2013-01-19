@@ -138,9 +138,9 @@ public class NodeTest {
 			if(!((n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
 					&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id)))
 				return false;
-			System.out.println("n1 (id: "+ n1.getId() +") shutting down...");
 			n1.shutdown();
-			Thread.sleep(2 * Node.PRED_REQ_INTERVAL);
+			System.out.println("n1 (id: "+ n1 +") shutting down...");
+			Thread.sleep(8 * Node.PRED_REQ_INTERVAL);
 			if((n2.getPredecessor().getId() != n2.getId()) && (n2.getSuccessor().getId() != n2.getId()))
 				return false;
 		} catch (Exception e) {

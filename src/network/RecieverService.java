@@ -1,5 +1,7 @@
 package network;
 
+import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +41,14 @@ public class RecieverService implements ServiceInterface{
 
 	@Override
 	public void service() {
-		Message msg = con.recieve();
-		notifyObservers(msg);
+		Message msg;
+		try {
+			msg = con.recieve();
+			notifyObservers(msg);
+		} catch (SocketException e) {
+			System.out.println("Reciever: Socket closed, stopping");
+			stop();
+		}
 	}
 
 	private void notifyObservers(Message msg) {
