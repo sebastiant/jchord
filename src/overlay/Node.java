@@ -29,6 +29,7 @@ public class Node implements Protocol {
 	/* Default value, self */
 	private PeerEntry predecessor;
 	private PeerEntry successor;
+	private boolean running = true;
 	
 	public static final int PRED_REQ_INTERVAL = 10000;
 	
@@ -59,6 +60,7 @@ public class Node implements Protocol {
 			}	
 		});
 		msgSender.start();
+		predRequestor = new Timer();
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
@@ -71,8 +73,11 @@ public class Node implements Protocol {
 	
 	public void shutdown()
 	{
-		msgSender.stop();
-		predRequestor.cancel();
+		if(running) {
+			msgSender.stop();
+			predRequestor.cancel();
+			running = false;
+		}
 	}
 	
 	public void send(Address addr, Message msg){
