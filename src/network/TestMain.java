@@ -45,11 +45,11 @@ public class TestMain {
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
 		msg.setKey("text", "Hello 1");
 		node1.send(msg);
-		node2.stop();
-		//msg = new Message();
-		//msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
-		//msg.setKey("text", "Hello 2");
-		//node2.send(msg);
+		//node2.stop();
+		msg = new Message();
+		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
+		msg.setKey("text", "Hello 2");
+		node2.send(msg);
 		
 		/*Timer t1 = new Timer();
 		Timer t2 = new Timer();

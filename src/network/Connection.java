@@ -97,10 +97,14 @@ public class Connection {
 		this.address = address;
 	}
 
-	public void disconnect() throws IOException {
+	public void disconnect() {
+		try {
 		out.flush();
 		socket.close();
 		closed = true;
+		} catch (IOException e) {
+			//Ignored
+		}
 	}
 	
 	public boolean isConnected() {

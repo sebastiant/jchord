@@ -26,7 +26,7 @@ public class MessageSender {
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
 	private Observer<Message> applicationMessageObserver;
-	private Observer<DisconnectEvent> disconnectObserver;
+	//private Observer<DisconnectEvent> disconnectObserver;
 	private Random random;
 	private Lock lock = new ReentrantLock();
 	private Address hostadress;
@@ -63,7 +63,7 @@ public class MessageSender {
 			}
 		};
 		
-		disconnectObserver = new Observer<DisconnectEvent>() {
+	/*	disconnectObserver = new Observer<DisconnectEvent>() {
 			@Override
 			public void notifyObserver(DisconnectEvent e) {
 				Connection c = e.getConnection();
@@ -90,7 +90,7 @@ public class MessageSender {
 				System.err.println("Disconnect");
 				eventObservable.notifyObservers(e);
 			}
-		};
+		};*/
 	}
 
 	public void start() {
@@ -106,15 +106,24 @@ public class MessageSender {
 			r.getValue().stop();
 		}
 		for(Entry<Address, Connection> c : cons.entrySet()) {
-			try {
-				c.getValue().disconnect();
-			} catch (IOException e) {
-				// Don't care.
-			}
+			c.getValue().disconnect();
 		}
 		//keepAlives.clear();
 		recievers.clear();
 		cons.clear();
+	}
+	
+	/* Explicitly disconnect this address */
+	public boolean disconnect(Address addr) {
+		if(cons.contains(addr)) {
+			Connection c = cons.get(addr);
+			RecieverService rcv = recievers.get(c);
+			rcv.stop();
+			c.disconnect();
+			return true;
+		} else  {
+			return false;
+		}
 	}
 	
 	private void handleConnection(Socket s) {
@@ -123,11 +132,7 @@ public class MessageSender {
 		try {
 			msg = con.recieve();
 		} catch (SocketException e1) {
-			try {
-				con.disconnect();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			con.disconnect();	
 			return;
 		}
 		if(msg.has("port")) {
@@ -139,6 +144,7 @@ public class MessageSender {
 				if(!cons.contains(con.getAddress())) {
 					accept = true;
 					cons.put(con.getAddress(), con);
+					addMessageReciever(con);
 				}
 				lock.unlock();
 				Message rsp = new Message();
@@ -174,6 +180,7 @@ public class MessageSender {
 					Message rcv = con.recieve();
 					if(rcv.getBoolean("accept") == true) {
 						cons.put(address, con);
+						addMessageReciever(con);
 						//addKeepAliveService(addMessageReciever(con));
 						break;
 					} else {

@@ -190,9 +190,9 @@ public class Node implements Protocol {
 			if(command.equals(PROTOCOL_JOIN))
 			{
 				handleJoin(msg);
-			} else //Probably caused by churn -we've disconnected from the node due to timeout.
+			} else 
 			{
-				handleClosedConnection(src);
+				System.out.println("Unhandled command: " + command);
 			}
 		}
 	}
@@ -211,7 +211,6 @@ public class Node implements Protocol {
 			System.err.println("Unexpected sender of message:" + msg);
 		}
 	}
-	
 	
 	/* 
 	 * Protocol specific methods handling implemented protocol messages.
@@ -366,7 +365,8 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleClosedConnection(Address src){
-		// Nothing
+		peers.remove(src);
+		msgSender.disconnect(src); 
 	}
 	
 	/**
@@ -405,11 +405,11 @@ public class Node implements Protocol {
 	
 	public void fixFingers()
 	{
-		for(FingerEntry e : ft.getFingerTable())
+		/*for(FingerEntry e : ft.getFingerTable())
 		{
 			System.out.println("Fixing fingerentry " + e.getKey());
 			e.setPeerEntry(findSuccessor(e.getKey()));
-		}
+		}*/
 	}
 	/* Recursive ring lookup */
 	public PeerEntry findSuccessor(int key)
