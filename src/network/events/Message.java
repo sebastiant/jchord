@@ -172,6 +172,28 @@ public class Message {
 		return l;
 	}
 	
+	public boolean getBoolean(String key) {
+		boolean b = false;
+		try {
+			b = this.json.getBoolean(key);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return b;
+	}
+	
+	public int getInt(String key) {
+		int i = -1;
+		try {
+			i = this.json.getInt(key);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return i;
+	}
+	
 	public String toString() {
 		return this.json.toString();
 	}

@@ -181,7 +181,7 @@ public class Node implements Protocol {
 								predecessor.getId()))
 						{
 							System.out.println("My Id: " + localId + ". Changing predecessor from "
-									+ predecessor.getId() + ", to: " +(Long)msg.getKey(PROTOCOL_JOIN_ID));
+									+ predecessor.getId() + ", to: " +(Long)msg.getLong(PROTOCOL_JOIN_ID));
 						}
 						predecessor = peers.get(src);
 					}

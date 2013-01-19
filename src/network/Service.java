@@ -1,9 +1,9 @@
 package network;
 
 public class Service {
-	boolean running;
-	Thread thread;
-	ServiceInterface interf;
+	private boolean running;
+	private Thread thread;
+	private ServiceInterface interf;
 	
 	
 	public Service() {}
