@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONException;
 
@@ -27,7 +29,10 @@ public class Node implements Protocol {
 	/* Default value, self */
 	private PeerEntry predecessor;
 	private PeerEntry successor;
+	
 	public static final int PRED_REQ_INTERVAL = 10000;
+	
+	private Timer predRequestor;
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
@@ -54,18 +59,28 @@ public class Node implements Protocol {
 			}	
 		});
 		msgSender.start();
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				sendPredRequest();
+				predRequestor.schedule(this, PRED_REQ_INTERVAL);
+			}
+		};
+		predRequestor.schedule(task, PRED_REQ_INTERVAL);
 	}
 	
 	public void shutdown()
 	{
 		msgSender.stop();
+		predRequestor.cancel();
 	}
+	
 	public void send(Address addr, Message msg){
 		msg.setDestinationAddress(addr);
 		System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
 		msgSender.send(msg);
 	}
-
+	
 	public void sendToAll(Message msg){
 		//TODO: implement me ;D
 	}
@@ -82,12 +97,19 @@ public class Node implements Protocol {
 		
 	}
 	
-	public void sendPredRequest() {
+	private void sendPredRequest() {
 		if(successor != null) {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_PREDECESSOR_REQUEST);
 			send(successor.getAddress(), msg);
 		}
+	}
+	
+	private void sendSuccessorInform() {
+		Message msg = new Message();
+		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
+		msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
+		send(predecessor.getAddress(), msg);
 	}
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
@@ -222,7 +244,7 @@ public class Node implements Protocol {
 	/**
      * Handle a received SuccessorInform message.
      * A Successor inform is received when the sending node informs the receiving node that it is
-     * its current successor. The receiving node compares its current successor with the sender
+     * its current predecessor. The receiving node compares its current predecessor with the sender
      * and makes a decision whether to change predecessor or not (done in silence, no information is sent out
      * regarding a possible change of predecessor).
      * @param msg The message containing the senders id.
@@ -231,8 +253,12 @@ public class Node implements Protocol {
 	private void handleSuccessorInform(Message msg){
 		if(!msg.has(PROTOCOL_SUCCESSORINFORM))
 				return;
-		if(!msg.getKey(PROTOCOL_SUCCESSORINFORM).equals(predecessor.getId())){
-			//TODO: Change current predecessor?
+		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
+		long predid = predecessor.getId();
+		if(sender != predid) {
+			if(isBetween(sender, predid, self.getId())) {
+				predecessor = new PeerEntry(msg.getSourceAddress(), sender);
+			}
 		}
 	}
 	
@@ -251,7 +277,8 @@ public class Node implements Protocol {
 		
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_RESPONSE);
-		response.setKey(PROTOCOL_PREDECESSOR_RESPONSE, predecessor.getId());
+		response.setKey(PROTOCOL_PREDECESSOR_ID, predecessor.getId());
+		response.setKey(PROTOCOL_PREDECESSOR_ADDRESS, predecessor.getAddress());
 		send(src,response);
 	}
 	
@@ -266,8 +293,12 @@ public class Node implements Protocol {
 	private void handlePredecessorResponse(Message msg){
 		if(state.equals(STATE_DISCONNECTED))
 			return;
-		
-		if(msg.)
+		long pid = msg.getLong(PROTOCOL_PREDECESSOR_ID);
+		if(self.getId() != pid) {
+			Address addr = new Address(msg.getString(PROTOCOL_PREDECESSOR_ADDRESS));
+			successor = new PeerEntry(addr, pid);
+			sendSuccessorInform();
+		}
 	}
 	
 	/**

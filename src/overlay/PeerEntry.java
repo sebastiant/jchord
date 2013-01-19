@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import network.Address;
 
 public class PeerEntry{
-	long id;
+	private long id;
 	private Address addr;
 	public PeerEntry(Address addr, long id){
 		this.addr = addr;
