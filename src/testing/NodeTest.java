@@ -25,45 +25,45 @@ public class NodeTest {
 		if(testInBetween2())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
+			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween3: ");
 		if(testInBetween3())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
+			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween4: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
+			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween5: ");
 		if(testInBetween5())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
+			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween6: ");
 		if(testInBetween6())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
+			System.out.println("Failed.");
 		
 		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
-		
+			System.out.println("Failed.");
+			
 		System.out.print("TestJoin2_disconnect: ");
 		if(testJoin2_disconnect())
 			System.out.println("Success!");
 		else
-			System.err.println("Failed.");
-
+			System.out.println("Failed.");
+		/*
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
@@ -90,10 +90,9 @@ public class NodeTest {
 			int n1_port = 7979;
 			int n2_port = 8080;
 			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
-			n1.fixFingers();
 			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
-			Thread.sleep(100);
+			Thread.sleep(10000);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
 			if(n2.getPredecessor() == null

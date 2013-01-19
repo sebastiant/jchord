@@ -18,11 +18,11 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	public void service() {
 		try {
 			Socket socket = serverSocket.accept();
-			System.out.println(this + 
+		/*	System.out.println(this + 
 								": new connection from " +
 								socket.getInetAddress().getHostName() +
 								":" +
-								socket.getPort());
+								socket.getPort()); */
 			notifyObservers(socket);
 		} catch(SocketException e) {
 			if(e.getMessage().equals("Socket closed")) {

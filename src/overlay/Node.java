@@ -31,18 +31,20 @@ public class Node implements Protocol {
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	private boolean running = true;
+	private long predecessorLastSeen = Long.MAX_VALUE;
 	
 	public static final int PRED_REQ_INTERVAL = 1000;
 	
-	private Service predRequestor;
+	private Service periodicChecking;
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
 		this.arity = arity;
 		long localId = IDGenerator.getId(addr, idSpace);
 		self = new PeerEntry(addr, localId);
-		this.ft = new FingerTable(arity, (int)idSpace, self); //TODO: Convert FingerTable's idSpace member to long.
-		predecessor = successor = self;
+		this.ft = new FingerTable(arity, (int)idSpace, self); //TODO: Convert FingerTable'
+		predecessor = null;
+		successor = self;
 		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
 		msgSender = new MessageSender(addr.getPort());
@@ -62,7 +64,7 @@ public class Node implements Protocol {
 			}	
 		});
 		msgSender.start();
-		predRequestor = new Service() {
+		periodicChecking = new Service() {
 			@Override
 			public void service() {
 				try {
@@ -72,25 +74,26 @@ public class Node implements Protocol {
 					e.printStackTrace();
 				}
 				if(running) {
-					sendPredRequest();
+					sendCheckPredecessor();
+					sendPredRequest();				
 				}
 			}
 		};
-		predRequestor.start();
+		periodicChecking.start();
 	}
 	
 	public void shutdown()
 	{
 		if(running) {
 			msgSender.stop();
-			predRequestor.stop();
+			periodicChecking.stop();
 			running = false;
 		}
 	}
 	
 	public void send(Address addr, Message msg){
 		msg.setDestinationAddress(addr);
-		System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
+	//	System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
 		msgSender.send(msg);
 	}
 	
@@ -107,6 +110,20 @@ public class Node implements Protocol {
 		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
 		msg.setKey(Node.PROTOCOL_JOIN_ID, self.getId());
 		send(addr, msg);
+		
+	}
+	
+	private void sendCheckPredecessor() {
+		if(predecessor != null) {
+			long now = System.currentTimeMillis();
+			if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
+				predecessor = null;
+				System.err.println(self + ": Predecessor timed out");
+			}
+			Message msg = new Message();
+			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
+			send(predecessor.getAddress(), msg);
+		}
 		
 	}
 	
@@ -128,14 +145,12 @@ public class Node implements Protocol {
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.err.println("Received DisconnectEvent from some host!");
 		handleDisconnect(e.getSource());
-		
 	}
 	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
 		System.err.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
 		handleDisconnect(e.getSource());
 	}
-
 	
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
@@ -162,6 +177,10 @@ public class Node implements Protocol {
 				handlePredecessorRequest(src);
 			} else if(command.equals(PROTOCOL_PREDECESSOR_RESPONSE)){
 				handlePredecessorResponse(msg);
+			} else if(command.equals(PROTOCOL_CHECK_PREDECESSOR)) {
+				handleCheckPredecessor(msg);
+			} else if(command.equals(PROTOCOL_CHECK_PREDECESSOR_RESPONSE)) {
+				handleCheckPredResponse(msg);
 			} else
 			{
 				handleUnknownMessage(msg);
@@ -178,7 +197,22 @@ public class Node implements Protocol {
 		}
 	}
 
-
+	/** Respond on predecessor pings */
+	public void handleCheckPredecessor(Message msg) {
+		Message response = new Message();
+		response.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR_RESPONSE);
+		send(msg.getSourceAddress(), response);
+	}
+	/** Update predecessorLastSeen when a ping response is received.*/
+	public void handleCheckPredResponse(Message msg) {
+		if(msg.getSourceAddress().equals(predecessor.getAddress())) {
+			predecessorLastSeen = System.currentTimeMillis();
+		} else {
+			System.err.println("Unexpected sender of message:" + msg);
+		}
+	}
+	
+	
 	/* 
 	 * Protocol specific methods handling implemented protocol messages.
 	 * Methods are passed either the sender's address or if necessary, also the message received.
