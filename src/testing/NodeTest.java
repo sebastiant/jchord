@@ -16,50 +16,50 @@ public class NodeTest {
 		if(testInBetween1())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		System.out.print("Testinbetween2: ");
 
 		if(testInBetween2())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween3: ");
 		if(testInBetween3())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween4: ");
 		if(testInBetween4())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween5: ");
 		if(testInBetween5())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		System.out.print("Testinbetween6: ");
 		if(testInBetween6())
 			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		
 		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
-			System.out.println("TestJoin2: Success!");
+			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 			
 		System.out.print("TestJoin2_disconnect: ");
 		if(testJoin2_disconnect())
-			System.out.println("TestJoin2_disconnect: Success!");
+			System.out.println("Success!");
 		else
-			System.out.println("Failed.");
+			System.err.println("Failed.");
 		/*
 		System.out.print("TestJoin3: ");
 		if(testJoin3())

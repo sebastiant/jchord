@@ -122,7 +122,6 @@ public class MessageSender {
 	}
 	
 	private Connection getConnection(Address address) {
-		System.out.println("getConnection " + server.getPort());
 		lock.lock();
 		if(cons.containsKey(address)) {
 			lock.unlock();
