@@ -30,14 +30,14 @@ public class NodeTest {
 		*/
 		System.out.print("TestJoin1: ");
 		if(testJoin1())
-			System.out.println("Success!");
+			System.out.println("TestJoin1, Success!");
 		else
-			System.out.println("Failed.");
+			System.out.println("TestJoin1, Failed.");
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
-			System.out.println("Success!");
+			System.out.println("TestJoin2, Success!");
 		else
-			System.out.println("Failed.");
+			System.out.println("TestJoin2, Failed.");
 			
 	}
 	

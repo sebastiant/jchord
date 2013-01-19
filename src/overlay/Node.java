@@ -78,6 +78,7 @@ public class Node implements Protocol {
 		send(addr, msg);
 		
 	}
+	
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.out.println("Received DisconnectEvent from some host!");
 		
@@ -308,6 +309,7 @@ public class Node implements Protocol {
 	{
 		return successor;
 	}
+	
 	public long getId(){
 		return localId;
 	}
