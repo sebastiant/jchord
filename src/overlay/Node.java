@@ -114,17 +114,16 @@ public class Node implements Protocol {
 	}
 	
 	private void sendCheckPredecessor() {
+		long now = System.currentTimeMillis();
+		if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
+			predecessor = null;
+			//System.err.println(self + ": Predecessor timed out");
+		}
 		if(predecessor != null) {
-			long now = System.currentTimeMillis();
-			if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
-				predecessor = null;
-				System.err.println(self + ": Predecessor timed out");
-			}
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
 		}
-		
 	}
 	
 	private void sendPredRequest() {
@@ -136,10 +135,12 @@ public class Node implements Protocol {
 	}
 	
 	private void sendSuccessorInform() {
-		Message msg = new Message();
-		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
-		msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
-		send(predecessor.getAddress(), msg);
+		if(!self.equals(successor)) {
+			Message msg = new Message();
+			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
+			msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
+			send(successor.getAddress(), msg);
+		}
 	}
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
@@ -161,7 +162,7 @@ public class Node implements Protocol {
 			return;
 		}
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
-		System.out.println("Received message from: " + src);
+		System.out.println("Received command " + command + " from: " + src);
 
 		if(peers.get(msg.getSourceAddress()) != null){ //Connected node
 			if(command.equals(PROTOCOL_JOIN))
@@ -309,9 +310,11 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
-		if(!msg.has(PROTOCOL_SUCCESSORINFORM))
-				return;
 		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
+		if(predecessor == null) {
+			predecessor = new PeerEntry(msg.getSourceAddress(), sender);
+			return;
+		}
 		long predid = predecessor.getId();
 		if(sender != predid) {
 			if(isBetween(sender, predid, self.getId())) {
@@ -335,8 +338,12 @@ public class Node implements Protocol {
 		
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_RESPONSE);
-		response.setKey(PROTOCOL_PREDECESSOR_ID, predecessor.getId());
-		response.setKey(PROTOCOL_PREDECESSOR_ADDRESS, predecessor.getAddress());
+		if(predecessor != null) {
+			response.setKey(PROTOCOL_PREDECESSOR_ID, predecessor.getId());
+			response.setKey(PROTOCOL_PREDECESSOR_ADDRESS, predecessor.getAddress());
+		} else {
+			response.setKey(PROTOCOL_PREDECESSOR_ID, -1L);
+		}
 		send(src,response);
 	}
 	
@@ -352,7 +359,7 @@ public class Node implements Protocol {
 		if(state.equals(STATE_DISCONNECTED))
 			return;
 		long pid = msg.getLong(PROTOCOL_PREDECESSOR_ID);
-		if(self.getId() != pid) {
+		if (pid != -1 && pid != self.getId()) {
 			Address addr = new Address(msg.getString(PROTOCOL_PREDECESSOR_ADDRESS));
 			successor = new PeerEntry(addr, pid);
 			sendSuccessorInform();

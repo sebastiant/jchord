@@ -17,6 +17,7 @@ public interface Protocol {
 	public static final String PROTOCOL_PREDECESSOR_ID = "predid";
 	public static final String PROTOCOL_PREDECESSOR_ADDRESS = "predaddr";
 	public static final String PROTOCOL_SENDER_ID = "sid";
+	public static final String PROTOCOL_NULL = "null";
 	
 	public static final String PROTOCOL_FIND_SUCCESSOR = "findsucc";
 	public static final String PROTOCOL_FIND_SUCCESSOR_KEY = "succkey";

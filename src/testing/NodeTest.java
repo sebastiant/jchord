@@ -94,7 +94,7 @@ public class NodeTest {
 			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
 			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
-			Thread.sleep(10000);
+			Thread.sleep(2000);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
 			if(n2.getPredecessor() == null
