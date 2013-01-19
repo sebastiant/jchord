@@ -12,9 +12,6 @@ import network.Address;
 public class NodeTest {
 	
 	public static void main(String[] args){
-		FingerTable ft = new FingerTable(2, 2048, new PeerEntry(null, 1337));
-		ft.printFt();
-		/*
 		System.out.println("Running tests!");
 		
 		//Test ring logic
@@ -60,13 +57,13 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.err.println("Failed.");
-			
+		
 		System.out.print("TestJoin2_disconnect: ");
 		if(testJoin2_disconnect())
 			System.out.println("Success!");
 		else
 			System.err.println("Failed.");
-		/*
+
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
@@ -76,8 +73,7 @@ public class NodeTest {
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
 		else
-			System.out.println("TestJoin3_disconnect: Failed.");
-			*/
+			System.out.println("TestJoin3_disconnect: Failed.");	
 	}
 
 	/*
@@ -89,11 +85,12 @@ public class NodeTest {
 		Node n1 = null,n2 = null;
 		try
 		{
-			int arity=10;
-			int idspace=1024;
+			int arity=2;
+			int idspace=2048;
 			int n1_port = 7979;
 			int n2_port = 8080;
 			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			n1.fixFingers();
 			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
 			Thread.sleep(100);
@@ -124,8 +121,8 @@ public class NodeTest {
 		Node n1 = null,n2 = null;
 		try
 		{
-			int arity=10;
-			int idspace=1024;
+			int arity=2;
+			int idspace=2048;
 			int n1_port = 7979;
 			int n2_port = 8080;
 			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
@@ -163,8 +160,8 @@ public class NodeTest {
 		Node n1 = null, n2 = null, n3 = null;
 		try
 		{
-			int arity=10;
-			int idspace=1024;
+			int arity=2;
+			int idspace=2048;
 			int n1_port = 7171;
 			int n2_port = 7272;
 			int n3_port = 7373;

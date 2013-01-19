@@ -20,4 +20,8 @@ public class FingerEntry {
 	{
 		return pe;
 	}
+	public void setPeerEntry(PeerEntry pe)
+	{
+		this.pe = pe;
+	}
 }

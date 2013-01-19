@@ -9,15 +9,17 @@ public class FingerTable {
 	
 	public FingerTable(int k, int n, PeerEntry self)
 	{
-		if(!isPowerOfTwo(n) || k < 1 || (n < (k * Math.log10(n) / Math.log10(2))))
-		{
-			System.out.println("n must be a power of two and k must be greather than 1.");
-			throw new RuntimeException("Can not instantiate FingerTable object with passed parameters.");
-		}
-		System.out.println("ok identifier space size (" + Math.log10(n) / Math.log10(2) + "^2)");
 		size =  (int) (k * Math.log10(n) / Math.log10(2));
 		levelSize = size / k;
-		System.out.println("Creating routing-table of size: " + size + ". levelSize: " + levelSize);
+		if(!isPowerOfTwo(n) || k < 1 || n < size)
+		{
+			throw new RuntimeException("Can not instantiate FingerTable object with passed parameters.");
+		}
+		
+		System.out.println("Identifier space size: " + n + " (" + (int)(Math.log10(n) / Math.log10(2)) + "^2).");
+		System.out.println("Routing table size: " + size);
+		System.out.println("Level size: " + levelSize);
+		
 		ft = new FingerEntry[size];
 		for(int offset = 0, j = 0, i = 0; i < size; i++,j++)
 		{
@@ -33,13 +35,39 @@ public class FingerTable {
 		}
 		
 	}
-	public void printFt()
+	
+	public FingerEntry[] getFingerTable()
 	{
-		for(FingerEntry e : ft)
+		return ft;
+	}
+	
+	public void setFingerEntry(int key, PeerEntry value)
+	{
+		for(FingerEntry f : ft)
 		{
-			System.out.println(e.getKey() + ": " + e.getPeerEntry().getId());
+			if(f.getKey() == key)
+				f.setPeerEntry(value);
 		}
 	}
+	/*
+	 * closestPrecedingNode
+	 * Returns the, from the finger table, closest preceding node for a specific key.
+	 * Optimization is very possible here as all entries are iterated through...
+	 */
+	public PeerEntry closestPrecedingNode(int key, PeerEntry node)
+	{
+		PeerEntry last = node;
+		for(FingerEntry fe : ft)
+		{
+			if(Node.isBetween(key,last.getId(),fe.getKey()))
+			{
+				return last;
+			}
+			last = fe.getPeerEntry();
+		}
+		return last;
+	}
+	
 	public static boolean isPowerOfTwo(int num)
 	{
 		return ((Math.log10(num) / Math.log10(2)) - Math.rint(Math.log10(num) / Math.log10(2))) == 0;

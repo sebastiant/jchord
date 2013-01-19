@@ -22,7 +22,7 @@ public class Node implements Protocol {
 
 	private MessageSender msgSender;
 	private Map<Address, PeerEntry> peers = Collections.synchronizedMap(new HashMap<Address, PeerEntry>());
-	
+	private FingerTable ft;
 	private int arity;
 	private long idSpace;
 	private PeerEntry self;
@@ -41,6 +41,7 @@ public class Node implements Protocol {
 		this.arity = arity;
 		long localId = IDGenerator.getId(addr, idSpace);
 		self = new PeerEntry(addr, localId);
+		this.ft = new FingerTable(arity, (int)idSpace, self); //TODO: Convert FingerTable's idSpace member to long.
 		predecessor = successor = self;
 		state = STATE_DISCONNECTED;
 		peers = new HashMap<Address, PeerEntry>();
@@ -367,6 +368,21 @@ public class Node implements Protocol {
 	public long getId(){
 		return self.getId();
 	}
+	
+	public void fixFingers()
+	{
+		for(FingerEntry e : ft.getFingerTable())
+		{
+			System.out.println("Fixing fingerentry " + e.getKey());
+			e.setPeerEntry(findSuccessor(e.getKey()));
+		}
+	}
+	/* Recursive ring lookup */
+	public PeerEntry findSuccessor(int key)
+	{
+		return null;
+	}
+	
 	
 	/* 
 	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space.
