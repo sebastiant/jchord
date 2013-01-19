@@ -25,6 +25,7 @@ public class Node implements Protocol {
 	private String state;
 	private PeerEntry predecessor;
 	private PeerEntry successor;
+	public static final int PRED_REQ_INTERVAL = 10000;
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
