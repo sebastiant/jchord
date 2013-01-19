@@ -12,6 +12,7 @@ public class NodeTest {
 		System.out.println("Running tests!");
 		
 		//Test ring logic
+		/*
 		System.out.print("Testinbetween1: ");
 		if(testInBetween1())
 			System.out.println("Success!");
@@ -54,18 +55,19 @@ public class NodeTest {
 			System.out.println("TestJoin2: Success!");
 		else
 			System.out.println("Failed.");
-		
+		*/
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-		
+		/*
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
 		else
 			System.out.println("TestJoin3_disconnect: Failed.");
+			*/
 	}
 
 	/*
@@ -74,7 +76,6 @@ public class NodeTest {
 	 */
 	public static boolean testJoin2()
 	{
-		boolean result = false;
 		Node n1 = null,n2 = null;
 		try
 		{
@@ -88,11 +89,16 @@ public class NodeTest {
 			Thread.sleep(100);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
-			if(n2.getPredecessor() != null){
-				if((n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
-						&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id))
-					result = true;
+			if(n2.getPredecessor() == null
+					|| n2.getSuccessor() == null
+					|| n1.getPredecessor() == null
+					|| n1.getSuccessor() == null)
+			{
+				return false;
 			}
+			if((n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
+					&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id))
+				return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -100,7 +106,46 @@ public class NodeTest {
 			n2.shutdown();
 		}
 		
-		return result;
+		return false;
+	}
+	
+	public static boolean testJoin2_disconnect()
+	{
+		Node n1 = null,n2 = null;
+		try
+		{
+			int arity=10;
+			int idspace=1024;
+			int n1_port = 7979;
+			int n2_port = 8080;
+			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
+			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
+			Thread.sleep(100);
+			long n1_id = n1.getId();
+			long n2_id = n2.getId();
+			if(n2.getPredecessor() == null
+					|| n2.getSuccessor() == null
+					|| n1.getPredecessor() == null
+					|| n1.getSuccessor() == null)
+			{
+				return false;
+			}
+			if(!((n2.getPredecessor().getId() == n1_id) && (n2.getSuccessor().getId() == n1_id)
+					&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id)))
+				return false;
+			n1.shutdown();
+			Thread.sleep(Node.PRED_REQ_INTERVAL+1000);
+			if((n2.getPredecessor().getId() != n2.getId()) && (n2.getSuccessor().getId() != n2.getId()))
+				return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			n1.shutdown();
+			n2.shutdown();
+		}
+		
+		return true;
 	}
 	public static boolean testJoin3()
 	{
@@ -130,9 +175,6 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n1_id)
 						&& (n3.getSuccessor().getId() == n2_id))
 				{
-					n1.shutdown();
-					n2.shutdown();
-					n3.shutdown();
 					return true;
 				}
 			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
@@ -144,15 +186,9 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n2_id)
 						&& (n3.getSuccessor().getId() == n1_id))
 				{
-					n1.shutdown();
-					n2.shutdown();
-					n3.shutdown();
 					return true;
 				}
 			}
-			n1.shutdown();
-			n2.shutdown();
-			n3.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
