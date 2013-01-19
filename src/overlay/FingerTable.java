@@ -5,9 +5,9 @@ import java.util.ArrayList;
 public class FingerTable {
 	private FingerEntry ft[];
 	private int size;
-	private int levelSize;
+	private long levelSize;
 	
-	public FingerTable(int k, int n, PeerEntry self)
+	public FingerTable(int k, long n, PeerEntry self)
 	{
 		size =  (int) (k * Math.log10(n) / Math.log10(2));
 		levelSize = size / k;
@@ -41,7 +41,7 @@ public class FingerTable {
 		return ft;
 	}
 	
-	public void setFingerEntry(int key, PeerEntry value)
+	public void setFingerEntry(long key, PeerEntry value)
 	{
 		for(FingerEntry f : ft)
 		{
@@ -54,7 +54,7 @@ public class FingerTable {
 	 * Returns the, from the finger table, closest preceding node for a specific key.
 	 * Optimization is very possible here as all entries are iterated through...
 	 */
-	public PeerEntry closestPrecedingNode(int key, PeerEntry node)
+	public PeerEntry closestPrecedingNode(long key, PeerEntry node)
 	{
 		PeerEntry last = node;
 		for(FingerEntry fe : ft)
@@ -68,7 +68,7 @@ public class FingerTable {
 		return last;
 	}
 	
-	public static boolean isPowerOfTwo(int num)
+	public static boolean isPowerOfTwo(long num)
 	{
 		return ((Math.log10(num) / Math.log10(2)) - Math.rint(Math.log10(num) / Math.log10(2))) == 0;
 	}

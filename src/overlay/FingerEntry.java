@@ -1,18 +1,18 @@
 package overlay;
 
 public class FingerEntry {
-	private int key;
+	private long key;
 	private PeerEntry pe;
-	public FingerEntry(int key, PeerEntry pe)
+	public FingerEntry(long key, PeerEntry pe)
 	{
 		this.key = key;
 		this.pe = pe;
 	}
-	public int getKey()
+	public long getKey()
 	{
 		return key;
 	}
-	public void setKey(int key)
+	public void setKey(long key)
 	{
 		this.key = key;
 	}
