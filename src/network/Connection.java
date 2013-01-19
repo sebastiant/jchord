@@ -7,17 +7,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.concurrent.ConcurrentHashMap;
-
-import network.events.ConnectionMessageEvent;
-import network.events.ControlEvent;
-import network.events.DisconnectEvent;
 import network.events.Message;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONString;
 
 public class Connection {
 	
