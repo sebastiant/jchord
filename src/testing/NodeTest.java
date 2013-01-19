@@ -121,7 +121,8 @@ public class NodeTest {
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
 			Thread.sleep(100);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
-			Thread.sleep(100);
+			Thread.sleep(Node.PRED_REQ_INTERVAL+1000);		
+			
 			if(Node.isBetween(n1_id, n2_id, n3_id)){
 				if((n1.getPredecessor().getId() == n2_id)
 						&& (n1.getSuccessor().getId() == n3_id)
@@ -130,9 +131,6 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n1_id)
 						&& (n3.getSuccessor().getId() == n2_id))
 				{
-					n1.shutdown();
-					n2.shutdown();
-					n3.shutdown();
 					return true;
 				}
 			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
@@ -144,15 +142,9 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n2_id)
 						&& (n3.getSuccessor().getId() == n1_id))
 				{
-					n1.shutdown();
-					n2.shutdown();
-					n3.shutdown();
 					return true;
 				}
 			}
-			n1.shutdown();
-			n2.shutdown();
-			n3.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

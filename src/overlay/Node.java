@@ -12,6 +12,7 @@ import org.json.JSONException;
 import network.Address;
 import network.ConcreteObserver;
 import network.MessageSender;
+import network.Service;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
@@ -31,9 +32,9 @@ public class Node implements Protocol {
 	private PeerEntry successor;
 	private boolean running = true;
 	
-	public static final int PRED_REQ_INTERVAL = 10000;
+	public static final int PRED_REQ_INTERVAL = 1000;
 	
-	private Timer predRequestor;
+	private Service predRequestor;
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
@@ -60,22 +61,28 @@ public class Node implements Protocol {
 			}	
 		});
 		msgSender.start();
-		predRequestor = new Timer();
-		TimerTask task = new TimerTask() {
+		predRequestor = new Service() {
 			@Override
-			public void run() {
-				sendPredRequest();
-				predRequestor.schedule(this, PRED_REQ_INTERVAL);
+			public void service() {
+				try {
+					Thread.sleep(PRED_REQ_INTERVAL);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(running) {
+					sendPredRequest();
+				}
 			}
 		};
-		predRequestor.schedule(task, PRED_REQ_INTERVAL);
+		predRequestor.start();
 	}
 	
 	public void shutdown()
 	{
 		if(running) {
 			msgSender.stop();
-			predRequestor.cancel();
+			predRequestor.stop();
 			running = false;
 		}
 	}
@@ -118,12 +125,12 @@ public class Node implements Protocol {
 	}
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
-		System.out.println("Received DisconnectEvent from some host!");
+		System.err.println("Received DisconnectEvent from some host!");
 		
 	}
 	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
-		System.out.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getRemoteAddress());
+		System.err.println("Received ConnectionRefusedEvent when trying to connect to: " + e.getRemoteAddress());
 	}
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
