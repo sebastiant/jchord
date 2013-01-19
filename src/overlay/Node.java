@@ -181,7 +181,11 @@ public class Node implements Protocol {
 				handleCheckPredecessor(msg);
 			} else if(command.equals(PROTOCOL_CHECK_PREDECESSOR_RESPONSE)) {
 				handleCheckPredResponse(msg);
-			} else
+			} else if(command.equals(PROTOCOL_FIND_SUCCESSOR)){
+				handleFindSuccessor(msg);
+			} else if(command.equals(PROTOCOL_FIND_SUCCESSOR_RESPONSE)){
+				handleFindSuccessorResponse(msg);
+			}else
 			{
 				handleUnknownMessage(msg);
 			}
@@ -365,10 +369,36 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleClosedConnection(Address src){
-		peers.remove(src);
-		msgSender.disconnect(src); 
+		// Nothing
 	}
-	
+	/**
+     * Handle a received FindSuccessor
+     * @param src The address of the sending node.
+     * @return void
+     */
+	private void handleFindSuccessor(Message msg){
+		if(isBetween(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY),predecessor.getId(), self.getId()))
+		{
+			Message resp = new Message();
+			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
+			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY));
+			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, self.getAddress().toString());
+			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, self.getId());
+			send(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
+		}
+		else
+			send(ft.closestPrecedingNode(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), self).getAddress(), msg);
+	}
+	/**
+     * Handle a received FindSuccessorResponse
+     * @param src The address of the sending node.
+     * @return void
+     */
+	private void handleFindSuccessorResponse(Message msg){
+		PeerEntry pe = new PeerEntry(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
+				msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
+		ft.setFingerEntry(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), pe);
+	}
 	/**
      * Handle a message with unknown syntax
      * Current version of the protocol just drops it and writes to stdout about it.
@@ -379,6 +409,7 @@ public class Node implements Protocol {
 		System.out.println("Received unknown message: " +msg.toString());
 		return;
 	}
+	
 	
 	/*
 	 * Methods to support testing.
@@ -405,16 +436,24 @@ public class Node implements Protocol {
 	
 	public void fixFingers()
 	{
-		/*for(FingerEntry e : ft.getFingerTable())
+		for(FingerEntry e : ft.getFingerTable())
 		{
 			System.out.println("Fixing fingerentry " + e.getKey());
-			e.setPeerEntry(findSuccessor(e.getKey()));
-		}*/
+			findSuccessor(e.getKey());
+		}
 	}
 	/* Recursive ring lookup */
-	public PeerEntry findSuccessor(int key)
+	public void findSuccessor(long key)
 	{
-		return null;
+		/* send out a request from known peers. */
+		Message msg = new Message();
+		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
+		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
+		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
+		if(isBetween(key,predecessor.getId(), self.getId()))
+			send(self.getAddress(), msg);
+		else
+			send(ft.closestPrecedingNode(key, self).getAddress(), msg);
 	}
 	
 	

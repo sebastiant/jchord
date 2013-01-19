@@ -17,6 +17,14 @@ public interface Protocol {
 	public static final String PROTOCOL_PREDECESSOR_ID = "predid";
 	public static final String PROTOCOL_PREDECESSOR_ADDRESS = "predaddr";
 	public static final String PROTOCOL_SENDER_ID = "sid";
+	
+	public static final String PROTOCOL_FIND_SUCCESSOR = "findsucc";
+	public static final String PROTOCOL_FIND_SUCCESSOR_KEY = "succkey";
+	public static final String PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR = "findsuccsenderaddr";
+	public static final String PROTOCOL_FIND_SUCCESSOR_RESPONSE = "findsuccresp";
+	public static final String PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID = "findsuccrespid";
+	public static final String PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR = "findsuccrespaddr";
+	
 	public static final String PROTOCOL_CHECK_PREDECESSOR = "ckpred";
 	public static final String PROTOCOL_CHECK_PREDECESSOR_RESPONSE = "ckpresp";
 	//Node states.
