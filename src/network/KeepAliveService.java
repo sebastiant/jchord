@@ -22,7 +22,7 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 			@Override
 			public void notifyObserver(Message e) {
 				lastHB = System.currentTimeMillis();
-				System.out.println("Recived hb");
+				//System.out.println("Recived hb");
 			}
 		};
 		mr.register(hbObs, "hb");

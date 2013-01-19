@@ -35,4 +35,8 @@ public class PeerEntry{
 		hash *= 17 + addr.hashCode();
 		return hash;
 	}
+	
+	public String toString() {
+		return "#" +id; 
+	}
 }

@@ -22,7 +22,7 @@ public class MessageSender {
 	private Server server;
 	private ConcurrentHashMap<Address, Connection> cons = new ConcurrentHashMap<Address, Connection>();
 	private ConcurrentHashMap<Connection, RecieverService> recievers = new ConcurrentHashMap<Connection, RecieverService>();
-	private ConcurrentHashMap<Connection, KeepAliveService> keepAlives = new ConcurrentHashMap<Connection, KeepAliveService>();
+	//private ConcurrentHashMap<Connection, KeepAliveService> keepAlives = new ConcurrentHashMap<Connection, KeepAliveService>();
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
 	private Observer<Message> applicationMessageObserver;
@@ -70,9 +70,9 @@ public class MessageSender {
 				
 				// Turn off services
 				RecieverService mr = recievers.get(c);
-				KeepAliveService kps = keepAlives.get(c);
+			//	KeepAliveService kps = keepAlives.get(c);
 				mr.stop();
-				kps.stop();
+			//	kps.stop();
 				
 				// Disconnect
 				try {
@@ -83,7 +83,7 @@ public class MessageSender {
 				
 				// Clean up tables
 				recievers.remove(c);
-				keepAlives.remove(c);
+				//keepAlives.remove(c);
 				cons.remove(c.getAddress());
 				
 				// Notify application layer
@@ -99,9 +99,9 @@ public class MessageSender {
 	
 	public void stop() {
 		server.stop();
-		for(Entry<Connection, KeepAliveService>  k : keepAlives.entrySet()) {
+	/*	for(Entry<Connection, KeepAliveService>  k : keepAlives.entrySet()) {
 			k.getValue().stop();
-		}
+		} */
 		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
 			r.getValue().stop();
 		}
@@ -112,7 +112,7 @@ public class MessageSender {
 				// Don't care.
 			}
 		}
-		keepAlives.clear();
+		//keepAlives.clear();
 		recievers.clear();
 		cons.clear();
 	}
@@ -150,7 +150,7 @@ public class MessageSender {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				addKeepAliveService(addMessageReciever(con));
+				//addKeepAliveService(addMessageReciever(con));
 			}		
 		} else {
 			System.err.println("Unknonw message: " + msg);
@@ -173,9 +173,8 @@ public class MessageSender {
 					con.send(msg);
 					Message rcv = con.recieve();
 					if(rcv.getBoolean("accept") == true) {
-						System.out.println("accept");
 						cons.put(address, con);
-						addKeepAliveService(addMessageReciever(con));
+						//addKeepAliveService(addMessageReciever(con));
 						break;
 					} else {
 						System.err.println("Connection to " + address + " was denied");
@@ -241,11 +240,11 @@ public class MessageSender {
 		return mr;
 	}
 	
-	private void addKeepAliveService(RecieverService mr) {
+	/*private void addKeepAliveService(RecieverService mr) {
 		KeepAliveService kps = new KeepAliveService(mr, KEEP_ALIVE_TIMEOUT);
 		kps.register(disconnectObserver);
 		keepAlives.put(mr.getConnection(), kps);
-	}
+	}*/
 	
 	public void registerMessageObserver(Observer<Message> obs) {
 		this.messageObservable.register(obs);

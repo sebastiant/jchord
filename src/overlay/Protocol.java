@@ -17,6 +17,8 @@ public interface Protocol {
 	public static final String PROTOCOL_PREDECESSOR_ID = "predid";
 	public static final String PROTOCOL_PREDECESSOR_ADDRESS = "predaddr";
 	public static final String PROTOCOL_SENDER_ID = "sid";
+	public static final String PROTOCOL_CHECK_PREDECESSOR = "ckpred";
+	public static final String PROTOCOL_CHECK_PREDECESSOR_RESPONSE = "ckpresp";
 	//Node states.
 	public static final String STATE_DISCONNECTED = "disconnected";
 	public static final String STATE_CONNECTING = "connecting";
