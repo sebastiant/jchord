@@ -1,13 +1,6 @@
 package network;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.json.JSONException;
 
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;

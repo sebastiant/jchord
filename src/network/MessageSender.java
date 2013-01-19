@@ -5,16 +5,12 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import network.events.ConnectionMessageEvent;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
@@ -26,8 +22,6 @@ public class MessageSender {
 	private ConcurrentHashMap<Address, Connection> cons = new ConcurrentHashMap<Address, Connection>();
 	private ConcurrentHashMap<Connection, RecieverService> recievers = new ConcurrentHashMap<Connection, RecieverService>();
 	private ConcurrentHashMap<Connection, KeepAliveService> keepAlives = new ConcurrentHashMap<Connection, KeepAliveService>();
-	private ConcreteObserver<ConnectionMessageEvent> messageObserver;
-	private ConcreteObserver<ControlEvent> eventObserver;
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
 	private Observer<Message> applicationMessageObserver;
