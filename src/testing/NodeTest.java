@@ -37,13 +37,13 @@ public class NodeTest {
 			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween5: ");
-		if(testInBetween4())
+		if(testInBetween5())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
 		
 		System.out.print("Testinbetween6: ");
-		if(testInBetween4())
+		if(testInBetween6())
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
@@ -129,6 +129,9 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n1_id)
 						&& (n3.getSuccessor().getId() == n2_id))
 				{
+					n1.shutdown();
+					n2.shutdown();
+					n3.shutdown();
 					return true;
 				}
 			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
@@ -140,9 +143,15 @@ public class NodeTest {
 						&& (n3.getPredecessor().getId() == n2_id)
 						&& (n3.getSuccessor().getId() == n1_id))
 				{
+					n1.shutdown();
+					n2.shutdown();
+					n3.shutdown();
 					return true;
 				}
 			}
+			n1.shutdown();
+			n2.shutdown();
+			n3.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
