@@ -40,9 +40,11 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Message hb = new Message();
-		hb.setId("hb");
-		con.send(hb);
+		if(isRunning()) {
+			Message hb = new Message();
+			hb.setId("hb");
+			con.send(hb);
+		}
 	}
 	
 	public boolean isRunning() {

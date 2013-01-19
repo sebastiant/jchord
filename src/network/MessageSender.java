@@ -94,6 +94,18 @@ public class MessageSender {
 	
 	public void stop() {
 		server.stop();
+		for(Entry<Connection, KeepAliveService>  k : keepAlives.entrySet()) {
+			k.getValue().stop();
+		}
+		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
+			r.getValue().stop();
+		}
+		for(Entry<Address, Connection> c : cons.entrySet()) {
+			c.getValue().disconnect();
+		}
+		keepAlives.clear();
+		recievers.clear();
+		cons.clear();
 	}
 	
 	private void handleConnection(Socket s) {
@@ -146,7 +158,7 @@ public class MessageSender {
 					}	
 				} catch (ConnectException e) {
 					eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
-					break;
+					return null;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -181,6 +193,7 @@ public class MessageSender {
 			Connection c = null;
 			for(;;) {
 				c = getConnection(m.getDestinationAddress());
+				if(c == null) break; // Connection refused
 				if(c.isConnected()) {
 					c.send(m);
 					break;

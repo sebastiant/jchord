@@ -323,14 +323,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleClosedConnection(Address src){
-		if(state.equals(STATE_DISCONNECTED))
-			return;
-		//Disconnect from all connected nodes.
-		state = STATE_DISCONNECTED;
-		Message response = new Message();
-		response.setKey(PROTOCOL_COMMAND, PROTOCOL_DISCONNECT);
-		sendToAll(response);
-		peers.clear();
+		// Nothing
 	}
 	
 	/**
