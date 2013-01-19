@@ -43,23 +43,30 @@ public class NodeTest {
 		else
 			System.out.println("Failed.");
 		*/
-		System.out.print("TestJoin1: ");
-		if(testJoin1())
-			System.out.println("TestJoin1: Success!");
-		else
-			System.out.println("Failed.");
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
 			System.out.println("TestJoin2: Success!");
 		else
-			System.out.println("TestJoin2: Failed.");
+			System.out.println("Failed.");
+		
+		System.out.print("TestJoin3: ");
+		if(testJoin3())
+			System.out.println("TestJoin3: Success!");
+		else
+			System.out.println("TestJoin3: Failed.");
+		
+		System.out.print("TestJoin3_disconnect: ");
+		if(testJoin3_disconnect())
+			System.out.println("TestJoin3_disconnect: Success!");
+		else
+			System.out.println("TestJoin3_disconnect: Failed.");
 	}
 	
 	/*
-	 * Make two nodes, try to connect one to the other and check that the resul
+	 * Make two nodes, try to connect one to the other and check that they have updated their predecessors and successors
 	 * 
 	 */
-	public static boolean testJoin1()
+	public static boolean testJoin2()
 	{
 		boolean result = false;
 		Node n1 = null,n2 = null;
@@ -80,8 +87,6 @@ public class NodeTest {
 						&& (n1.getPredecessor().getId() == n2_id) && (n1.getSuccessor().getId() == n2_id))
 					result = true;
 			}
-			
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -91,7 +96,7 @@ public class NodeTest {
 		
 		return result;
 	}
-	public static boolean testJoin2()
+	public static boolean testJoin3()
 	{
 		try
 		{
@@ -112,19 +117,24 @@ public class NodeTest {
 			Thread.sleep(100);
 			if(Node.isBetween(n1_id, n2_id, n3_id)){
 				if((n1.getPredecessor().getId() == n2_id)
+						&& (n1.getSuccessor().getId() == n3_id)
 						&& (n2.getPredecessor().getId() == n3_id)
-						&& (n3.getPredecessor().getId() == n1_id))
+						&& (n2.getSuccessor().getId() == n1_id)
+						&& (n3.getPredecessor().getId() == n1_id)
+						&& (n3.getSuccessor().getId() == n2_id))
 				{
 					return true;
 				}
 			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
 			{
-				if(() &&
-						() &&
-						() &&
-						())
+				if((n1.getPredecessor().getId() == n3_id)
+						&& (n1.getSuccessor().getId() == n2_id)
+						&& (n2.getPredecessor().getId() == n1_id)
+						&& (n2.getSuccessor().getId() == n3_id)
+						&& (n3.getPredecessor().getId() == n2_id)
+						&& (n3.getSuccessor().getId() == n1_id))
 				{
-					
+					return true;
 				}
 			}
 		} catch (Exception e) {
@@ -132,7 +142,63 @@ public class NodeTest {
 		}
 		return false;
 	}
-
+	public static boolean testJoin3_disconnect()
+	{
+		try
+		{
+			int arity=10;
+			int idspace=1024;
+			int n1_port = 7171;
+			int n2_port = 7272;
+			int n3_port = 7373;
+			Node n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
+			Node n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
+			Node n3 = new Node(new Address(InetAddress.getLocalHost(), n3_port), idspace, arity);
+			long n1_id = n1.getId();
+			long n2_id = n2.getId();
+			long n3_id = n3.getId();
+			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
+			Thread.sleep(100);
+			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
+			Thread.sleep(100);
+			if(Node.isBetween(n1_id, n2_id, n3_id)){
+				if(!((n1.getPredecessor().getId() == n2_id)
+						&& (n1.getSuccessor().getId() == n3_id)
+						&& (n2.getPredecessor().getId() == n3_id)
+						&& (n2.getSuccessor().getId() == n1_id)
+						&& (n3.getPredecessor().getId() == n1_id)
+						&& (n3.getSuccessor().getId() == n2_id)))
+				{
+					return false;
+				}
+			} else /* Node.isBetween(n1_id, n3_id, n2_id) */
+			{
+				if(!((n1.getPredecessor().getId() == n3_id)
+						&& (n1.getSuccessor().getId() == n2_id)
+						&& (n2.getPredecessor().getId() == n1_id)
+						&& (n2.getSuccessor().getId() == n3_id)
+						&& (n3.getPredecessor().getId() == n2_id)
+						&& (n3.getSuccessor().getId() == n1_id)))
+				{
+					return false;
+				}
+			}
+			//Kill node 3
+			n3.shutdown();
+			Thread.sleep(Node.PRED_REQ_INTERVAL+1000);
+			//Check that node 1 and node 2 has updated the ring accordingly.
+			if((n1.getPredecessor().getId() == n2_id)
+					&& (n1.getSuccessor().getId() == n2_id)
+					&& (n2.getPredecessor().getId() == n1_id)
+					&& (n2.getSuccessor().getId() == n1_id))
+			{
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 	public static boolean testInBetween1(){
 		long l_1 = 40;
 		long l_2 = 4;
