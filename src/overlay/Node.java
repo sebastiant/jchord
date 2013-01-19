@@ -368,11 +368,11 @@ public class Node implements Protocol {
 		long shifted_l2 = l_2 - l_1;
 		long shifted_l3 = l_3 - l_1;
 		if((shifted_l2 < 0) && (shifted_l3 < 0))
-			return (shifted_l2 < shifted_l3);
+			return (shifted_l2 > shifted_l3);
 		else if(shifted_l3 < 0)
-			return true;
-		else if(shifted_l2 < 0)
 			return false;
+		else if(shifted_l2 < 0)
+			return true;
 		else //shifted_l2 > 0 && shifted_l3 > 0
 			return (shifted_l2 < shifted_l3);
 	}
