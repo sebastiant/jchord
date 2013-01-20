@@ -27,7 +27,6 @@ public class Connection {
 		setup(socket); 
 	}
 	
-	
 	public Connection(Socket s) {
 		setup(s);
 	}
@@ -49,8 +48,7 @@ public class Connection {
 		if(!socket.isClosed()){
 			out.write(message.toString() + "\n");
 			out.flush();
-		}
-				
+		}	
 	}
 	
 	public Message recieve() throws SocketException {

@@ -29,8 +29,8 @@ public class Node implements Protocol {
 	public static final int PRED_REQ_INTERVAL = 500;
 	public static final int FINGER_FIX_INTERVAL = 1000;
 
-	private Timer checkPredecessorTimer = new Timer(false);
-	private Timer checkFingersTimer = new Timer(false);
+	private Timer checkPredecessorTimer = new Timer(true);
+	private Timer checkFingersTimer = new Timer(true);
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
@@ -570,7 +570,12 @@ public class Node implements Protocol {
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
 			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
 			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, source.getAddress().toString());
-			send(ft.closestPrecedingNode(source.getId()).getAddress(), msg);
+			PeerEntry entry = ft.closestPrecedingNode(source.getId());
+			if(entry != null) {
+				send(entry.getAddress(), msg);
+			} else {
+				System.out.println("GOT NULL!!!");
+			}
 		}
 	}
 	
