@@ -68,18 +68,15 @@ public class Node implements Protocol {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if(running && state != STATE_DISCONNECTED) {
+				if(running && state == STATE_CONNECTED) {
 					if(fixFingersInterval == 4)
 					{
 						fixFingers();
 						fixFingersInterval = 0;
 					}
-					if(state == STATE_CONNECTED)
-					{
-						sendCheckPredecessor();
-						sendPredRequest();
-						fixFingersInterval++;
-					}
+					sendCheckPredecessor();
+					sendPredRequest();
+					fixFingersInterval++;
 				}
 			}
 		};
@@ -279,15 +276,17 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
-		System.out.println("Received successor inform!!");
+		System.out.println("ID ("+self.getId()+") Received successor inform!!");
 		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
 		if(predecessor == null) {
+			System.out.println("ID ("+self.getId()+") Changing my predecessor!");
 			predecessor = new PeerEntry(msg.getSourceAddress(), sender);
 			return;
 		}
 		long predid = predecessor.getId();
 		if(sender != predid) {
 			if(isBetween(sender, predid, self.getId())) {
+				System.out.println("ID ("+self.getId()+") Changing my predecessor!");
 				predecessor = new PeerEntry(msg.getSourceAddress(), sender);
 			}
 		}
