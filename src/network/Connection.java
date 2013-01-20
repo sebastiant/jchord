@@ -46,9 +46,10 @@ public class Connection {
 	}
 	
 	public void send(Message message) throws IOException {
-		socket.isClosed();
-		out.write(message.toString() + "\n");
-		out.flush();
+		if(!socket.isClosed()){
+			out.write(message.toString() + "\n");
+			out.flush();
+		}
 				
 	}
 	
