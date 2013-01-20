@@ -25,10 +25,14 @@ public interface Protocol {
 	public static final String PROTOCOL_SENDER_ID = "sid";
 	public static final String PROTOCOL_NULL = "null";
 	
-	public static final String PROTOCOL_SUCCESSLORLIST_1 = "succlist1";
-	public static final String PROTOCOL_SUCCESSLORLIST_2 = "succlist2";
-	public static final String PROTOCOL_SUCCESSLORLIST_3 = "succlist3";
-	public static final String PROTOCOL_SUCCESSLORLIST_4 = "succlist4";
+	public static final String PROTOCOL_SUCCESSORLIST_1_ADDR = "succlist1addr";
+	public static final String PROTOCOL_SUCCESSORLIST_1_ID = "succlist1id";
+	public static final String PROTOCOL_SUCCESSORLIST_2_ADDR = "succlist2addr";
+	public static final String PROTOCOL_SUCCESSORLIST_2_ID = "succlist2id";
+	public static final String PROTOCOL_SUCCESSORLIST_3_ADDR = "succlist3addr";
+	public static final String PROTOCOL_SUCCESSORLIST_3_ID = "succlist3id";
+	public static final String PROTOCOL_SUCCESSORLIST_4_ADDR = "succlist4addr";
+	public static final String PROTOCOL_SUCCESSORLIST_4_ID = "succlist4id";
 
 	public static final String PROTOCOL_FIND_SUCCESSOR = "findsucc";
 	public static final String PROTOCOL_FIND_SUCCESSOR_KEY = "succkey";
