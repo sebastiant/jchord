@@ -2,6 +2,7 @@ package testing;
 
 import java.net.InetAddress;
 
+import overlay.FingerEntry;
 import overlay.FingerTable;
 import overlay.Node;
 import overlay.PeerEntry;
@@ -60,8 +61,7 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		*/
-		
+
 		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
 		if(testJoin2())
@@ -74,18 +74,19 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-			
+		*/
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-
+		/*
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
 		else
 			System.out.println("TestJoin3_disconnect: Failed.");
+			*/
 	}
 
 	/*
@@ -187,10 +188,30 @@ public class NodeTest {
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
 			long n3_id = n3.getId();
+			System.out.println("ID: "+ n1_id + " connecting to ID: " + n2_id);
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
 			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+			System.out.println("ID: "+ n3_id + " connecting to ID: " + n1_id);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 6);
+			FingerEntry[] fe = n1.getFingers();
+			System.out.println("n1 ("+n1.getId()+") finger table\n-----------");
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n2 ("+n2.getId()+") finger table\n-----------");
+			fe = n2.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n3 ("+n3.getId()+") finger table\n-----------");
+			fe = n3.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
 			if(Node.isBetween(n1_id, n2_id, n3_id)){
 				if((n1.getPredecessor().getId() == n2_id)
 						&& (n1.getSuccessor().getId() == n3_id)
@@ -239,9 +260,9 @@ public class NodeTest {
 			long n2_id = n2.getId();
 			long n3_id = n3.getId();
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
-			Thread.sleep(100);
+			Thread.sleep(3000);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
-			Thread.sleep(100);
+			Thread.sleep(3000);
 			if(Node.isBetween(n1_id, n2_id, n3_id)){
 				if(!((n1.getPredecessor().getId() == n2_id)
 						&& (n1.getSuccessor().getId() == n3_id)

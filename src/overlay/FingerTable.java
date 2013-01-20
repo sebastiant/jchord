@@ -3,6 +3,7 @@ package overlay;
 import java.util.ArrayList;
 
 public class FingerTable {
+	private PeerEntry self;
 	private FingerEntry ft[];
 	private int size;
 	private long levelSize;
@@ -11,6 +12,7 @@ public class FingerTable {
 	{
 		size =  (int) (k * Math.log10(n) / Math.log10(2));
 		levelSize = size / k;
+		this.self = self;
 		if(!isPowerOfTwo(n) || k < 1 || n < size)
 		{
 			throw new RuntimeException("Can not instantiate FingerTable object with passed parameters.");
@@ -54,9 +56,9 @@ public class FingerTable {
 	 * Returns the, from the finger table, closest preceding node for a specific key.
 	 * Optimization is very possible here as all entries are iterated through...
 	 */
-	public PeerEntry closestPrecedingNode(long key, PeerEntry node)
+	public PeerEntry closestPrecedingNode(long key)
 	{
-		PeerEntry last = node;
+		PeerEntry last = self;
 		for(FingerEntry fe : ft)
 		{
 			if(fe.getPeerEntry() != null)
