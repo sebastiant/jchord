@@ -25,7 +25,7 @@ public class Message {
 	
 	public void setDestinationAddress(InetAddress addr, int port) {
 		try {
-			this.json.put("_Dst_address", addr.getHostAddress() + ":" + port);
+			this.json.put("_dest", addr.getHostAddress() + ":" + port);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -38,7 +38,7 @@ public class Message {
 	
 	public void setDestinationAddress(String addr) {
 		try {
-			this.json.put("_Dst_address", addr);
+			this.json.put("_dest", addr);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,7 +48,7 @@ public class Message {
 	public Address getDestinationAddress() {
 		Address ret = null;
 		try {
-			ret = new Address((String)this.json.get("_Dst_address"));		
+			ret = new Address((String)this.json.get("_dest"));		
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -59,7 +59,7 @@ public class Message {
 	public Address getSourceAddress() {
 		Address ret = null;
 		try {
-			ret = new Address((String)this.json.get("_Src_address"));
+			ret = new Address((String)this.json.get("_src"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -134,7 +134,7 @@ public class Message {
 	
 	public void setSourceAddress(String source) {
 		try {
-			this.json.put("_Src_address", source);
+			this.json.put("_src", source);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
