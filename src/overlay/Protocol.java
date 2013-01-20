@@ -18,8 +18,7 @@ public interface Protocol {
 	
 	public static final String PROTOCOL_SUCCESSORINFORM = "succ";
 	
-	public static final String PROTOCOL_PREDECESSOR_RESPONSE = "pred";
-	
+	public static final String PROTOCOL_PREDECESSOR_RESPONSE = "predresponse";
 	public static final String PROTOCOL_PREDECESSOR_REQUEST = "predreq";
 	public static final String PROTOCOL_PREDECESSOR_ID = "predid";
 	public static final String PROTOCOL_PREDECESSOR_ADDRESS = "predaddr";
