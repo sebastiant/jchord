@@ -73,13 +73,13 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		*/
-	/*	System.out.print("TestJoin3: ");
+		
+		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-	*/		
+		*/	
 		
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
@@ -307,7 +307,6 @@ public class NodeTest {
 			}
 			System.out.println("----------------\n KILLING NODE 3 \n ----------------");
 			n3.shutdown();
-			System.out.println("wait");
 			Thread.sleep(Node.PRED_REQ_INTERVAL * 12);
 			//Check that node 1 and node 2 has updated the ring accordingly.
 			/*
@@ -319,10 +318,12 @@ public class NodeTest {
 				return true;
 			}
 			*/
-			System.out.println("node: " + n1_id + " pred: " + n1.getPredecessor().getId());
+			
+			//System.out.println("node: " + n1_id + " pred: " + n1.getPredecessor().getId());
 			System.out.println("node: " + n1_id + " succ: " + n1.getSuccessor().getId());
-			System.out.println("node: " + n2_id + " pred: " + n2.getPredecessor().getId());
+			//System.out.println("node: " + n2_id + " pred: " + n2.getPredecessor().getId());
 			System.out.println("node: " + n2_id + " succ: " + n2.getSuccessor().getId());
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
