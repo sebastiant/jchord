@@ -79,15 +79,15 @@ public class Node implements Protocol {
 					fixFingers();
 				}
 			}
-		}, 1000, FINGER_FIX_INTERVAL);
+		}, 1000, FINGER_FIX_INTERVAL); 
 	}
 	
 	public void shutdown()
 	{
 		if(running) {
-			msgSender.stop();
 			checkFingersTimer.cancel();
 			checkPredecessorTimer.cancel();
+			msgSender.stop();
 			running = false;
 		}
 	}

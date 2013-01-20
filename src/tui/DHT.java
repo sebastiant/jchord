@@ -7,17 +7,16 @@ import network.Address;
 public class DHT {
 	
 	private Node node = null;
+	private boolean connected = false;
 	
 	/** Provides a simple interface against the overlay */
-	public DHT() {
-		
+	public DHT(Address address, long idSpace, int airity) {
+		node = new Node(address, idSpace, airity);	
 	}
 	
-	public void connect(Address address, long idSpace, int airity) {
-		if(node != null) {
-			node.shutdown();
-		}
-		node = new Node(address, idSpace, airity);
+	public void connect(Address address) {
+		node.connect(address);
+		connected = true;
 	}
 	
 	public void showFigers() {
@@ -34,9 +33,6 @@ public class DHT {
 
 	
 	public boolean isConnected() {
-		if(node != null) 
-			return true;
-		else 
-			return false;
+		return connected;
 	}
 }

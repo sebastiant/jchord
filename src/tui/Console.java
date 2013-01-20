@@ -3,20 +3,31 @@ package tui;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import network.Address;
 
 public class Console {
 
 	private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 	private boolean running;
-	private DHT dht;
+	private DHT dht = null;
 	
-	public Console() {
+	public Console(int port,  long idSpace, int airity) {
 		System.out.println("DHT User interface");
+		Address addr = null;
+		try {
+			addr = new Address(InetAddress.getLocalHost(), port);
+			dht = new DHT(addr, idSpace, airity);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		running = true;
-		this.dht = new DHT();
 	}
 	
-	public void readInput() throws IOException {
+	public void commandLine() throws IOException {
 		System.out.print("# ");
 		String line = in.readLine();
 		String split[] = line.split("\\s+");
@@ -29,18 +40,9 @@ public class Console {
 			return;
 		}
 		switch(Command.valueOf(cmd)) {
+		
 		case CONNECT:
-			long idSpace = Long.MAX_VALUE;
-			int airity = 2;
-			System.out.println("Not implemented yet");
 			
-			if(split.length > 2) {
-				idSpace = Long.parseLong(split[2]);
-			}
-			if(split.length > 3) {
-				airity = Integer.parseInt(split[3]);
-			}
-			System.out.println("Joinig adress: " + split[1] + " idpace: " + idSpace +  " airity: " + airity);
 			break;
 		case DISCONNECT:
 			if(!dht.isConnected()) {
@@ -81,7 +83,7 @@ public class Console {
 	public void run() {
 		while(running) {
 			try {
-				readInput();
+				commandLine();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
