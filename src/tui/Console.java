@@ -21,6 +21,13 @@ public class Console {
 		String line = in.readLine();
 		String split[] = line.split("\\s+");
 		String cmd = split[0].toUpperCase();
+		Command command;
+		try {
+			command = Command.valueOf(cmd);
+		} catch(IllegalArgumentException e){
+			System.out.println("Unknown command: " + split[0]);
+			return;
+		}
 		switch(Command.valueOf(cmd)) {
 		case CONNECT:
 			long idSpace = Long.MAX_VALUE;
@@ -35,6 +42,21 @@ public class Console {
 			}
 			System.out.println("Joinig adress: " + split[1] + " idpace: " + idSpace +  " airity: " + airity);
 			break;
+		case DISCONNECT:
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+			} else {
+				dht.disconnect();
+				System.out.println("Disconnected");
+			}		
+			break;
+		case FINGERS:
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+			} else {
+				dht.showFigers();
+			}
+			break;
 		case HELP:
 			System.out.println("Syntax: Command [arguments]");
 			for(Command s :Command.values()) {
@@ -46,7 +68,7 @@ public class Console {
 			quit();
 			break;
 		default:
-			System.out.println("Unknown command: " + cmd);
+			System.out.println("Unhandled command: " + cmd);
 			break;
 		}
 	}

@@ -32,4 +32,11 @@ public class DHT {
 		node = null;
 	}
 
+	
+	public boolean isConnected() {
+		if(node != null) 
+			return true;
+		else 
+			return false;
+	}
 }

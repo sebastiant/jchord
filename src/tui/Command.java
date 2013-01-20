@@ -3,12 +3,18 @@ package tui;
 public enum Command {
 	CONNECT("Join a dht network, connect ADRESS [IDSPACE] [ARITY]"),
 	HELP("Print this help"),
-	QUIT("Disconnect and exit");
+	FINGERS("Show fingers"),
+	DISCONNECT("Disconnect from ring"),
+	QUIT("Exit");
 	
 	private String description;
 	
 	private Command(String description) {
 		this.description = description;
+	}
+	
+	public String toString() {
+		return this.name().toLowerCase();
 	}
 	
 	public void printHelp() {
