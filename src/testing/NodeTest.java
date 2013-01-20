@@ -33,7 +33,6 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		
 		System.out.print("Testinbetween4: ");
 		if(testInBetween4())
 			System.out.println("Success!");
@@ -74,18 +73,20 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		
+		*/
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-		*/
+			
+		/*
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
 		else
 			System.out.println("TestJoin3_disconnect: Failed.");
+			*/
 	}
 
 	/*
@@ -192,7 +193,7 @@ public class NodeTest {
 			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
 			System.out.println("ID: "+ n3_id + " connecting to ID: " + n1_id);
 			n3.connect(new Address(InetAddress.getLocalHost(), n1_port));
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 6);
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
 			FingerEntry[] fe = n1.getFingers();
 			System.out.println("n1 ("+n1.getId()+") finger table\n-----------");
 			for(FingerEntry e : fe)
