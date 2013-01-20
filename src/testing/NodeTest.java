@@ -13,8 +13,8 @@ public class NodeTest {
 	
 	public static void main(String[] args){
 		System.out.println("Running tests!");
-		/*
 		//Test ring logic
+		/*
 		System.out.print("Testinbetween1: ");
 		if(testInBetween1())
 			System.out.println("Success!");
@@ -50,6 +50,17 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
+		System.out.print("Testinbetween7: ");
+		if(testInBetween6())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
+		System.out.print("Testinbetween8: ");
+		if(testInBetween6())
+			System.out.println("Success!");
+		else
+			System.out.println("Failed.");
+		*/
 		
 		//Test overlay-creation/destruction
 		System.out.print("TestJoin2: ");
@@ -63,13 +74,13 @@ public class NodeTest {
 			System.out.println("Success!");
 		else
 			System.out.println("Failed.");
-		
-		*/
+			
 		System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
+
 		/*
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
@@ -96,9 +107,14 @@ public class NodeTest {
 			n1 = new Node(new Address(InetAddress.getLocalHost(), n1_port), idspace, arity);
 			n2 = new Node(new Address(InetAddress.getLocalHost(), n2_port), idspace, arity);
 			n1.connect(new Address(InetAddress.getLocalHost(), n2_port));
-			Thread.sleep(2000);
+			Thread.sleep(8000);
 			long n1_id = n1.getId();
 			long n2_id = n2.getId();
+			System.out.println("n1: " + n1_id + "succ: " + n1.getSuccessor().getId());
+			System.out.println("n1: " + n1_id + "pred: " + n1.getPredecessor().getId());
+			System.out.println("n2: " + n2_id + "succ: " + n2.getSuccessor().getId());
+			System.out.println("n2: " + n2_id + "pred: " + n2.getPredecessor().getId());
+
 			if(n2.getPredecessor() == null
 					|| n2.getSuccessor() == null
 					|| n1.getPredecessor() == null
@@ -305,6 +321,18 @@ public class NodeTest {
 		long l_1 = 1000;
 		long l_2 = 20;
 		long l_3 = 5;
+		return Node.isBetween(l_1, l_2, l_3); 
+	}
+	public static boolean testInBetween7(){
+		long l_1 = 10;
+		long l_2 = 5;
+		long l_3 = 10;
+		return Node.isBetween(l_1, l_2, l_3); 
+	}
+	public static boolean testInBetween8(){
+		long l_1 = 11;
+		long l_2 = 1000;
+		long l_3 = 11;
 		return Node.isBetween(l_1, l_2, l_3); 
 	}
 }
