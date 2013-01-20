@@ -85,9 +85,9 @@ public class Node implements Protocol {
 	public void shutdown()
 	{
 		if(running) {
-			msgSender.stop();
 			checkFingersTimer.cancel();
 			checkPredecessorTimer.cancel();
+			msgSender.stop();
 			running = false;
 		}
 	}
