@@ -254,8 +254,8 @@ public class Node implements Protocol {
 		if(msg.has(PROTOCOL_JOIN_ID) && msg.has(PROTOCOL_JOIN_ARITY)
 				&& msg.has(PROTOCOL_JOIN_IDENTIFIERSPACE))
 		{
-			if(((Integer)msg.getKey(PROTOCOL_JOIN_ARITY) == arity)
-					&& ((Integer)msg.getKey(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
+			if((msg.getInt(PROTOCOL_JOIN_ARITY) == arity)
+					&& (msg.getLong(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
 			{
 				//Accept the join!
 				if(state.equals(STATE_DISCONNECTED))
