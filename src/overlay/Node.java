@@ -4,6 +4,9 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import network.Address;
 import network.ConcreteObserver;
 import network.MessageSender;
@@ -28,9 +31,11 @@ public class Node implements Protocol {
 	private long predecessorLastSeen = Long.MAX_VALUE;
 	
 	public static final int PRED_REQ_INTERVAL = 2000;
+	public static final int FINGER_FIX_INTERVAL = 10000;
 	private int fixFingersInterval;
-	
-	private Service periodicChecking;
+
+	private Timer checkPredecessorTimer = new Timer(true);
+	private Timer checkFingersTimer = new Timer(true);
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
@@ -59,38 +64,35 @@ public class Node implements Protocol {
 			}	
 		});
 		msgSender.start();
-		periodicChecking = new Service() {
+		
+		checkPredecessorTimer.schedule(new TimerTask() {
 			@Override
-			public void service() {
-				try {
-					Thread.sleep(PRED_REQ_INTERVAL);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if(running && state != STATE_DISCONNECTED) {
-					if(fixFingersInterval == 4)
-					{
-						fixFingers();
-						fixFingersInterval = 0;
-					}
-					if(state == STATE_CONNECTED)
-					{
-						sendCheckPredecessor();
-						sendPredRequest();
-						fixFingersInterval++;
-					}
+			public void run() {
+				if(state == STATE_CONNECTED)
+				{
+					sendCheckPredecessor();
+					sendPredRequest();
 				}
 			}
-		};
-		periodicChecking.start();
+			
+		}, 1000, PRED_REQ_INTERVAL);
+		
+		checkFingersTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if(state == STATE_CONNECTED) {
+					fixFingers();
+				}
+			}
+		}, 1000, FINGER_FIX_INTERVAL);
 	}
 	
 	public void shutdown()
 	{
 		if(running) {
 			msgSender.stop();
-			periodicChecking.stop();
+			checkFingersTimer.cancel();
+			checkPredecessorTimer.cancel();
 			running = false;
 		}
 	}
@@ -119,15 +121,20 @@ public class Node implements Protocol {
 	
 	private void sendCheckPredecessor() {
 		long now = System.currentTimeMillis();
-		if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
-			//predecessor = null;
-			System.err.println(self + ": Predecessor timed out");
-		}
 		if(predecessor != null) {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
+			if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
+				predecessor = null;
+				System.err.println(self + ": Predecessor timed out");
+			} 
 		}
+	}
+	
+	private void updatePredecessor(PeerEntry predecessor) {
+		predecessorLastSeen = System.currentTimeMillis();
+		this.predecessor = predecessor;
 	}
 	
 	private void sendPredRequest() {
@@ -282,13 +289,13 @@ public class Node implements Protocol {
 		System.out.println("Received successor inform!!");
 		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
 		if(predecessor == null) {
-			predecessor = new PeerEntry(msg.getSourceAddress(), sender);
+			updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
 			return;
 		}
 		long predid = predecessor.getId();
 		if(sender != predid) {
 			if(isBetween(sender, predid, self.getId())) {
-				predecessor = new PeerEntry(msg.getSourceAddress(), sender);
+				updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
 			}
 		}
 	}
@@ -437,7 +444,7 @@ public class Node implements Protocol {
 	
 	public void fixFingers()
 	{
-		for(FingerEntry e : ft.getFingerTable())
+		for(FingerEntry e : ft.getEntries())
 		{
 			if(e.getPeerEntry() != null)
 			{
