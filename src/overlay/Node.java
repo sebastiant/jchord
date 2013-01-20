@@ -450,6 +450,7 @@ public class Node implements Protocol {
 			Message resp = new Message();
 			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 			send(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
@@ -475,19 +476,26 @@ public class Node implements Protocol {
      */
 	private void handleFindSuccessorResponse(Message msg){
 		//System.out.println("ID("+self.getId()+") Received find successor response");
-		if(state == Node.STATE_CONNECTING)
+		if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_FINGERTABLE))
 		{
-			if(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY) == self.getId())
+			if(state == Node.STATE_CONNECTING)
 			{
-				System.out.println("("+self.getId()+") Connection Accepted!");
-				updateSuccessor(new PeerEntry(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
-						msg.getInt(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID)));
-				state = Node.STATE_CONNECTED;
+				if(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY) == self.getId())
+				{
+					System.out.println("("+self.getId()+") Connection Accepted!");
+					updateSuccessor(new PeerEntry(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
+							msg.getInt(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID)));
+					state = Node.STATE_CONNECTED;
+				}
 			}
+			PeerEntry pe = new PeerEntry(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
+					msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
+			ft.setFingerEntry(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), pe);
+		} else if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_LOOKUP))
+		{
+			System.out.println("Lookup result for key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)
+					+ ">> node: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
 		}
-		PeerEntry pe = new PeerEntry(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
-				msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
-		ft.setFingerEntry(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), pe);
 	}
 	/**
      * Handle a message with unknown syntax
@@ -551,6 +559,7 @@ public class Node implements Protocol {
 		Message msg = new Message();
 		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
 		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
+		msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
 		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
 		if(isBetween(key,self.getId(), successor.getId()))
 		{
@@ -571,6 +580,7 @@ public class Node implements Protocol {
 			Message resp = new Message();
 			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 			send(source.getAddress(), resp);
@@ -580,6 +590,7 @@ public class Node implements Protocol {
 		{
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
 			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
 			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, source.getAddress().toString());
 			PeerEntry entry = ft.closestPrecedingNode(source.getId());
