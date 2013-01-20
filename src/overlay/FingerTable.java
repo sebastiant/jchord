@@ -36,7 +36,7 @@ public class FingerTable {
 		
 	}
 	
-	public FingerEntry[] getFingerTable()
+	public FingerEntry[] getEntries()
 	{
 		return ft;
 	}
