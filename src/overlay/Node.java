@@ -29,8 +29,8 @@ public class Node implements Protocol {
 	public static final int PRED_REQ_INTERVAL = 500;
 	public static final int FINGER_FIX_INTERVAL = 1000;
 
-	private Timer checkPredecessorTimer = new Timer(true);
-	private Timer checkFingersTimer = new Timer(true);
+	private Timer checkPredecessorTimer = new Timer(false);
+	private Timer checkFingersTimer = new Timer(false);
 	
 	public Node(Address addr, long idSpace, int arity) {
 		this.idSpace = idSpace;
@@ -86,7 +86,9 @@ public class Node implements Protocol {
 	{
 		if(running) {
 			checkFingersTimer.cancel();
+			checkFingersTimer.purge();
 			checkPredecessorTimer.cancel();
+			checkPredecessorTimer.purge();
 			msgSender.stop();
 			running = false;
 		}
@@ -115,14 +117,15 @@ public class Node implements Protocol {
 	}
 	
 	private void sendCheckPredecessor() {
+		System.out.println("Checking pred");
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
-			if(predecessorLastSeen - now > PRED_REQ_INTERVAL*2) {
+			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*2) {
 				predecessor = null;
-				System.err.println(self + ": Predecessor timed out");
+				System.out.println(self + ": Predecessor timed out");
 			} 
 		}
 	}
@@ -150,7 +153,8 @@ public class Node implements Protocol {
 
 		}
 		this.successor = successor;
-		successorlist[0] = successor;
+		sendSuccessorInform();
+		successorlist[0] = successorlist[1] = successorlist[2] = null;
 	}
 	private void sendPredRequest() {
 		if(!successor.equals(self)) {
@@ -178,11 +182,23 @@ public class Node implements Protocol {
 		if(e.getSource().equals(successor.getAddress()))
 		{
 			System.out.println("ID("+self.getId()+") My successor has disconnected!");
-			successor = self;
+			if(successorlist[0] != null && !successor.equals(successorlist[0]))
+			{
+				System.out.println("Switching to next on list: "+successorlist[0].getId());
+				successor = successorlist[0];
+				sendSuccessorInform();
+			}
+			else
+			{
+				state = STATE_DISCONNECTED;
+				successor = self;
+			}
 			successorlist[0] = null;
 			successorlist[1] = null;
 			successorlist[2] = null;
 		}
+		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
+		System.out.println("FT get entry(Fail): " +ft.getFingerEntry(IDGenerator.getId(e.getSource(), idSpace)));
 	}
 	
 	public void handleMessage(Message msg) {
@@ -389,10 +405,6 @@ public class Node implements Protocol {
 		}else { //(pid != self.getId())
 			Address addr = new Address(msg.getString(PROTOCOL_PREDECESSOR_ADDRESS));
 			updateSuccessor(new PeerEntry(addr, pid));
-			sendSuccessorInform();
-			successorlist[0] = null;
-			successorlist[1] = null;
-			successorlist[2] = null;
 		}
 	}
 	
@@ -421,38 +433,30 @@ public class Node implements Protocol {
 		}
 		if(successor == null || successor == self)
 		{
-			System.out.println("!!! ID("+self.getId()+") Cant handle findsuccessor, have no successor.");
+			System.out.println("!!! ID("+self.getId()+") Received findsuccessor when disconnected.");
 			return;
 		}
+		long key = msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY);
 		if(isBetween(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY),self.getId(), successor.getId()))
 		{
 			Message resp = new Message();
 			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY));
+			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 			send(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
 			return;
 		}
 		
-		long key = msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY);
-		if(ft.closestPrecedingNode(key).getId() == self.getId())
+		if(ft.closestPrecedingNode(key) == null)
 		{
-			Message resp = new Message();
-			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY));
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, self.getAddress().toString());
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, self.getId());
-			send(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
+			System.out.println("!!! ID("+self.getId()+") Broken fingertable when looking for key: " + key);
+			//send(successor.getAddress(), msg);
 			return;
 		}
 		else
 		{
-			/*
-			 System.out.println("!!! ID("+self.getId()+") sending closest preceding nodes. ID: "
-					+ ft.closestPrecedingNode(key).getId()
-					+ "and key is: " + key);
-					*/
+			System.out.println("!!! ID("+self.getId()+") Should send on key: " + key + " to : " + ft.closestPrecedingNode(key).getId());
 			send(ft.closestPrecedingNode(key).getAddress(), msg);
 		}
 	}
@@ -543,14 +547,8 @@ public class Node implements Protocol {
 		}
 		else
 		{
-			//System.out.println("("+self.getId()+") Sending findsuccessor to: (" + ft.closestPrecedingNode(key).getId() + ")");
-			if(ft.closestPrecedingNode(key).equals(self))
-			{
-				ft.setFingerEntry(key, self);
-			} else
-			{
+			if(ft.closestPrecedingNode(key) != null)
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
-			}
 		}
 	}
 	

@@ -247,8 +247,8 @@ public class NodeTest {
 		Node n1 = null, n2 = null, n3 = null;
 		try
 		{
-			int arity=10;
-			int idspace=1024;
+			int arity=2;
+			int idspace=2048;
 			int n1_port = 7171;
 			int n2_port = 7272;
 			int n3_port = 7373;
@@ -284,10 +284,32 @@ public class NodeTest {
 					return false;
 				}
 			}
+			
 			//Kill node 3
+			FingerEntry[] fe = n1.getFingers();
+			System.out.println("n1 ("+n1.getId()+") finger table\n-----------");
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n2 ("+n2.getId()+") finger table\n-----------");
+			fe = n2.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n3 ("+n3.getId()+") finger table\n-----------");
+			fe = n3.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("----------------\n KILLING NODE 3 \n ----------------");
 			n3.shutdown();
-			Thread.sleep(Node.PRED_REQ_INTERVAL+1000);
+			System.out.println("wait");
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 12);
 			//Check that node 1 and node 2 has updated the ring accordingly.
+			/*
 			if((n1.getPredecessor().getId() == n2_id)
 					&& (n1.getSuccessor().getId() == n2_id)
 					&& (n2.getPredecessor().getId() == n1_id)
@@ -295,6 +317,11 @@ public class NodeTest {
 			{
 				return true;
 			}
+			*/
+			System.out.println("node: " + n1_id + " pred: " + n1.getPredecessor().getId());
+			System.out.println("node: " + n1_id + " succ: " + n1.getSuccessor().getId());
+			System.out.println("node: " + n2_id + " pred: " + n2.getPredecessor().getId());
+			System.out.println("node: " + n2_id + " succ: " + n2.getSuccessor().getId());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

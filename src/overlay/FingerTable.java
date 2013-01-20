@@ -51,6 +51,23 @@ public class FingerTable {
 				f.setPeerEntry(value);
 		}
 	}
+	public PeerEntry getFingerEntry(long key)
+	{
+		for(FingerEntry f : ft)
+		{
+			if(f.getKey() == key)
+				return f.getPeerEntry();
+		}
+		return null;
+	}
+	public void repairFingerTable(PeerEntry successor, PeerEntry failedNode)
+	{
+		for(FingerEntry f : ft)
+		{
+			if(f.getPeerEntry().equals(failedNode))
+				f.setPeerEntry(successor);
+		}
+	}
 	/*
 	 * closestPrecedingNode
 	 * Returns the, from the finger table, closest preceding node for a specific key.
@@ -58,19 +75,17 @@ public class FingerTable {
 	 */
 	public PeerEntry closestPrecedingNode(long key)
 	{
-		PeerEntry last = self;
-		for(FingerEntry fe : ft)
+		for(int i = size-1; i >= 0; i--)
 		{
-			if(fe.getPeerEntry() != null)
+			if(ft[i] != null)
 			{
-				if(Node.isBetween(key,last.getId(),fe.getKey()))
+				if(Node.isBetween(ft[i].getPeerEntry().getId(), self.getId(), key) && key != ft[i].getPeerEntry().getId())
 				{
-					return last;
+					return ft[i].getPeerEntry();
 				}
-				last = fe.getPeerEntry();
 			}
 		}
-		return last;
+		return null; /* cannot happen! */
 	}
 	
 	public static boolean isPowerOfTwo(long num)
