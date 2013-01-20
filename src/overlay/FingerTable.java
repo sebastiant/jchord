@@ -59,11 +59,14 @@ public class FingerTable {
 		PeerEntry last = node;
 		for(FingerEntry fe : ft)
 		{
-			if(Node.isBetween(key,last.getId(),fe.getKey()))
+			if(fe.getPeerEntry() != null)
 			{
-				return last;
+				if(Node.isBetween(key,last.getId(),fe.getKey()))
+				{
+					return last;
+				}
+				last = fe.getPeerEntry();
 			}
-			last = fe.getPeerEntry();
 		}
 		return last;
 	}

@@ -68,9 +68,16 @@ public class Node implements Protocol {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if(running) {
-					sendCheckPredecessor();
-					sendPredRequest();				
+				if(running && state != STATE_DISCONNECTED) {
+					if(state == STATE_CONNECTING)
+					{
+						fixFingers();
+					} else
+					{
+						sendCheckPredecessor();
+						sendPredRequest();
+						fixFingers();
+					}
 				}
 			}
 		};
@@ -159,7 +166,7 @@ public class Node implements Protocol {
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
 		System.out.println("Received command " + command + " from: " + src);
 
-		if(peers.get(msg.getSourceAddress()) != null){ //Connected node
+		//if(peers.get(msg.getSourceAddress()) != null){ //Connected node
 			if(command.equals(PROTOCOL_JOIN))
 			{
 				handleJoin(msg);
@@ -185,8 +192,8 @@ public class Node implements Protocol {
 			{
 				handleUnknownMessage(msg);
 			}
-		} else // peers.get(msg.getSourceAddress() == null
-		{
+		//} else // peers.get(msg.getSourceAddress() == null
+		//{
 			if(command.equals(PROTOCOL_JOIN))
 			{
 				handleJoin(msg);
@@ -194,7 +201,7 @@ public class Node implements Protocol {
 			{
 				System.out.println("Unhandled command: " + command);
 			}
-		}
+		//}
 	}
 
 	/** Respond on predecessor pings */
@@ -233,11 +240,17 @@ public class Node implements Protocol {
 		{
 			if(msg.has(PROTOCOL_JOIN_ID))
 			{
+				/*
 				System.out.println("Finally connected! :)");
 				state = STATE_CONNECTED;
 				//Set node as successor and predecessor
 				peers.put(src, new PeerEntry(src, msg.getLong(PROTOCOL_JOIN_ID)));
 				successor = predecessor = peers.get(src);
+				*/
+				System.out.println("ID("+self.getId()+"Connection Accepted, searching for Successor");
+				state = STATE_CONNECTING;
+				successor = peers.get(src);
+				ft.setFingerEntry(self.getId()+1, peers.get(src));
 			}
 		}
 		else
@@ -261,13 +274,17 @@ public class Node implements Protocol {
 					}
 					else //Update predecessor?
 					{
-						if(isBetween(msg.getLong(PROTOCOL_JOIN_ID), self.getId(), 
+						if(predecessor == null)
+						{
+							predecessor = peers.get(src);
+						}
+						else if(isBetween(msg.getLong(PROTOCOL_JOIN_ID), self.getId(), 
 								predecessor.getId()))
 						{
 							System.out.println("My Id: " + self.getId() + ". Changing predecessor from "
 									+ predecessor.getId() + ", to: " +(Long)msg.getLong(PROTOCOL_JOIN_ID));
+							predecessor = peers.get(src);
 						}
-						predecessor = peers.get(src);
 					}
 					send(src, response);
 					return;
@@ -379,6 +396,11 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleFindSuccessor(Message msg){
+		if(predecessor == null)
+		{
+			System.out.println("CANT DO FIND SUCC");
+			return;
+		}
 		if(isBetween(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY),predecessor.getId(), self.getId()))
 		{
 			Message resp = new Message();
@@ -397,6 +419,18 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleFindSuccessorResponse(Message msg){
+		System.out.println("Got find successor response");
+		if(state == Node.STATE_CONNECTING)
+		{
+			if(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY) == self.getId())
+			{
+				successor = new PeerEntry(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
+						msg.getInt(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
+				state = Node.STATE_CONNECTED;
+				System.out.println("FINALLY CONNECTED!");
+			}
+		}
+			
 		PeerEntry pe = new PeerEntry(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
 				msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
 		ft.setFingerEntry(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), pe);
@@ -440,19 +474,28 @@ public class Node implements Protocol {
 	{
 		for(FingerEntry e : ft.getFingerTable())
 		{
-			System.out.println("Fixing fingerentry " + e.getKey());
-			findSuccessor(e.getKey());
+			if(e.getPeerEntry() != null)
+			{
+				System.out.println("Fixing fingerentry " + e.getKey());
+				findSuccessor(e.getKey());
+			}
 		}
 	}
 	/* Recursive ring lookup */
 	public void findSuccessor(long key)
 	{
+		System.out.println("findsuccessor DERP!");
 		/* send out a request from known peers. */
 		Message msg = new Message();
 		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
 		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
 		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
-		if(isBetween(key,predecessor.getId(), self.getId()))
+		if(predecessor == null)
+		{
+			System.out.println("Sending to: " + ft.closestPrecedingNode(key, self).getAddress());
+			send(ft.closestPrecedingNode(key, self).getAddress(), msg);
+		}
+		else if(isBetween(key,predecessor.getId(), self.getId()))
 			send(self.getAddress(), msg);
 		else
 			send(ft.closestPrecedingNode(key, self).getAddress(), msg);
