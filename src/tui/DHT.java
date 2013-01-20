@@ -22,7 +22,7 @@ public class DHT {
 	public void showFigers() {
 		FingerEntry fe[]  = node.getFingers();
 		for(FingerEntry e: fe) {
-			System.out.println(fe.toString());
+			System.out.println(e.getKey() + " -> " + e.getPeerEntry());
 		}
 	}
 	

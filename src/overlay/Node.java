@@ -86,7 +86,13 @@ public class Node implements Protocol {
 	{
 		if(running) {
 			checkFingersTimer.cancel();
-			checkPredecessorTimer.cancel();
+			checkPredecessorTimer.cancel();;
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			msgSender.stop();
 			running = false;
 		}
@@ -110,8 +116,7 @@ public class Node implements Protocol {
 		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
 		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
 		msg.setKey(Node.PROTOCOL_JOIN_ID, self.getId());
-		send(addr, msg);
-		
+		send(addr, msg);		
 	}
 	
 	private void sendCheckPredecessor() {
