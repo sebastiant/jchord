@@ -213,16 +213,16 @@ public class MessageSender {
 		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
 		  m.getDestinationAddress().equals(this.localhost)) {
-			if(!m.has("_src")) {
-				m.setSourceAddress(hostadress);
-			}
+			//if(!m.has("_src")) {
+			m.setSourceAddress(hostadress);
+			//}
 			applicationMessageObserver.notifyObserver(m);
 			return;
 		}		
 		try {
-			if(!m.has("_src")) {
-				m.setSourceAddress(InetAddress.getLocalHost().getHostAddress() +":" + server.getPort());
-			}
+			//if(!m.has("_src")) {
+			m.setSourceAddress(InetAddress.getLocalHost().getHostAddress() +":" + server.getPort());
+			//}
 			Connection c = null;
 			for(;;) {
 				c = getConnection(m.getDestinationAddress());
