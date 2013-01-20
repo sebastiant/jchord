@@ -74,19 +74,19 @@ public class NodeTest {
 		else
 			System.out.println("Failed.");
 		*/
-		System.out.print("TestJoin3: ");
+	/*	System.out.print("TestJoin3: ");
 		if(testJoin3())
 			System.out.println("TestJoin3: Success!");
 		else
 			System.out.println("TestJoin3: Failed.");
-			
-		/*
+	*/		
+		
 		System.out.print("TestJoin3_disconnect: ");
 		if(testJoin3_disconnect())
 			System.out.println("TestJoin3_disconnect: Success!");
 		else
 			System.out.println("TestJoin3_disconnect: Failed.");
-			*/
+			
 	}
 
 	/*

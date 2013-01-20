@@ -12,6 +12,7 @@ public class TestMain {
 	public static void main(String[] args) throws Exception {
 		final MessageSender node1 = new MessageSender(9001);
 		final MessageSender node2 = new MessageSender(9002);
+		final MessageSender node3 = new MessageSender(9003);
 		ConcreteObserver<ControlEvent> controlObs = new ConcreteObserver<ControlEvent>() {
 			@Override
 			public void notifyObserver(ControlEvent e) {
@@ -29,17 +30,20 @@ public class TestMain {
 			public void notifyObserver(Message e) {
 					String text = e.getString("text");
 					Address address = e.getSourceAddress();
-					System.out.println("Receved \"" + text + "\" from " + address.toString());
+					System.out.println("Recieved \"" + text + "\" from " + address.toString());
 				
 			}	
 		};
 		node1.registerMessageObserver(messageObs);
 		node2.registerMessageObserver(messageObs);
+		node3.registerMessageObserver(messageObs);
 		node1.registerControlObserver(controlObs);
 		node2.registerControlObserver(controlObs);
+		node3.registerControlObserver(controlObs);
 		
 		node1.start();
 		node2.start();
+		node3.start();
 		
 		Message msg = new Message();
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
@@ -50,7 +54,13 @@ public class TestMain {
 		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9001");
 		msg.setKey("text", "Hello 2");
 		node2.send(msg);
-		System.out.println("Test");
+		System.out.println("Test1");
+		msg = new Message();
+		msg.setDestinationAddress(InetAddress.getByName("localhost").getHostAddress() + ":9002");
+		msg.setKey("text", "Hello 3");
+		System.out.println("Test2");
+		node3.send(msg);
+		System.out.println("Test3");
 		
 		/*Timer t1 = new Timer();
 		Timer t2 = new Timer();
@@ -90,6 +100,8 @@ public class TestMain {
 		Thread.sleep(5*1000);
 		node1.printConnections();
 		node2.printConnections();
+		node3.printConnections();
+		
 		
 	}
 }
