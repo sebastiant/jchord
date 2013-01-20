@@ -112,12 +112,10 @@ public class Node implements Protocol {
 		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
 		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
 		msg.setKey(Node.PROTOCOL_JOIN_ID, self.getId());
-		send(addr, msg);
-		
+		send(addr, msg);		
 	}
 	
 	private void sendCheckPredecessor() {
-		System.out.println("Checking pred");
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
 			Message msg = new Message();
@@ -125,7 +123,7 @@ public class Node implements Protocol {
 			send(predecessor.getAddress(), msg);
 			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*2) {
 				predecessor = null;
-				System.out.println(self + ": Predecessor timed out");
+				System.err.println(self + ": Predecessor timed out");
 			} 
 		}
 	}

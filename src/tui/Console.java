@@ -42,7 +42,9 @@ public class Console {
 		switch(Command.valueOf(cmd)) {
 		
 		case CONNECT:
-			
+			Address addr = new Address(split[1]);
+			dht.connect(addr);
+			System.out.println("Connect message sent");
 			break;
 		case DISCONNECT:
 			if(!dht.isConnected()) {
@@ -53,11 +55,7 @@ public class Console {
 			}		
 			break;
 		case FINGERS:
-			if(!dht.isConnected()) {
-				System.out.println("Not connected");
-			} else {
-				dht.showFigers();
-			}
+			dht.showFigers();
 			break;
 		case HELP:
 			System.out.println("Syntax: Command [arguments]");
