@@ -287,12 +287,25 @@ public class NodeTest {
 			}
 			
 			//Kill node 3
+			FingerEntry[] fe = n1.getFingers();
+			System.out.println("n1 ("+n1.getId()+") finger table\n-----------");
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n2 ("+n2.getId()+") finger table\n-----------");
+			fe = n2.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
+			System.out.println("n3 ("+n3.getId()+") finger table\n-----------");
+			fe = n3.getFingers();
+			for(FingerEntry e : fe)
+			{
+				System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+			}
 			System.out.println("----------------\n KILLING NODE 3 \n ----------------");
-			System.out.println("n1. id: " + n1.getId() + " port: "+ n1.getAddress().getPort());
-			System.out.println("n2 id: " + n2.getId() +" port: " + n2.getAddress().getPort());
-			System.out.println("n3 id: " + n3.getId() +" port: " + n3.getAddress().getPort());
-			System.out.println("-----");
-
 			n3.shutdown();
 			Thread.sleep(Node.PRED_REQ_INTERVAL * 12);
 			//Check that node 1 and node 2 has updated the ring accordingly.

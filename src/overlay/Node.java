@@ -26,7 +26,7 @@ public class Node implements Protocol {
 	private boolean running = true;
 	private long predecessorLastSeen = Long.MAX_VALUE;
 	
-	public static final int PRED_REQ_INTERVAL = 500;
+	public static final int PRED_REQ_INTERVAL = 1000;
 	public static final int FINGER_FIX_INTERVAL = 1000;
 
 	private Timer checkPredecessorTimer = new Timer(true);
@@ -569,8 +569,6 @@ public class Node implements Protocol {
 		{
 			if(ft.closestPrecedingNode(key) != null)
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
-			else
-				send(successor.getAddress(), msg);
 		}
 	}
 	

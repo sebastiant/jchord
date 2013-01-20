@@ -30,7 +30,7 @@ public class MessageSender {
 	private Lock lock = new ReentrantLock();
 	private Address hostadress;
 	private Address localhost;
-	public static final int MAX_ATTEMPTS = 3;
+	public static final int MAX_ATTEMPTS = 5;
 	public static final int MAX_BACKOFF = 5000;
 	public static final int KEEP_ALIVE_TIMEOUT = 10000;
 	
@@ -163,7 +163,7 @@ public class MessageSender {
 	}
 	
 	private Connection getConnection(Address address) {
-		lock.lock();
+		lock.lock();;
 		if(cons.containsKey(address)) {
 			lock.unlock();
 			return cons.get(address);
@@ -187,6 +187,7 @@ public class MessageSender {
 					}	
 				} catch (ConnectException e) {
 					eventObservable.notifyObservers(new ConnectionRefusedEvent(address));
+					lock.unlock();
 					return null;
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -208,28 +209,31 @@ public class MessageSender {
 		return cons.get(address);
 	}
 	
-	public void send(Message m) {
+	public boolean send(Message m) {;
 		m.setId("app");
 		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
 		  m.getDestinationAddress().equals(this.localhost)) {
 			m.setSourceAddress(hostadress);
 			applicationMessageObserver.notifyObserver(m);
-			return;
+			return true;
 		}		
 		try {
 			m.setSourceAddress(InetAddress.getLocalHost().getHostAddress() +":" + server.getPort());
 			Connection c = null;
 			for(;;) {
 				c = getConnection(m.getDestinationAddress());
-				if(c == null) break; // Connection refused
+				if(c == null) {
+					return false;// Connection refused
+				}
 				if(c.isConnected()) {
-					try {			
+					try {		
 						c.send(m);
+						return true;
 					} catch (IOException e) {
 						System.err.println(e);
+						return false;
 					}
-					break;
 				} else { // Closed connection, remove it.
 					removeConnection(c);
 				}
@@ -237,6 +241,7 @@ public class MessageSender {
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
@@ -247,16 +252,12 @@ public class MessageSender {
 		return mr;
 	}
 	
-	protected void removeConnection(Connection c) {
-		System.out.println("Removing connection");
-		synchronized(cons) {
-			if(cons.contains(c)) {
-				if(recievers.containsKey(c)) {
-					recievers.get(c).stop();
-					recievers.remove(c);
-				}
-				cons.remove(c.getAddress());
-			}
+	protected synchronized void removeConnection(Connection c) {
+		if(cons.contains(c)) {
+			System.out.println("Remove connection to " + c.getAddress());
+			recievers.get(c).stop();
+			recievers.remove(c);
+			cons.remove(c.getAddress());
 		}
 	}
 	
