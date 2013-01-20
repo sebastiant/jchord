@@ -39,8 +39,7 @@ public class Console {
 			System.out.println("Unknown command: " + split[0]);
 			return;
 		}
-		switch(Command.valueOf(cmd)) {
-		
+		switch(command) {
 		case CONNECT:
 			Address addr = new Address(split[1]);
 			dht.connect(addr);
