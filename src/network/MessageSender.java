@@ -246,13 +246,13 @@ public class MessageSender {
 	}
 	
 	private RecieverService addMessageReciever(Connection c) {
-		RecieverService mr = new RecieverService(c, this);
+		RecieverService mr = new RecieverService(c);
 		mr.register(applicationMessageObserver, "app");
 		recievers.put(c,mr);
 		return mr;
 	}
 	
-	protected synchronized void removeConnection(Connection c) {
+	protected void removeConnection(Connection c) {
 		if(cons.contains(c)) {
 			System.out.println("Remove connection to " + c.getAddress());
 			recievers.get(c).stop();
