@@ -501,6 +501,9 @@ public class Node implements Protocol {
 			send(ft.closestPrecedingNode(key, self).getAddress(), msg);
 	}
 	
+	public FingerEntry[] getFingers() {
+		return ft.getEntries();
+	}
 	
 	/* 
 	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space.
