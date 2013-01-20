@@ -14,11 +14,13 @@ public class RecieverService implements ServiceInterface{
 	private Connection con;
 	private HashMap<String, List<Observer<Message>>> observers = new HashMap<String, List<Observer<Message>>>();
 	private Service service;
+	private MessageSender sender;
 	
-	public RecieverService(Connection c) {
+	public RecieverService(Connection c, MessageSender sender) {
 		this.con = c;
 		this.service = new Service(this);
 		this.service.start();
+		this.sender = sender;
 	}
 	
 	/* messageId == all -> all messages */
@@ -45,9 +47,9 @@ public class RecieverService implements ServiceInterface{
 		try {
 			msg = con.recieve();
 			notifyObservers(msg);
-		} catch (SocketException e) {
-			System.out.println("Reciever: Socket closed, stopping");
-			stop();
+		} catch (SocketException e) { // Socket closed
+			//System.out.println("Reciever: Socket closed, stopping");
+			sender.removeConnection(con);
 		}
 	}
 

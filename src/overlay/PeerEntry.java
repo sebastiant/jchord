@@ -37,6 +37,6 @@ public class PeerEntry{
 	}
 	
 	public String toString() {
-		return "#" +id; 
+		return "(" +id + ") "; 
 	}
 }

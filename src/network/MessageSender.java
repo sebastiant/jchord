@@ -30,7 +30,7 @@ public class MessageSender {
 	private Lock lock = new ReentrantLock();
 	private Address hostadress;
 	private Address localhost;
-	public static final int MAX_ATTEMPTS = 5;
+	public static final int MAX_ATTEMPTS = 3;
 	public static final int MAX_BACKOFF = 5000;
 	public static final int KEEP_ALIVE_TIMEOUT = 10000;
 	
@@ -213,27 +213,25 @@ public class MessageSender {
 		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
 		  m.getDestinationAddress().equals(this.localhost)) {
-			//if(!m.has("_src")) {
 			m.setSourceAddress(hostadress);
-			//}
 			applicationMessageObserver.notifyObserver(m);
 			return;
 		}		
 		try {
-			//if(!m.has("_src")) {
 			m.setSourceAddress(InetAddress.getLocalHost().getHostAddress() +":" + server.getPort());
-			//}
 			Connection c = null;
 			for(;;) {
 				c = getConnection(m.getDestinationAddress());
 				if(c == null) break; // Connection refused
 				if(c.isConnected()) {
-					try {
+					try {			
 						c.send(m);
 					} catch (IOException e) {
-						
+						System.err.println(e);
 					}
 					break;
+				} else { // Closed connection, remove it.
+					removeConnection(c);
 				}
 			}
 		} catch (UnknownHostException e) {
@@ -243,10 +241,18 @@ public class MessageSender {
 	}
 	
 	private RecieverService addMessageReciever(Connection c) {
-		RecieverService mr = new RecieverService(c);
+		RecieverService mr = new RecieverService(c, this);
 		mr.register(applicationMessageObserver, "app");
 		recievers.put(c,mr);
 		return mr;
+	}
+	
+	protected void removeConnection(Connection c) {
+		if(cons.contains(c)) {
+			recievers.get(c).stop();
+			recievers.remove(c);
+			cons.remove(c.getAddress());
+		}
 	}
 	
 	/*private void addKeepAliveService(RecieverService mr) {
