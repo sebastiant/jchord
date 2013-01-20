@@ -161,7 +161,7 @@ public class NodeTest {
 			n1.shutdown();
 			System.out.println("n1 (id: "+ n1 +") shutting down...");
 			Thread.sleep(2 * Node.PRED_REQ_INTERVAL);
-			if(n2.getPredecessor()==null)
+			if(n2.getPredecessor() == null)
 				return true;
 		} catch (Exception e) {
 			e.printStackTrace();

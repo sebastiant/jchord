@@ -1,16 +1,11 @@
 package overlay;
 
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import network.Address;
 import network.ConcreteObserver;
 import network.MessageSender;
-import network.Service;
 import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.DisconnectEvent;
@@ -286,7 +281,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
-		System.out.println("ID ("+self.getId()+") Received successor inform!!");
+		System.out.println("Received successor inform!!");
 		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
 		if(predecessor == null) {
 			updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
