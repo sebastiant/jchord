@@ -38,7 +38,7 @@ public class Node implements Protocol {
 		long localId = IDGenerator.getId(addr, idSpace);
 		self = new PeerEntry(addr, localId);
 		this.ft = new FingerTable(arity, idSpace, self);
-		this.successorlist = new PeerEntry[4];
+		this.successorlist = new PeerEntry[3];
 		predecessor = null;
 		successor = self;
 		state = STATE_DISCONNECTED;
@@ -175,6 +175,14 @@ public class Node implements Protocol {
 	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
 		System.out.println("ID("+self.getId()+") Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
+		if(e.getSource().equals(successor.getAddress()))
+		{
+			System.out.println("ID("+self.getId()+") My successor has disconnected!");
+			successor = self;
+			successorlist[0] = null;
+			successorlist[1] = null;
+			successorlist[2] = null;
+		}
 	}
 	
 	public void handleMessage(Message msg) {
@@ -221,11 +229,7 @@ public class Node implements Protocol {
 	}
 	/** Update predecessorLastSeen when a ping response is received.*/
 	public void handleCheckPredResponse(Message msg) {
-		if(msg.getSourceAddress().equals(predecessor.getAddress())) {
-			predecessorLastSeen = System.currentTimeMillis();
-		} else {
-			System.err.println("Unexpected sender of message:" + msg);
-		}
+		predecessorLastSeen = System.currentTimeMillis();
 	}
 	
 	/* 
@@ -333,6 +337,21 @@ public class Node implements Protocol {
 		} else {
 			response.setKey(PROTOCOL_PREDECESSOR_ID, -1L);
 		}
+		response.setKey(PROTOCOL_SUCCESSORLIST_1_ADDR,successor.getAddress().toString());
+		response.setKey(PROTOCOL_SUCCESSORLIST_1_ID,successor.getId());
+
+		if(successorlist[0] != null)
+		{
+			response.setKey(PROTOCOL_SUCCESSORLIST_2_ADDR,successorlist[0].getAddress().toString());
+			response.setKey(PROTOCOL_SUCCESSORLIST_2_ID,successorlist[0].getId());
+
+		}
+		if(successorlist[1] != null)
+		{
+			response.setKey(PROTOCOL_SUCCESSORLIST_3_ADDR,successorlist[1].getAddress().toString());
+			response.setKey(PROTOCOL_SUCCESSORLIST_3_ID,successorlist[1].getId());
+
+		}
 		send(src,response);
 	}
 	
@@ -348,13 +367,32 @@ public class Node implements Protocol {
 		if(state.equals(STATE_DISCONNECTED))
 			return;
 		long pid = msg.getLong(PROTOCOL_PREDECESSOR_ID);
-		if (pid == -1)
+		if (pid == self.getId())
+		{
+			
+			if(msg.has(PROTOCOL_SUCCESSORLIST_1_ID))
+			{
+				successorlist[0] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_1_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_1_ID));
+			} if(msg.has(PROTOCOL_SUCCESSORLIST_2_ID))
+			{
+				successorlist[1] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_2_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_2_ID));
+
+			} if(msg.has(PROTOCOL_SUCCESSORLIST_3_ID))
+			{
+				successorlist[2] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_3_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_3_ID));
+			}
+			return;
+		} else if (pid == -1)
 		{
 			sendSuccessorInform();
-		}else if(pid != self.getId()) {
+			return;
+		}else { //(pid != self.getId())
 			Address addr = new Address(msg.getString(PROTOCOL_PREDECESSOR_ADDRESS));
 			updateSuccessor(new PeerEntry(addr, pid));
 			sendSuccessorInform();
+			successorlist[0] = null;
+			successorlist[1] = null;
+			successorlist[2] = null;
 		}
 	}
 	
