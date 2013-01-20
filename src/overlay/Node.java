@@ -77,7 +77,7 @@ public class Node implements Protocol {
 					fixFingers();
 				}
 			}
-		}, 1000, FINGER_FIX_INTERVAL);
+		}, 1000, FINGER_FIX_INTERVAL); 
 	}
 	
 	public void shutdown()
