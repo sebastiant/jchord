@@ -248,10 +248,15 @@ public class MessageSender {
 	}
 	
 	protected void removeConnection(Connection c) {
-		if(cons.contains(c)) {
-			recievers.get(c).stop();
-			recievers.remove(c);
-			cons.remove(c.getAddress());
+		System.out.println("Removing connection");
+		synchronized(cons) {
+			if(cons.contains(c)) {
+				if(recievers.containsKey(c)) {
+					recievers.get(c).stop();
+					recievers.remove(c);
+				}
+				cons.remove(c.getAddress());
+			}
 		}
 	}
 	

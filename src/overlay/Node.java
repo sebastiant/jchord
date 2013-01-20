@@ -118,13 +118,17 @@ public class Node implements Protocol {
 	private void sendCheckPredecessor() {
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
+			System.out.println(self.getId() + "Pinging to addr: "+ predecessor.getAddress());
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
-			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*2) {
+			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*4) {
+				System.err.println(self + ": Predecessor (" + predecessor.getId() + ") timed out");
 				predecessor = null;
-				System.err.println(self + ": Predecessor timed out");
 			} 
+		} else
+		{
+			System.out.println("Not pinging! pred = NULL");
 		}
 	}
 	
@@ -167,6 +171,7 @@ public class Node implements Protocol {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
 			msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
+			System.out.println(self.getId()+": Sent successor inform to successor: " + successor.getId());
 			send(successor.getAddress(), msg);
 		}
 	}
@@ -183,20 +188,23 @@ public class Node implements Protocol {
 			if(successorlist[0] != null && !successor.equals(successorlist[0]))
 			{
 				System.out.println("Switching to next on list: "+successorlist[0].getId());
-				successor = successorlist[0];
-				sendSuccessorInform();
+				updateSuccessor(successorlist[0]);
 			}
 			else
 			{
+				System.out.println("("+self.getId()+") DISCONNECTED");
 				state = STATE_DISCONNECTED;
 				successor = self;
 			}
 			successorlist[0] = null;
 			successorlist[1] = null;
 			successorlist[2] = null;
+		} if(e.getSource().equals(predecessor.getAddress()))
+		{
+			System.out.println("("+self.getId()+") setting predecessor to null");
+			predecessor = null;
 		}
 		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
-		System.out.println("FT get entry(Fail): " +ft.getFingerEntry(IDGenerator.getId(e.getSource(), idSpace)));
 	}
 	
 	public void handleMessage(Message msg) {
@@ -237,6 +245,7 @@ public class Node implements Protocol {
 
 	/** Respond on predecessor pings */
 	public void handleCheckPredecessor(Message msg) {
+		System.out.println(self.getId() + " responding to ping");
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR_RESPONSE);
 		send(msg.getSourceAddress(), response);
@@ -317,6 +326,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleSuccessorInform(Message msg){
+		System.out.println(self.getId() + " received successor inform!");
 		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
 		if(predecessor == null) {
 			updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
@@ -512,6 +522,10 @@ public class Node implements Protocol {
 	
 	public long getId(){
 		return self.getId();
+	}
+	public Address getAddress()
+	{
+		return self.getAddress();
 	}
 	
 	public void fixFingers()

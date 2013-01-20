@@ -64,8 +64,10 @@ public class FingerTable {
 	{
 		for(FingerEntry f : ft)
 		{
-			if(f.getPeerEntry().equals(failedNode))
+			if(f.getPeerEntry().getId() == failedNode.getId())
+			{
 				f.setPeerEntry(successor);
+			}
 		}
 	}
 	/*
