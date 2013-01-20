@@ -27,7 +27,6 @@ public class Node implements Protocol {
 	
 	public static final int PRED_REQ_INTERVAL = 2000;
 	public static final int FINGER_FIX_INTERVAL = 10000;
-	private int fixFingersInterval;
 
 	private Timer checkPredecessorTimer = new Timer(true);
 	private Timer checkFingersTimer = new Timer(true);
@@ -41,7 +40,6 @@ public class Node implements Protocol {
 		predecessor = null;
 		successor = self;
 		state = STATE_DISCONNECTED;
-		fixFingersInterval = 0;
 		msgSender = new MessageSender(addr.getPort());
 		msgSender.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
@@ -142,7 +140,7 @@ public class Node implements Protocol {
 	
 	private void sendSuccessorInform() {
 		System.out.println("!!SENDING SUCCESSOR INFORM");
-		if(!self.equals(successor)) {
+		if(!successor.equals(self)) {
 			Message msg = new Message();
 			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
 			msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
