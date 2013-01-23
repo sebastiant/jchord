@@ -32,7 +32,7 @@ public class MessageSender {
 	private Address localhost;
 	public static final int MAX_ATTEMPTS = 5;
 	public static final int MAX_BACKOFF = 3000;
-	public static final int KEEP_ALIVE_TIMEOUT = 10000;
+//	public static final int KEEP_ALIVE_TIMEOUT = 10000;
 	
 	public MessageSender(int port) {
 		try {

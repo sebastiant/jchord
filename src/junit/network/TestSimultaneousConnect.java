@@ -17,11 +17,13 @@ public class TestSimultaneousConnect {
 	MessageSender node2;
 	Timer t1;
 	Timer t2;
+	Object signal;
 	boolean receivedMessage1 = false;
 	boolean receivedMessage2 = false;
 	
 	@Before
 	public void setUp() {
+		signal = new Object();
 		node1 = new MessageSender(9001);
 		node2 = new MessageSender(9002);
 		node1.start();
@@ -63,6 +65,9 @@ public class TestSimultaneousConnect {
 			public void notifyObserver(Message e) {
 				if(e.has("content") && e.getString("content").equals("message2")) {
 					receivedMessage1 = true;
+					synchronized(signal) {
+						signal.notifyAll();
+					}
 				}
 			}
 		});
@@ -71,17 +76,26 @@ public class TestSimultaneousConnect {
 			public void notifyObserver(Message e) {
 				if(e.has("content") && e.getString("content").equals("message1")) {
 					receivedMessage2 = true;
+					synchronized(signal) {
+						signal.notifyAll();
+					}
 				}
 			}
 		});
 		long timeout = System.currentTimeMillis() + 
 				(MessageSender.MAX_BACKOFF * MessageSender.MAX_ATTEMPTS);
-		while(!(receivedMessage1 && receivedMessage2) && System.currentTimeMillis() <= timeout) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e1) {
-				fail(e1.getMessage());
+		
+		// Wait for timers to fire
+		try {
+			synchronized(signal){
+				while(!(receivedMessage1 && receivedMessage2) && 
+						(timeout - System.currentTimeMillis() > 0))
+				{		
+					signal.wait(timeout - System.currentTimeMillis());
+				}
 			}
+		} catch (InterruptedException e1) {
+			fail(e1.getMessage());
 		}
 		assertTrue(receivedMessage1);
 		assertTrue(receivedMessage2);		
@@ -99,6 +113,7 @@ public class TestSimultaneousConnect {
 		node2.stop();
 		node1 = null;
 		node2 = null;
+		signal = null;
 		t1 = null;
 		t2 = null;
 	}
