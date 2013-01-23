@@ -54,7 +54,7 @@ public class TestSend {
 		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}
-		node1.send(message);
+		assertTrue(node1.send(message));
 		
 		message = new Message();
 		message.setKey("message","hello2");
@@ -63,7 +63,7 @@ public class TestSend {
 		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}
-		node2.send(message);
+		assertTrue(node2.send(message));
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
