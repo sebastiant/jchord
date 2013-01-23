@@ -31,7 +31,7 @@ public class MessageSender {
 	private Address hostadress;
 	private Address localhost;
 	public static final int MAX_ATTEMPTS = 5;
-	public static final int MAX_BACKOFF = 5000;
+	public static final int MAX_BACKOFF = 3000;
 	public static final int KEEP_ALIVE_TIMEOUT = 10000;
 	
 	public MessageSender(int port) {
@@ -42,7 +42,7 @@ public class MessageSender {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		random = new Random(System.currentTimeMillis());
+		random = new Random(System.currentTimeMillis()*29 + this.hashCode()*31);
 		server = new Server(port);
 		messageObservable =  new Observable<Message>();
 		eventObservable = new Observable<ControlEvent>();
@@ -146,17 +146,17 @@ public class MessageSender {
 					addMessageReciever(con);
 				}
 				lock.unlock();
-				Message rsp = new Message();
-				rsp.setId("con");
-				rsp.setKey("accept", accept);
-				try {
-					con.send(rsp);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				//addKeepAliveService(addMessageReciever(con));
-			}		
+			} 
+			Message rsp = new Message();
+			rsp.setId("con");
+			rsp.setKey("accept", accept);
+			try {
+				con.send(rsp);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else {
 			System.err.println("Unknonw message: " + msg);
 		}
