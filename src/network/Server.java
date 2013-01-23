@@ -47,7 +47,6 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	
 	public void stop() {
 		service.stop();
-		service = null;
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
@@ -63,5 +62,9 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	
 	public String toString() {
 		return "network.Server#" + serverSocket.getLocalPort();
+	}
+	
+	public boolean isRunning() {
+		return service.isRunning();
 	}
 }

@@ -15,7 +15,7 @@ public class Service {
 	public void start() {
 		thread = new Thread() {
 			public void run() {
-				while(running ) {
+				while(running) {
 					service();
 				}
 			}

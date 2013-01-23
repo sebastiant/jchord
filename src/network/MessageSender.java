@@ -210,6 +210,9 @@ public class MessageSender {
 	}
 	
 	public boolean send(Message m) {;
+		if(!server.isRunning()) {
+			return false;
+		}
 		m.setId("app");
 		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
@@ -286,5 +289,9 @@ public class MessageSender {
 			System.out.println(c.getLocalAddress().getHostAddress() +  ":" + c.getLocalPort() + " - " + 
 			c.getInetAddress().getHostAddress() + ":" +c.getPort());
 		}
+	}
+	
+	public Address getAddress() {
+		return this.hostadress;
 	}
 }
