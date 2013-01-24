@@ -21,25 +21,21 @@ public class MessageSender {
 	private Server server;
 	private ConcurrentHashMap<Address, Connection> cons = new ConcurrentHashMap<Address, Connection>();
 	private ConcurrentHashMap<Connection, RecieverService> recievers = new ConcurrentHashMap<Connection, RecieverService>();
-	//private ConcurrentHashMap<Connection, KeepAliveService> keepAlives = new ConcurrentHashMap<Connection, KeepAliveService>();
 	private Observable<Message> messageObservable;
 	private Observable<ControlEvent> eventObservable;
 	private Observer<Message> applicationMessageObserver;
-	//private Observer<DisconnectEvent> disconnectObserver;
 	private Random random;
 	private Lock lock = new ReentrantLock();
 	private Address hostadress;
 	private Address localhost;
 	public static final int MAX_ATTEMPTS = 5;
 	public static final int MAX_BACKOFF = 3000;
-//	public static final int KEEP_ALIVE_TIMEOUT = 10000;
 	
 	public MessageSender(int port) {
 		try {
 			this.hostadress = new Address(InetAddress.getLocalHost(), port);
 			this.localhost = new Address(InetAddress.getLoopbackAddress(), port);
 		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		random = new Random(System.currentTimeMillis()*29 + this.hashCode()*31);
@@ -61,35 +57,6 @@ public class MessageSender {
 				messageObservable.notifyObservers(e);
 			}
 		};
-		
-	/*	disconnectObserver = new Observer<DisconnectEvent>() {
-			@Override
-			public void notifyObserver(DisconnectEvent e) {
-				Connection c = e.getConnection();
-				
-				// Turn off services
-				RecieverService mr = recievers.get(c);
-			//	KeepAliveService kps = keepAlives.get(c);
-				mr.stop();
-			//	kps.stop();
-				
-				// Disconnect
-				try {
-					c.disconnect();
-				} catch (IOException e1) {
-					// Don't care
-				}
-				
-				// Clean up tables
-				recievers.remove(c);
-				//keepAlives.remove(c);
-				cons.remove(c.getAddress());
-				
-				// Notify application layer
-				System.err.println("Disconnect");
-				eventObservable.notifyObservers(e);
-			}
-		};*/
 	}
 
 	public void start() {
@@ -98,29 +65,21 @@ public class MessageSender {
 	
 	public void stop() {
 		server.stop();
-	/*	for(Entry<Connection, KeepAliveService>  k : keepAlives.entrySet()) {
-			k.getValue().stop();
-		} */
 		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
 			r.getValue().stop();
 		}
 		for(Entry<Address, Connection> c : cons.entrySet()) {
 			c.getValue().disconnect();
 		}
-		//keepAlives.clear();
 		recievers.clear();
 		cons.clear();
 	}
 	
 	/* Explicitly disconnect this address */
-	public boolean disconnect(Address addr) {
-		if(cons.contains(addr)) {
-			Connection c = cons.get(addr);
-			RecieverService rcv = recievers.get(c);
-			rcv.stop();
-			c.disconnect();
-			return true;
-		} else  {
+	public synchronized boolean disconnect(Address addr) {
+		if(cons.containsKey(addr)) {
+			return removeConnection(cons.get(addr));
+		} else {
 			return false;
 		}
 	}
@@ -146,7 +105,6 @@ public class MessageSender {
 					addMessageReciever(con);
 				}
 				lock.unlock();
-				//addKeepAliveService(addMessageReciever(con));
 			} 
 			Message rsp = new Message();
 			rsp.setId("con");
@@ -180,7 +138,6 @@ public class MessageSender {
 					if(rcv.getBoolean("accept") == true) {
 						cons.put(address, con);
 						addMessageReciever(con);
-						//addKeepAliveService(addMessageReciever(con));
 						break;
 					} else {
 						System.err.println("Connection to " + address + " was denied");
@@ -209,10 +166,10 @@ public class MessageSender {
 		return cons.get(address);
 	}
 	
-	public boolean send(Message m) {;
+	public boolean send(Message m) {
 		if(!server.isRunning()) {
 			return false;
-		}
+		} 
 		m.setId("app");
 		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
@@ -249,26 +206,23 @@ public class MessageSender {
 	}
 	
 	private RecieverService addMessageReciever(Connection c) {
-		RecieverService mr = new RecieverService(c);
+		RecieverService mr = new RecieverService(c, this);
 		mr.register(applicationMessageObserver, "app");
 		recievers.put(c,mr);
 		return mr;
 	}
 	
-	protected void removeConnection(Connection c) {
+	protected synchronized boolean removeConnection(Connection c) {
 		if(cons.contains(c)) {
 			System.out.println("Remove connection to " + c.getAddress());
 			recievers.get(c).stop();
 			recievers.remove(c);
 			cons.remove(c.getAddress());
+			return true;
+		} else {
+			return false;
 		}
 	}
-	
-	/*private void addKeepAliveService(RecieverService mr) {
-		KeepAliveService kps = new KeepAliveService(mr, KEEP_ALIVE_TIMEOUT);
-		kps.register(disconnectObserver);
-		keepAlives.put(mr.getConnection(), kps);
-	}*/
 	
 	public void registerMessageObserver(Observer<Message> obs) {
 		this.messageObservable.register(obs);

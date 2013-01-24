@@ -24,6 +24,7 @@ public class Connection {
 	
 	public Connection(Address address) throws IOException {
 		Socket socket = new Socket(address.getInetAddress(), address.getPort());
+		socket.setKeepAlive(true);
 		setup(socket); 
 	}
 	

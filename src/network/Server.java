@@ -13,11 +13,13 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 
 	public Server(int port) {
 		this.port = port;
+		service = new Service(this);
 	}
 	
 	public void service() {
 		try {
 			Socket socket = serverSocket.accept();
+			socket.setKeepAlive(true);
 		/*	System.out.println(this + 
 								": new connection from " +
 								socket.getInetAddress().getHostName() +
@@ -26,34 +28,37 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 			notifyObservers(socket);
 		} catch(SocketException e) {
 			if(e.getMessage().equals("Socket closed")) {
-				// Silent ignore
+				//Silent ignore
+				stop();
 			}
-		}catch (IOException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
 	
 	public void start() {
-		try {
-			serverSocket = new ServerSocket(port);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(!service.isRunning()) {
+			try {
+				serverSocket = new ServerSocket(port);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			service.start();
 		}
-		service = new Service(this);
-		service.start();
 	}
 	
 	public void stop() {
-		service.stop();
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(service.isRunning()) {
+			service.stop();
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
 	}
 	
 	public int getPort() {

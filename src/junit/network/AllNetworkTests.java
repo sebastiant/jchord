@@ -10,7 +10,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @Suite.SuiteClasses({TestSend.class, 
 					TestConnectionRefused.class, 
 					TestStop.class,
-					TestSimultaneousConnect.class})
+					TestSimultaneousConnect.class,
+					TestMessageSenderMisc.class,
+					TestAddress.class})
 public class AllNetworkTests {
 	 
 }
