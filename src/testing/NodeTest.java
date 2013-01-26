@@ -309,7 +309,11 @@ public class NodeTest {
 			n3.shutdown();
 			Thread.sleep(Node.PRED_REQ_INTERVAL * 12);
 			//Check that node 1 and node 2 has updated the ring accordingly.
-			/*
+			System.out.println("node: " + n1_id + " pred: " + n1.getPredecessor().getId());
+			System.out.println("node: " + n1_id + " succ: " + n1.getSuccessor().getId());
+			System.out.println("node: " + n2_id + " pred: " + n2.getPredecessor().getId());
+			System.out.println("node: " + n2_id + " succ: " + n2.getSuccessor().getId());
+			
 			if((n1.getPredecessor().getId() == n2_id)
 					&& (n1.getSuccessor().getId() == n2_id)
 					&& (n2.getPredecessor().getId() == n1_id)
@@ -317,12 +321,6 @@ public class NodeTest {
 			{
 				return true;
 			}
-			*/
-			
-			//System.out.println("node: " + n1_id + " pred: " + n1.getPredecessor().getId());
-			System.out.println("node: " + n1_id + " succ: " + n1.getSuccessor().getId());
-			//System.out.println("node: " + n2_id + " pred: " + n2.getPredecessor().getId());
-			System.out.println("node: " + n2_id + " succ: " + n2.getSuccessor().getId());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
