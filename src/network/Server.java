@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class Server extends Observable<Socket> implements ServiceInterface {
 
@@ -26,7 +27,9 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 								":" +
 								socket.getPort()); */
 			notifyObservers(socket);
-		} catch(SocketException e) {
+		} catch(SocketTimeoutException e){
+			//Exception expected. To regularly check if we still should accept connections.
+		}catch(SocketException e) {
 			if(e.getMessage().equals("Socket closed")) {
 				//Silent ignore
 				stop();
@@ -41,6 +44,7 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		if(!service.isRunning()) {
 			try {
 				serverSocket = new ServerSocket(port);
+				serverSocket.setSoTimeout(1000); //Throw SocketTimeoutException if no connection was accepted within 1sec.
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

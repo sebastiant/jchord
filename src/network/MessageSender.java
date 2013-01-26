@@ -121,7 +121,7 @@ public class MessageSender {
 	}
 	
 	private Connection getConnection(Address address) {
-		lock.lock();;
+		lock.lock();
 		if(cons.containsKey(address)) {
 			lock.unlock();
 			return cons.get(address);

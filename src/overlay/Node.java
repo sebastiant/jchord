@@ -108,10 +108,10 @@ public class Node implements Protocol {
 	{
 		state = STATE_CONNECTING;
 		Message msg = new Message();
-		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_JOIN);
-		msg.setKey(Node.PROTOCOL_JOIN_ARITY, arity);
-		msg.setKey(Node.PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
-		msg.setKey(Node.PROTOCOL_JOIN_ID, self.getId());
+		msg.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
+		msg.setKey(PROTOCOL_JOIN_ARITY, arity);
+		msg.setKey(PROTOCOL_JOIN_IDENTIFIERSPACE, idSpace);
+		msg.setKey(PROTOCOL_JOIN_ID, self.getId());
 		send(addr, msg);		
 	}
 	
@@ -120,7 +120,7 @@ public class Node implements Protocol {
 		if(predecessor != null) {
 			System.out.println(self.getId() + "Pinging to addr: "+ predecessor.getAddress());
 			Message msg = new Message();
-			msg.setKey(Node.PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
 			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*4) {
 				System.err.println(self + ": Predecessor (" + predecessor.getId() + ") timed out");
@@ -161,7 +161,7 @@ public class Node implements Protocol {
 	private void sendPredRequest() {
 		if(!successor.equals(self)) {
 			Message msg = new Message();
-			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_PREDECESSOR_REQUEST);
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_REQUEST);
 			send(successor.getAddress(), msg);
 		}
 	}
@@ -169,8 +169,8 @@ public class Node implements Protocol {
 	private void sendSuccessorInform() {
 		if(!self.equals(successor)) {
 			Message msg = new Message();
-			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_SUCCESSORINFORM);
-			msg.setKey(Node.PROTOCOL_SENDER_ID, self.getId());
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_SUCCESSORINFORM);
+			msg.setKey(PROTOCOL_SENDER_ID, self.getId());
 			System.out.println(self.getId()+": Sent successor inform to successor: " + successor.getId());
 			send(successor.getAddress(), msg);
 		}
@@ -289,10 +289,11 @@ public class Node implements Protocol {
 				{
 					state = STATE_CONNECTED;
 					updateSuccessor(new PeerEntry(src,msg.getLong(PROTOCOL_JOIN_ID)));
-					resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
-					resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(PROTOCOL_JOIN_ID));
-					resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, self.getAddress().toString());
-					resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, self.getId());
+					resp.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR_RESPONSE);
+					resp.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
+					resp.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(PROTOCOL_JOIN_ID));
+					resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, self.getAddress().toString());
+					resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, self.getId());
 					send(src, resp);
 					return;
 				}
@@ -327,7 +328,7 @@ public class Node implements Protocol {
      */
 	private void handleSuccessorInform(Message msg){
 		System.out.println(self.getId() + " received successor inform!");
-		long sender = msg.getLong(Node.PROTOCOL_SENDER_ID);
+		long sender = msg.getLong(PROTOCOL_SENDER_ID);
 		if(predecessor == null) {
 			updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
 			return;
@@ -444,16 +445,16 @@ public class Node implements Protocol {
 			System.out.println("!!! ID("+self.getId()+") Received findsuccessor when disconnected.");
 			return;
 		}
-		long key = msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY);
-		if(isBetween(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY),self.getId(), successor.getId()))
+		long key = msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY);
+		if(isBetween(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY),self.getId(), successor.getId()))
 		{
 			Message resp = new Message();
-			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
-			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
-			send(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
+			resp.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR_RESPONSE);
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
+			send(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
 			return;
 		}
 		
@@ -488,9 +489,9 @@ public class Node implements Protocol {
 					state = Node.STATE_CONNECTED;
 				}
 			}
-			PeerEntry pe = new PeerEntry(new Address(msg.getString(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
-					msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
-			ft.setFingerEntry(msg.getLong(Node.PROTOCOL_FIND_SUCCESSOR_KEY), pe);
+			PeerEntry pe = new PeerEntry(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
+					msg.getLong(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
+			ft.setFingerEntry(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY), pe);
 		} else if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_LOOKUP))
 		{
 			System.out.println("Lookup result for key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)
@@ -557,10 +558,10 @@ public class Node implements Protocol {
 	public void findSuccessor(long key)
 	{
 		Message msg = new Message();
-		msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
-		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, key);
+		msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
+		msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
 		msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
-		msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
+		msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
 		if(isBetween(key,self.getId(), successor.getId()))
 		{
 			ft.setFingerEntry(key, successor);
@@ -576,21 +577,21 @@ public class Node implements Protocol {
 		if(isBetween(source.getId(),self.getId(), successor.getId()))
 		{
 			Message resp = new Message();
-			resp.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
+			resp.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR_RESPONSE);
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
 			resp.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
-			resp.setKey(Node.PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
+			resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 			send(source.getAddress(), resp);
 			updateSuccessor(source);
 		}
 		else if(ft.closestPrecedingNode(source.getId()) != null)
 		{
 			Message msg = new Message();
-			msg.setKey(Node.PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
-			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
-			msg.setKey(Node.PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, source.getAddress().toString());
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, source.getId());
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, source.getAddress().toString());
 			PeerEntry entry = ft.closestPrecedingNode(source.getId());
 			if(entry != null) {
 				send(entry.getAddress(), msg);
@@ -608,7 +609,7 @@ public class Node implements Protocol {
 		else if(ft.closestPrecedingNode(key) != null)
 		{
 			Message msg = new Message();
-			msg.setKey(PROTOCOL_COMMAND, Node.PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_LOOKUP);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());

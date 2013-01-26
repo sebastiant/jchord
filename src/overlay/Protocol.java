@@ -35,7 +35,7 @@ public interface Protocol {
 	public static final String PROTOCOL_SUCCESSORLIST_4_ID = "succlist4id";
 
 	public static final String PROTOCOL_FIND_SUCCESSOR = "findsucc";
-	public static final String PROTOCOL_FIND_SUCCESSOR_COMMAND = "findsucccommamd";
+	public static final String PROTOCOL_FIND_SUCCESSOR_COMMAND = "findsucccommand";
 	public static final String PROTOCOL_FIND_SUCCESSOR_FINGERTABLE = "findsuccft";
 	public static final String PROTOCOL_FIND_SUCCESSOR_LOOKUP = "findsuccft";
 	public static final String PROTOCOL_FIND_SUCCESSOR_KEY = "succkey";
