@@ -109,12 +109,7 @@ public class MessageSender {
 			Message rsp = new Message();
 			rsp.setId("con");
 			rsp.setKey("accept", accept);
-			try {
-				con.send(rsp);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			con.send(rsp);
 		} else {
 			System.err.println("Unknonw message: " + msg);
 		}
@@ -186,14 +181,8 @@ public class MessageSender {
 				if(c == null) {
 					return false;// Connection refused
 				}
-				if(c.isConnected()) {
-					try {		
-						c.send(m);
-						return true;
-					} catch (IOException e) {
-						System.err.println(e);
-						return false;
-					}
+				if(c.isConnected()) {	
+					return c.send(m);
 				} else { // Closed connection, remove it.
 					removeConnection(c);
 				}

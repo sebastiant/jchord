@@ -67,7 +67,7 @@ public class TestStop {
 		message = new Message();
 		message.setDestinationAddress(node3.getAddress());
 		message.setKey("content", "message2");
-		node1.send(message);
+		node2.send(message);
 		node2.stop();
 		message = new Message();
 		message.setDestinationAddress(node2.getAddress());

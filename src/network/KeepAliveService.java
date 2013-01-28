@@ -45,9 +45,7 @@ public class KeepAliveService extends Observable<DisconnectEvent> implements Ser
 		if(isRunning()) {
 			Message hb = new Message();
 			hb.setId("hb");
-			try {
-				con.send(hb);
-			} catch (IOException e) {
+			if(!con.send(hb)) {
 				this.notifyObservers(new DisconnectEvent(con.getAddress(), con));
 			}
 		}

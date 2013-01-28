@@ -21,13 +21,8 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		try {
 			Socket socket = serverSocket.accept();
 			socket.setKeepAlive(true);
-		/*	System.out.println(this + 
-								": new connection from " +
-								socket.getInetAddress().getHostName() +
-								":" +
-								socket.getPort()); */
 			notifyObservers(socket);
-		} catch(SocketTimeoutException e){
+		//} catch(SocketTimeoutException e){
 			//Exception expected. To regularly check if we still should accept connections.
 		}catch(SocketException e) {
 			if(e.getMessage().equals("Socket closed")) {
@@ -40,23 +35,26 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		} 
 	}
 	
-	public void start() {
+	public synchronized void start() {
 		if(!service.isRunning()) {
 			try {
 				serverSocket = new ServerSocket(port);
-				serverSocket.setSoTimeout(1000); //Throw SocketTimeoutException if no connection was accepted within 1sec.
+			//	serverSocket.setSoTimeout(1000); //Throw SocketTimeoutException if no connection was accepted within 1sec.
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			service.start();
+			if(serverSocket != null) {
+				service.start();
+			}
 		}
 	}
 	
-	public void stop() {
+	public synchronized void stop() {
 		if(service.isRunning()) {
 			service.stop();
 			try {
+				//Closes this socket. Any thread currently blocked in accept() will throw a SocketException.
 				serverSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -66,14 +64,14 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 	}
 	
 	public int getPort() {
-		return serverSocket.getLocalPort();		
+		return port;	
 	}
 	
 	public String toString() {
 		return "network.Server#" + serverSocket.getLocalPort();
 	}
 	
-	public boolean isRunning() {
+	public synchronized boolean isRunning() {
 		return service.isRunning();
 	}
 }

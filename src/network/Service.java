@@ -1,7 +1,7 @@
 package network;
 
 public class Service {
-	private boolean running;
+	private boolean running = false;
 	private Thread thread;
 	private ServiceInterface interf;
 	

@@ -45,11 +45,18 @@ public class Connection {
 		}
 	}
 	
-	public void send(Message message) throws IOException {
-		if(!socket.isClosed()){
-			out.write(message.toString() + "\n");
-			out.flush();
-		}	
+	public boolean send(Message message)  {
+		try {
+			if(!socket.isClosed()){
+				out.write(message.toString() + "\n");
+				out.flush();
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			return false;
+		}
 	}
 	
 	public Message recieve() throws SocketException {
@@ -97,7 +104,7 @@ public class Connection {
 		this.address = address;
 	}
 
-	public void disconnect() {
+	public synchronized void disconnect() {
 		try {
 		out.flush();
 		socket.close();
@@ -107,7 +114,7 @@ public class Connection {
 		}
 	}
 	
-	public boolean isConnected() {
+	public synchronized boolean isConnected() {
 		return !closed;
 	}
 }
