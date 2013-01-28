@@ -23,9 +23,9 @@ public class TestStop {
 	
 	@Before
 	public void setUp() {
-		node1 = new MessageSender(9001);
-		node2 = new MessageSender(9002);
-		node3 = new MessageSender(9003);
+		node1 = new MessageSender(9101);
+		node2 = new MessageSender(9102);
+		node3 = new MessageSender(9103);
 		node1.start();
 		node2.start();
 		node3.start();

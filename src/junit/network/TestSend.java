@@ -20,8 +20,8 @@ public class TestSend {
 
 	@Before
 	public void setUp() {
-		node1 = new MessageSender(9001);
-		node2 = new MessageSender(9002);
+		node1 = new MessageSender(9301);
+		node2 = new MessageSender(9302);
 		node1.start();
 		node2.start();
 	}
@@ -31,7 +31,7 @@ public class TestSend {
 		node1.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message m) {
-				assertTrue(m.getSourceAddress().getPort() == 9002);
+				assertTrue(m.getSourceAddress().getPort() == 9302);
 				assertTrue(m.has("message"));
 				assertTrue(m.getString("message").equals("hello2"));
 				gotMessage2 = true;
@@ -41,7 +41,7 @@ public class TestSend {
 		node2.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message m) {
-				assertTrue(m.getSourceAddress().getPort() == 9001);
+				assertTrue(m.getSourceAddress().getPort() == 9301);
 				assertTrue(m.has("message"));
 				assertTrue(m.getString("message").equals("hello1"));
 				gotMessage1 = true;
@@ -50,7 +50,7 @@ public class TestSend {
 		Message message = new Message();
 		message.setKey("message","hello1");
 		try {
-			message.setDestinationAddress(new Address(InetAddress.getLocalHost(), 9002));
+			message.setDestinationAddress(new Address(InetAddress.getLocalHost(), 9302));
 		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}
@@ -59,7 +59,7 @@ public class TestSend {
 		message = new Message();
 		message.setKey("message","hello2");
 		try {
-			message.setDestinationAddress(new Address(InetAddress.getLocalHost(), 9001));
+			message.setDestinationAddress(new Address(InetAddress.getLocalHost(), 9301));
 		} catch (UnknownHostException e) {
 			fail(e.getMessage());
 		}

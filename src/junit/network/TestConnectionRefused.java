@@ -22,7 +22,7 @@ public class TestConnectionRefused {
 	
 	@Before
 	public void setUp() {
-		node1 = new MessageSender(9001);
+		node1 = new MessageSender(9201);
 		node1.start();
 	}
 	

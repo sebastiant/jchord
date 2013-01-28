@@ -20,8 +20,8 @@ public class TestMessageSenderMisc {
 
 	@Test
 	public void testStart() {
-		MessageSender node1 = new MessageSender(9001);
-		MessageSender node2 = new MessageSender(9002);
+		MessageSender node1 = new MessageSender(9401);
+		MessageSender node2 = new MessageSender(9402);
 		startRcvMsg = false;
 		node2.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
@@ -53,12 +53,14 @@ public class TestMessageSenderMisc {
 			fail(e1.getMessage());
 		}
 		assertTrue(startRcvMsg);
+		node1.stop();
+		node2.stop();
 	}
 	
 	@Test
 	public void testDisconnect() {
-		MessageSender node1 = new MessageSender(9003);
-		MessageSender node2 = new MessageSender(9004);
+		MessageSender node1 = new MessageSender(9503);
+		MessageSender node2 = new MessageSender(9504);
 		node1.start();
 		node2.start();
 		Message msg = new Message();
@@ -91,10 +93,10 @@ public class TestMessageSenderMisc {
 
 	@Test
 	public void testGetConnections() {
-		MessageSender node1 = new MessageSender(9005);
-		MessageSender node2 = new MessageSender(9006);
-		MessageSender node3 = new MessageSender(9007);
-		MessageSender node4 = new MessageSender(9008);
+		MessageSender node1 = new MessageSender(9605);
+		MessageSender node2 = new MessageSender(9606);
+		MessageSender node3 = new MessageSender(9607);
+		MessageSender node4 = new MessageSender(9608);
 		node1.start();
 		node2.start();
 		node3.start();
@@ -125,8 +127,8 @@ public class TestMessageSenderMisc {
 
 	@Test
 	public void testGetAddress() {
-		MessageSender node1 = new MessageSender(9009);
-		assertTrue(node1.getAddress().getPort() == 9009);
+		MessageSender node1 = new MessageSender(9709);
+		assertTrue(node1.getAddress().getPort() == 9709);
 		try {
 			assertEquals(node1.getAddress().getInetAddress(), InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {

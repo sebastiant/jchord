@@ -24,8 +24,8 @@ public class TestSimultaneousConnect {
 	@Before
 	public void setUp() {
 		signal = new Object();
-		node1 = new MessageSender(9001);
-		node2 = new MessageSender(9002);
+		node1 = new MessageSender(8001);
+		node2 = new MessageSender(8002);
 		node1.start();
 		node2.start();
 		t1 = new Timer();
