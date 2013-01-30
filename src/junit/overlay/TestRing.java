@@ -92,7 +92,7 @@ public class TestRing {
 	}
 	
 	@Test
-	public void testJoinode3()
+	public void testRingSize3()
 	{
 		long node1_id = node1.getId();
 		long node2_id = node2.getId();
@@ -150,7 +150,7 @@ public class TestRing {
 	}
 	
 	@Test
-	public void testRingOfSize3()
+	public void testRingSize3_disconnect()
 	{
 		long node1_id = node1.getId();
 		long node2_id = node2.getId();
@@ -225,6 +225,205 @@ public class TestRing {
 			
 	}
 	
+	@Test
+	public void testRingSize4()
+	{
+		FingerEntry[] fe;
+		long node1_id = node1.getId();
+		long node2_id = node2.getId();
+		long node3_id = node3.getId();
+		long node4_id = node4.getId();
+		System.out.println("ID: "+ node1_id + " connecting to ID: " + node2_id);
+		node1.connect(node2.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		System.out.println("ID: "+ node3_id + " connecting to ID: " + node4_id);
+		node3.connect(node4.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		System.out.println("ID: "+ node1_id + " connecting to ID: " + node3_id);
+		node1.connect(node3.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		
+		fe = node1.getFingers();
+		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
+		fe = node2.getFingers();
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
+		fe = node3.getFingers();
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		System.out.println("node4 ("+node4.getId()+") finger table\n-----------");
+		fe = node4.getFingers();
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		
+		if(Node.isBetween(node1_id, node2_id, node4_id) && Node.isBetween(node3_id, node4_id, node2_id)){
+			assertTrue((node1.getPredecessor().getId() == node2_id)
+					&& (node1.getSuccessor().getId() == node4_id)
+					&& (node2.getPredecessor().getId() == node3_id)
+					&& (node2.getSuccessor().getId() == node1_id)
+					&& (node3.getPredecessor().getId() == node4_id)
+					&& (node3.getSuccessor().getId() == node2_id)
+					&& (node4.getPredecessor().getId() == node1_id)
+					&& (node4.getSuccessor().getId() == node3_id));
+		} else if((Node.isBetween(node1_id, node3_id, node4_id) && Node.isBetween(node2_id, node4_id, node3_id)))
+		{
+			assertTrue((node1.getPredecessor().getId() == node3_id)
+					&& (node1.getSuccessor().getId() == node4_id)
+					&& (node2.getPredecessor().getId() == node4_id)
+					&& (node2.getSuccessor().getId() == node3_id)
+					&& (node3.getPredecessor().getId() == node2_id)
+					&& (node3.getSuccessor().getId() == node1_id)
+					&& (node4.getPredecessor().getId() == node1_id)
+					&& (node4.getSuccessor().getId() == node2_id));
+		} else if((Node.isBetween(node1_id, node4_id, node3_id) && Node.isBetween(node2_id, node3_id, node4_id)))
+		{
+			assertTrue((node1.getPredecessor().getId() == node4_id)
+					&& (node1.getSuccessor().getId() == node3_id)
+					&& (node2.getPredecessor().getId() == node3_id)
+					&& (node2.getSuccessor().getId() == node4_id)
+					&& (node3.getPredecessor().getId() == node1_id)
+					&& (node3.getSuccessor().getId() == node2_id)
+					&& (node4.getPredecessor().getId() == node2_id)
+					&& (node4.getSuccessor().getId() == node1_id));
+		}
+		else if((Node.isBetween(node1_id, node2_id, node3_id) && Node.isBetween(node4_id, node3_id, node2_id)))
+		{
+			assertTrue((node1.getPredecessor().getId() == node2_id)
+					&& (node1.getSuccessor().getId() == node3_id)
+					&& (node2.getPredecessor().getId() == node4_id)
+					&& (node2.getSuccessor().getId() == node1_id)
+					&& (node3.getPredecessor().getId() == node1_id)
+					&& (node3.getSuccessor().getId() == node2_id)
+					&& (node4.getPredecessor().getId() == node2_id)
+					&& (node4.getSuccessor().getId() == node1_id));
+		}
+		else if((Node.isBetween(node1_id, node4_id, node2_id) && Node.isBetween(node3_id, node2_id, node4_id)))
+		{
+			assertTrue((node1.getPredecessor().getId() == node4_id)
+					&& (node1.getSuccessor().getId() == node2_id)
+					&& (node2.getPredecessor().getId() == node1_id)
+					&& (node2.getSuccessor().getId() == node3_id)
+					&& (node3.getPredecessor().getId() == node2_id)
+					&& (node3.getSuccessor().getId() == node4_id)
+					&& (node4.getPredecessor().getId() == node3_id)
+					&& (node4.getSuccessor().getId() == node1_id));
+		} else if((Node.isBetween(node1_id, node3_id, node2_id) && Node.isBetween(node4_id, node2_id, node3_id)))
+		{
+			assertTrue((node1.getPredecessor().getId() == node3_id)
+					&& (node1.getSuccessor().getId() == node2_id)
+					&& (node2.getPredecessor().getId() == node1_id)
+					&& (node2.getSuccessor().getId() == node4_id)
+					&& (node3.getPredecessor().getId() == node4_id)
+					&& (node3.getSuccessor().getId() == node1_id)
+					&& (node4.getPredecessor().getId() == node2_id)
+					&& (node4.getSuccessor().getId() == node3_id));
+		}
+	}
+	
+	@Test
+	public void testRingSize4_disconnect()
+	{
+		FingerEntry[] fe;
+		long node1_id = node1.getId();
+		long node2_id = node2.getId();
+		long node3_id = node3.getId();
+		long node4_id = node4.getId();
+		System.out.println("ID: "+ node1_id + " connecting to ID: " + node2_id);
+		node1.connect(node2.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		System.out.println("ID: "+ node3_id + " connecting to ID: " + node4_id);
+		node3.connect(node4.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		System.out.println("ID: "+ node1_id + " connecting to ID: " + node3_id);
+		node1.connect(node3.getAddress());
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		System.out.println("Killing node 4!");
+		node4.shutdown();
+		try{
+			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+		} catch(Exception e)
+		{
+			System.err.println("Couldn't sleep!");
+		}
+		
+		fe = node1.getFingers();
+		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
+		fe = node2.getFingers();
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
+		fe = node3.getFingers();
+		for(FingerEntry e : fe)
+		{
+			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
+		}
+		
+		if(Node.isBetween(node1_id, node2_id, node3_id)){
+			assertTrue((node1.getPredecessor().getId() == node2_id)
+					&& (node1.getSuccessor().getId() == node3_id)
+					&& (node2.getPredecessor().getId() == node3_id)
+					&& (node2.getSuccessor().getId() == node1_id)
+					&& (node3.getPredecessor().getId() == node1_id)
+					&& (node3.getSuccessor().getId() == node2_id));
+		} else /* Node.isBetween(node1_id, node3_id, node2_id) */
+		{
+			assertTrue((node1.getPredecessor().getId() == node3_id)
+					&& (node1.getSuccessor().getId() == node2_id)
+					&& (node2.getPredecessor().getId() == node1_id)
+					&& (node2.getSuccessor().getId() == node3_id)
+					&& (node3.getPredecessor().getId() == node2_id)
+					&& (node3.getSuccessor().getId() == node1_id));
+		}
+	}
 	@After
 	public void cleanUp()
 	{

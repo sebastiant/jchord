@@ -496,9 +496,9 @@ public class Node implements Protocol {
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 				send(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
-			} else if(ft.closestPrecedingNode(key) == null)
+			} else if(ft.closestPrecedingNode(key) == null) //Fingertable not built, unable to handle this request.
 			{
-				System.out.println("!!! ID("+self.getId()+") Fingertable broken. Returned null when looking for key: " + key);
+				//System.out.println("!!! ID("+self.getId()+") Fingertable broken. Returned null when looking for key: " + key);
 			} else //Send request along
 			{
 				//System.out.println("!!! ID("+self.getId()+") routing message to: " + ft.closestPrecedingNode(key).getId());
@@ -653,8 +653,6 @@ public class Node implements Protocol {
 			PeerEntry entry = ft.closestPrecedingNode(source.getId());
 			if(entry != null) {
 				send(entry.getAddress(), msg);
-			} else {
-				System.out.println("GOT NULL!!!");
 			}
 		}
 	}
@@ -678,48 +676,116 @@ public class Node implements Protocol {
 	
 	public Object getObject(long key)
 	{
+		Message msg;
 		if(isBetween(key, predecessor.getId(), self.getId()))
 		{
-			System.out.println(self.getId() + ": retrieving data from own storage");
-			return null;
-		} else if(isBetween(key, self.getId(), successor.getId()))
-		{
-			System.out.println(self.getId() + ": passing getObject-request to successor");
+			System.out.println(self.getId() + ": getting data from own storage");
+			return datastore.getEntry(key);
 		} else
 		{
-			System.out.println(self.getId() + ": sending getObject-request a long");
-
+			msg = new Message();
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_GET);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
+			if(isBetween(key, self.getId(), successor.getId()))
+			{
+				System.out.println(self.getId() + ": passing getObject-request to successor");
+				send(successor.getAddress(), msg);
+				for(int i=0;i<10;i++)
+				{
+					if(objectBuffer != null)
+					{
+						Object temp = objectBuffer;
+						objectBuffer = null;
+						return temp;
+					}
+					else
+					{
+						try{
+							Thread.sleep(1000);
+						}catch(Exception e)
+						{
+							System.out.println("Couldn't sleep thread");
+						}
+					}
+				}
+				return null;
+			} else
+			{
+				System.out.println(self.getId() + ": sending getObject-request a long");
+				send(ft.closestPrecedingNode(key).getAddress(), msg);
+				for(int i=0;i<10;i++)
+				{
+					if(objectBuffer != null)
+					{
+						Object temp = objectBuffer;
+						objectBuffer = null;
+						return temp;
+					}
+					else
+					{
+						try{
+							Thread.sleep(1000);
+						}catch(Exception e)
+						{
+							System.out.println("Couldn't sleep thread");
+						}
+					}
+				}
+				return null;
+			}
 		}
-		return null;
 	}
 	
 	public void putObject(long key, Object object)
 	{
+		Message msg;
 		if(isBetween(key, predecessor.getId(), self.getId()))
 		{
-			System.out.println(self.getId() + ": retrieving data from own storage");
-		} else if(isBetween(key, self.getId(), successor.getId()))
-		{
-			System.out.println(self.getId() + ": passing getObject-request to successor");
+			System.out.println(self.getId() + ": adding data from own storage");
+			datastore.addEntry(key, object);
 		} else
 		{
-			System.out.println(self.getId() + ": sending getObject-request a long");
-
+			msg = new Message();
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_PUT);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_PUT_OBJECT, object.toString());
+			if(isBetween(key, self.getId(), successor.getId()))
+			{
+				System.out.println(self.getId() + ": passing putObject-request to successor");
+				send(successor.getAddress(), msg);
+			} else
+			{
+				System.out.println(self.getId() + ": sending putObject-request a long");
+				send(ft.closestPrecedingNode(key).getAddress(), msg);
+			}
 		}
 	}
 	
 	public void removeObject(long key)
 	{
+		Message msg;
 		if(isBetween(key, predecessor.getId(), self.getId()))
 		{
-			System.out.println(self.getId() + ": retrieving data from own storage");
-		} else if(isBetween(key, self.getId(), successor.getId()))
-		{
-			System.out.println(self.getId() + ": passing getObject-request to successor");
+			System.out.println(self.getId() + ": removing data from own storage");
+			datastore.removeEntry(key);
 		} else
 		{
-			System.out.println(self.getId() + ": sending getObject-request a long");
-
+			msg = new Message();
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_REMOVE);
+			if(isBetween(key, self.getId(), successor.getId()))
+			{
+				System.out.println(self.getId() + ": passing removeObject-request to successor");
+				send(successor.getAddress(), msg);
+			} else
+			{
+				System.out.println(self.getId() + ": sending removeObject-request a long");
+				send(ft.closestPrecedingNode(key).getAddress(), msg);
+			}
 		}
 	}
 	
