@@ -421,18 +421,6 @@ public class Node implements Protocol {
 	}
 	
 	/**
-     * Handle a received ClosedConnection
-     * A ClosedConnection message is received when the sender has closed the connection to the receiving
-     * node. Instead of coping with partial disconnects in the system, this version of the protocol
-     * simply disconnects from all nodes when receiving a ClosedConnection. This is to simplify connectivity
-     * and states in the system, as if not doing this, nodes in the system can never form a full mesh.
-     * @param src The address of the sending node.
-     * @return void
-     */
-	private void handleClosedConnection(Address src){
-		System.out.println("ID("+self.getId()+") handling closed connection!!");
-	}
-	/**
      * Handle a received FindSuccessor
      * @param src The address of the sending node.
      * @return void
@@ -560,19 +548,22 @@ public class Node implements Protocol {
 	/* Recursive ring lookup */
 	public void findSuccessor(long key)
 	{
-		Message msg = new Message();
-		msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
-		msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
-		msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
-		msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
+		Message msg;
+		
 		if(isBetween(key,self.getId(), successor.getId()))
 		{
 			ft.setFingerEntry(key, successor);
-		}
-		else
+		} else if(key == self.getId())
 		{
-			if(ft.closestPrecedingNode(key) != null)
-				send(ft.closestPrecedingNode(key).getAddress(), msg);
+			ft.setFingerEntry(key, self);
+		} else if(ft.closestPrecedingNode(key) != null)
+		{
+			msg = new Message();
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_FINGERTABLE);
+			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
+			send(ft.closestPrecedingNode(key).getAddress(), msg);
 		}
 	}
 	
