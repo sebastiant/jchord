@@ -118,7 +118,7 @@ public class Node implements Protocol {
 	private void sendCheckPredecessor() {
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
-			System.out.println(self.getId() + "Pinging to addr: "+ predecessor.getAddress());
+			//System.out.println(self.getId() + "Pinging to addr: "+ predecessor.getAddress());
 			Message msg = new Message();
 			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
@@ -199,10 +199,13 @@ public class Node implements Protocol {
 			successorlist[0] = null;
 			successorlist[1] = null;
 			successorlist[2] = null;
-		} if(e.getSource().equals(predecessor.getAddress()))
+		} if(predecessor != null)
 		{
-			System.out.println("("+self.getId()+") setting predecessor to null");
-			predecessor = null;
+			if(e.getSource().equals(predecessor.getAddress()))
+			{
+				System.out.println("("+self.getId()+") setting predecessor to null");
+				predecessor = null;
+			}
 		}
 		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
 	}
@@ -245,7 +248,7 @@ public class Node implements Protocol {
 
 	/** Respond on predecessor pings */
 	public void handleCheckPredecessor(Message msg) {
-		System.out.println(self.getId() + " responding to ping");
+		//System.out.println(self.getId() + " responding to ping");
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR_RESPONSE);
 		send(msg.getSourceAddress(), response);
