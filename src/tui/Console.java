@@ -6,27 +6,30 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import overlay.FingerEntry;
+import overlay.Node;
+
 import network.Address;
 
 public class Console {
 
 	private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 	private boolean running;
-	private DHT dht = null;
-	
+	private DHT dht;
+
 	public Console(int port,  long idSpace, int airity) {
 		System.out.println("DHT User interface");
 		Address addr = null;
 		try {
 			addr = new Address(InetAddress.getLocalHost(), port);
-			dht = new DHT(addr, idSpace, airity);
+			this.dht = new DHT(addr, idSpace, airity);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		running = true;
 	}
-	
+
 	public void commandLine() throws IOException {
 		System.out.print("# ");
 		String line = in.readLine();
@@ -40,41 +43,132 @@ public class Console {
 			return;
 		}
 		switch(command) {
-		case CONNECT:
-			Address addr = new Address(split[1]);
+		case CONNECT: {
+			if(split.length < 2) {
+				System.out.println("No address given");
+				break;
+			}
+			String input = split[1];
+			if(input.indexOf(":") == -1) {
+				input += ":8000"; // add default port
+			}
+			Address addr = new Address(input);
 			dht.connect(addr);
 			System.out.println("Connect message sent");
 			break;
-		case DISCONNECT:
-			if(!dht.isConnected()) {
+		}
+		case DISCONNECT: {
+			if(dht.isConnected()) {
 				System.out.println("Not connected");
 			} else {
 				dht.disconnect();
 				System.out.println("Disconnected");
 			}		
 			break;
-		case FINGERS:
+		} 
+		case FINGERS: {
 			dht.showFigers();
 			break;
-		case HELP:
+		}
+		case HELP: {
 			System.out.println("Syntax: Command [arguments]");
 			for(Command s :Command.values()) {
 				s.printHelp();
 			}
 			break;
-		case QUIT:
+		}
+		case PUT: {
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+				break;
+			}
+			String input = getQuotes(line);
+			if(input != null) {
+				long key = dht.put(input);
+				System.out.println("key = " + key); 
+			} else {
+				System.out.println("No data provied, (forgot quotes?)");
+			}
+			break;
+		}	
+		case GET: {
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+				break;
+			}
+			if(split.length < 2) {
+				System.out.println("No key provieded");
+				break;
+			}
+			try {
+				long key = Long.parseLong(split[1]);
+				String data = dht.get(key);
+				System.out.println("data(" + key + ") = " + data);
+			} catch(NumberFormatException e) {
+				System.out.println("Invalid key");
+			}
+			break;
+		}
+		case RM:
+		case REMOVE: {
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+				break;
+			}
+			if(split.length < 2) {
+				System.out.println("No key provieded");
+				break;
+			}
+			try {
+				long key = Long.parseLong(split[1]);
+				dht.remove(key);
+				String data = dht.get(key);
+				System.out.println("data(" + key+ ") = " + data);
+			} catch(NumberFormatException e) {
+				System.out.println("Invalid key");
+			}
+			break;
+		}
+		case PUTKEY: {
+			if(!dht.isConnected()) {
+				System.out.println("Not connected");
+				break;
+			}
+			if(split.length < 3) {
+				System.out.println("Too few arguments");
+				break;
+			}
+			String input = getQuotes(line);
+			if(input != null) {
+				long key = dht.put(input);
+				System.out.println("key = " + key); 
+			} else {
+				System.out.println("No data provied, (forgot quotes?)");
+			}
+			
+		}
+		case QUIT: {
 			System.out.println("Bye...");
 			quit();
 			break;
-		default:
+		}
+		default: {
 			System.out.println("Unhandled command: " + cmd);
-			break;
+		}
 		}
 	}
-	
+
 	public void quit() {
 		//TODO cleanup
 		running = false;
+	}
+
+	private String getQuotes(String line) {
+		String[] result = line.split("\"");
+		if(result.length < 2) {
+			return null;
+		}
+		return result[1];
 	}
 	
 	public void run() {
@@ -88,5 +182,5 @@ public class Console {
 			}
 		}
 	}
-	
+
 }

@@ -830,6 +830,13 @@ public class Node implements Protocol {
 		else //shifted_l2 > 0 && shifted_l3 > 0
 			return (shifted_l2 > shifted_l3);
 	}
-
+	
+	public long getIdSpace() {
+		return idSpace;
+	}
+	
+	public int getAirtiy() {
+		return arity;
+	}
 }
 
