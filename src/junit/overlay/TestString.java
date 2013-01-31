@@ -1,6 +1,6 @@
 package junit.overlay;
 
-import datastorage.StorageInterface;
+import overlay.datastorage.StorageInterface;
 
 /*
  * Testobject used during tests.

@@ -111,11 +111,9 @@ public class TestSimultaneousConnect {
 	public void cleanUp() {
 		node1.stop();
 		node2.stop();
-		node1 = null;
-		node2 = null;
+		node1 = node2 = null;
 		signal = null;
-		t1 = null;
-		t2 = null;
+		t1 = t2 = null;
 	}
 	
 
