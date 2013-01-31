@@ -165,7 +165,7 @@ public class Node implements Protocol {
 			} 
 		} else
 		{
-			System.out.println("Not pinging! pred = NULL");
+			System.out.println(self.getId() + ": Not pinging! pred = NULL");
 		}
 	}
 	
@@ -185,6 +185,7 @@ public class Node implements Protocol {
 		{
 			System.out.println("Assigning entry: " + e.getKey() + " to new predecessor");
 			msg = new Message();
+			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_DATA_RESPONSIBILITY);
 			msg.setKey(PROTOCOL_DATA_KEY, e.getKey());
 			msg.setKey(PROTOCOL_DATA_OBJECT, e.getValue());
 			send(predecessor.getAddress(), msg);
