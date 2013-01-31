@@ -1,4 +1,4 @@
-package datastorage;
+package overlay.datastorage;
 
 /* 
  * Interface for objects stored in the datastore.
