@@ -146,7 +146,7 @@ public class Console {
 	}
 
 	public void quit() {
-		//TODO cleanup
+		dht.disconnect();
 		running = false;
 	}
 

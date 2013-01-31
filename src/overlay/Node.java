@@ -76,7 +76,7 @@ public class Node implements Protocol {
 			public void run() {
 				if(state == STATE_CONNECTED)
 				{
-					System.out.println(self.getId() + " checking predecessor. ");
+					//cSystem.out.println(self.getId() + " checking predecessor. ");
 					sendCheckPredecessor();
 					sendPredRequest();
 				}
@@ -88,7 +88,7 @@ public class Node implements Protocol {
 			@Override
 			public void run() {
 				if(state == STATE_CONNECTED) {
-					System.out.println(self.getId() + " fixing fingers ");
+					//System.out.println(self.getId() + " fixing fingers ");
 					fixFingers();
 				}
 			}
