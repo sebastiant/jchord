@@ -1,7 +1,5 @@
 package overlay;
 
-import java.util.ArrayList;
-
 public class FingerTable {
 	private PeerEntry self;
 	private FingerEntry ft[];
@@ -87,7 +85,8 @@ public class FingerTable {
 				}
 			}
 		}
-		return null; /* cannot happen! */
+		System.out.println("RETURNING SELF");
+		return self;
 	}
 	
 	public static boolean isPowerOfTwo(long num)

@@ -1,7 +1,6 @@
 package overlay;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -174,10 +173,10 @@ public class Node implements Protocol {
 		predecessorLastSeen = System.currentTimeMillis();
 		if(this.predecessor == null)
 		{
-			System.out.println("(" + self.getId() + ") changing predecessor from: NULL to: " + predecessor.getId());
+			System.out.println(self.getId() + ": Changing predecessor from: NULL to: " + predecessor.getId());
 		}
 		else{
-			System.out.println("(" + self.getId() + ") changing predecessor from: " + this.predecessor.getId() +" to: " + predecessor.getId());
+			System.out.println(self.getId() + ": changing predecessor from: " + this.predecessor.getId() +" to: " + predecessor.getId());
 		}
 		this.predecessor = predecessor;
 		//Send over any stored data which key's is not in between the predecessor and self in the ring to the predecessor.
@@ -196,10 +195,10 @@ public class Node implements Protocol {
 	{
 		if(this.successor == null)
 		{
-			System.out.println("(" + self.getId() + ") changing successor from: NULL to: " + successor.getId());
+			System.out.println(self.getId() + ": changing successor from: NULL to: " + successor.getId());
 		}
 		else{
-			System.out.println("(" + self.getId() + ") changing successor from: " + this.successor.getId() +" to: " + successor.getId());
+			System.out.println(self.getId() + ": changing successor from: " + this.successor.getId() +" to: " + successor.getId());
 
 		}
 		this.successor = successor;
@@ -226,14 +225,14 @@ public class Node implements Protocol {
 	}
 	
 	public void handleDisconnectEvent(DisconnectEvent e) {
-		System.out.println("ID("+self.getId()+") Received DisconnectEvent from some host!");
+		System.out.println(self.getId()+": Received DisconnectEvent from some host!");
 	}
 	
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
-		System.out.println("ID("+self.getId()+") Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
+		System.out.println(self.getId()+": Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
 		if(e.getSource().equals(successor.getAddress()))
 		{
-			System.out.println("ID("+self.getId()+") My successor has disconnected!");
+			System.out.println(self.getId()+": My successor has disconnected!");
 			if(successorlist[0] != null && !successor.equals(successorlist[0]))
 			{
 				System.out.println("Switching to next on list: "+successorlist[0].getId());
@@ -268,7 +267,7 @@ public class Node implements Protocol {
 			return;
 		}
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
-		//System.out.println("ID("+self.getId()+") Received command " + command + " from: " + src);
+		//System.out.println(self.getId()+": Received command " + command + " from: " + src);
 
 		if(command.equals(PROTOCOL_JOIN))
 		{
@@ -327,12 +326,12 @@ public class Node implements Protocol {
 	private void handleJoin(Message msg){
 		if(state == STATE_CONNECTING)
 		{
-			System.out.println("ID("+self.getId()+") Received join request although im connecting myself. dropped.");
+			System.out.println(self.getId()+": Received join request although im connecting myself. dropped.");
 			return;
 		}
 		Address src = msg.getSourceAddress();
 		Message resp = new Message();
-		System.out.println("ID("+self.getId()+") Received join request ");
+		System.out.println(self.getId()+": Received join request ");
 		if(msg.has(PROTOCOL_JOIN_ID) && msg.has(PROTOCOL_JOIN_ARITY)
 				&& msg.has(PROTOCOL_JOIN_IDENTIFIERSPACE))
 		{
@@ -364,12 +363,12 @@ public class Node implements Protocol {
 	private void handleJoinDenied(Message msg){
 		if(state==STATE_CONNECTING)
 		{
-			System.out.println("ID("+self.getId()+") My connection was DENIED by (" + msg.getLong(PROTOCOL_JOIN_ID));
+			System.out.println(self.getId()+": My connection was DENIED by (" + msg.getLong(PROTOCOL_JOIN_ID));
 			state = STATE_DISCONNECTED;
 		}
 		else
 		{
-			System.out.println("ID("+self.getId()+") Got join denied even though im not connecting!");
+			System.out.println(self.getId()+": Got join denied even though im not connecting!");
 		}
 	}
 	
@@ -508,7 +507,7 @@ public class Node implements Protocol {
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 				send(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
-			} else if(ft.closestPrecedingNode(key) == null) //Fingertable not built, unable to handle this request.
+			} else if(ft.closestPrecedingNode(key) == self) //Fingertable not built, unable to handle this request.
 			{
 				//System.out.println("!!! ID("+self.getId()+") Fingertable broken. Returned null when looking for key: " + key);
 			} else //Send request along
@@ -521,7 +520,7 @@ public class Node implements Protocol {
 		{
 			if(isBetween(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY), predecessor.getId(), self.getId())) //Our responsibility
 			{
-				System.out.println("handling: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND) + " from: " + msg.getSourceAddress().toString());
+				System.out.println(self.getId() + ": handling a " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND) + " from: " + msg.getSourceAddress().toString());
 				if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_GET)) //Only message to reply for: Get-requests
 				{
 					resp = new Message();
@@ -549,8 +548,22 @@ public class Node implements Protocol {
 				}
 			} else //Pass request along
 			{
-				System.out.println("Passing along: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND) + " from: " + msg.getSourceAddress().toString());
-				send(ft.closestPrecedingNode(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)).getAddress(), msg);
+				if(isBetween(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY), self.getId(), successor.getId())) //Successor's responsibility
+				{
+					/*
+					System.out.println(self.getId()  + "Passing along: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND)
+							+ " from: " + msg.getSourceAddress().toString() + " with key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
+					*/
+					send(successor.getAddress(), msg);
+				}
+				else
+				{
+					/*
+					 System.out.println(self.getId()  + "Passing along: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND)
+					 + " from: " + msg.getSourceAddress().toString() + " with key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
+					 */
+					send(ft.closestPrecedingNode(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)).getAddress(), msg);
+				}
 			}
 		}
 		
@@ -562,14 +575,14 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleFindSuccessorResponse(Message msg){
-		//System.out.println("ID("+self.getId()+") Received find successor response");
+		//System.out.println(self.getId()+": Received find successor response");
 		if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_FINGERTABLE))
 		{
 			if(state == Node.STATE_CONNECTING)
 			{
 				if(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY) == self.getId())
 				{
-					System.out.println("("+self.getId()+") Connection Accepted!");
+					System.out.println(self.getId() + ": Connection Accepted!");
 					updateSuccessor(new PeerEntry(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR)),
 							msg.getInt(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID)));
 					state = Node.STATE_CONNECTED;
@@ -597,7 +610,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleDataresponsibility(Message msg){
-		//System.out.println("ID("+self.getId()+") Received find successor response");
+		//System.out.println(self.getId()+": Received find successor response");
 		if(msg.has(PROTOCOL_DATA_KEY) && msg.has(PROTOCOL_DATA_OBJECT))
 		{
 			System.out.println(self.getId() + ": Adding data with key: " + msg.getLong(PROTOCOL_DATA_KEY) + " to my storage");
@@ -612,7 +625,7 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleUnknownMessage(Message msg){
-		System.out.println("!!! ID("+self.getId()+")Received unknown message: " +msg.toString());
+		System.out.println(self.getId()+": Received unknown message: " +msg.toString());
 		return;
 	}
 	
