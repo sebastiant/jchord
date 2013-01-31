@@ -253,7 +253,7 @@ public class Node implements Protocol {
 			if(e.getSource().equals(predecessor.getAddress()))
 			{
 				System.out.println("("+self.getId()+") setting predecessor to null");
-				predecessor = null;
+				predecessor = null;				
 			}
 		}
 		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
@@ -713,7 +713,7 @@ public class Node implements Protocol {
 	public Object getObject(long key)
 	{
 		Message msg;
-		if(isBetween(key, predecessor.getId(), self.getId()))
+		if(state != STATE_CONNECTED || isBetween(key, predecessor.getId(), self.getId()))
 		{
 			System.out.println(self.getId() + ": getting data from own storage");
 			return datastore.getEntry(key);
@@ -777,7 +777,7 @@ public class Node implements Protocol {
 	public void putObject(long key, Object object)
 	{
 		Message msg;
-		if(isBetween(key, predecessor.getId(), self.getId()))
+		if(state != STATE_CONNECTED || isBetween(key, predecessor.getId(), self.getId()))
 		{
 			System.out.println(self.getId() + ": adding data from own storage");
 			datastore.addEntry(key, object);
@@ -803,7 +803,7 @@ public class Node implements Protocol {
 	public void removeObject(long key)
 	{
 		Message msg;
-		if(isBetween(key, predecessor.getId(), self.getId()))
+		if(state != STATE_CONNECTED || isBetween(key, predecessor.getId(), self.getId()))
 		{
 			System.out.println(self.getId() + ": removing data from own storage");
 			datastore.removeEntry(key);

@@ -12,6 +12,7 @@ public enum Command {
 	DISCONNECT("disconnect", "Disconnect from ring"),
 	QUIT("quit", "Exit");
 	
+	public static final int INDENT = 40;
 	private String description;
 	private String invocation;
 	
@@ -27,7 +28,7 @@ public enum Command {
 	public void printHelp() {
 		StringBuffer buff = new StringBuffer();
 		buff.append(invocation);
-		while(buff.length() < 40) {
+		while(buff.length() < INDENT) {
 			buff.append(' ');
 		}
 		buff.append(" - ");

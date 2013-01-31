@@ -77,10 +77,6 @@ public class Console {
 			break;
 		}
 		case PUT: {
-			if(!dht.isConnected()) {
-				System.out.println("Not connected");
-				break;
-			}
 			String input = getQuotes(line);
 			if(input != null) {
 				long key = dht.put(input);
@@ -91,10 +87,6 @@ public class Console {
 			break;
 		}	
 		case GET: {
-			if(!dht.isConnected()) {
-				System.out.println("Not connected");
-				break;
-			}
 			if(split.length < 2) {
 				System.out.println("No key provieded");
 				break;
@@ -110,10 +102,6 @@ public class Console {
 		}
 		case RM:
 		case REMOVE: {
-			if(!dht.isConnected()) {
-				System.out.println("Not connected");
-				break;
-			}
 			if(split.length < 2) {
 				System.out.println("No key provieded");
 				break;
@@ -129,10 +117,6 @@ public class Console {
 			break;
 		}
 		case PUTKEY: {
-			if(!dht.isConnected()) {
-				System.out.println("Not connected");
-				break;
-			}
 			if(split.length < 3) {
 				System.out.println("Too few arguments");
 				break;
