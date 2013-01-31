@@ -11,7 +11,6 @@ import overlay.Node;
 public class DHT {
 	
 	private Node node = null;
-	private boolean connected = false;
 	
 	public DHT(Address addr, long idSpace, int airity) {
 		node = new Node(addr, idSpace, airity);	
@@ -26,13 +25,11 @@ public class DHT {
 	
 	public void connect(Address addr) {
 		node.connect(addr);
-		connected = true;
 	}
 	
 	public void disconnect() {
 		node.shutdown();
 		node = null;
-		connected = false;
 	}
 	
 	public long put(String data) {
@@ -41,7 +38,7 @@ public class DHT {
 		return key;
 	}
 	
-	public void putkey(String data, long key) {
+	public void putKey(String data, long key) {
 		node.putObject(key, data);
 	}
 	
@@ -59,7 +56,11 @@ public class DHT {
 	}
 	
 	public boolean isConnected() {
-		return connected;
+		if(node.getState() == node.STATE_CONNECTED) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	

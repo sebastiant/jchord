@@ -3,6 +3,7 @@ package tui;
 public class Main {
 
 	public static void main(String args[]) {
+		System.out.println("DHT User Interface");
 		int port = 8000;
 		int arity = 2;
 		long idSpace = 1024;
@@ -16,7 +17,7 @@ public class Main {
 		if(args.length >= 3) {
 			idSpace = Long.parseLong(args[2]);
 		}
-		System.out.println("Starting with port: " + port + " arity: " + arity);
+		System.out.println("Starting with port: " + port + ", arity: " + arity);
 		Console cons = new Console(port, idSpace, arity);
 		cons.run();
 	}

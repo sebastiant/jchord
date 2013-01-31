@@ -18,7 +18,6 @@ public class Console {
 	private DHT dht;
 
 	public Console(int port,  long idSpace, int airity) {
-		System.out.println("DHT User interface");
 		Address addr = null;
 		try {
 			addr = new Address(InetAddress.getLocalHost(), port);
@@ -138,14 +137,18 @@ public class Console {
 				System.out.println("Too few arguments");
 				break;
 			}
-			String input = getQuotes(line);
-			if(input != null) {
-				long key = dht.put(input);
-				System.out.println("key = " + key); 
-			} else {
-				System.out.println("No data provied, (forgot quotes?)");
+			try {
+				long key = Long.parseLong(split[1]);
+				String input = getQuotes(line);
+				if(input != null) {
+					dht.putKey(input, key);
+				} else {
+					System.out.println("No data provied, (forgot quotes?)");
+				}
+			} catch(NumberFormatException e) {
+				System.out.println("Invalid key");
 			}
-			
+			break;
 		}
 		case QUIT: {
 			System.out.println("Bye...");
