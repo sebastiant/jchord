@@ -3,6 +3,9 @@ package datastorage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import overlay.Node;
 
 
 public class Datastore {
@@ -27,11 +30,24 @@ public class Datastore {
 	{
 		store.remove(key);
 	}
-	public List<Object> getAllEntriesToKey(long key)
+	public Map<Long,Object> getAllEntriesNotBetween(long key_1, long key_2)
 	{
-		return null;
+		Map<Long,Object> res = new HashMap<Long,Object>();
+		for(Map.Entry<Long,Object> e : store.entrySet())
+		{
+			if(!Node.isBetween(e.getKey(), key_1, key_2))
+			{
+				res.put(e.getKey(), e.getValue());
+				store.remove(e.getKey());
+			}
+		}
+		return res;
 	}
 	
+	public boolean isEmpty()
+	{
+		return store.isEmpty();
+	}
 	@Override
 	public String toString()
 	{

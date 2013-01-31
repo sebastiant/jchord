@@ -5,7 +5,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({TestRing.class,
-						TestInBetween.class
+						TestInBetween.class,
+						TestStorage.class
 					})
 public class AllOverlayTests {
 	 

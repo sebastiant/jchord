@@ -57,6 +57,12 @@ public interface Protocol {
 	public static final String PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR = "findsuccrespaddr";
 	public static final String PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT = "findsuccrespobject";
 
+	//DATA RESPONSIBILITY
+	public static final String PROTOCOL_DATA_RESPONSIBILITY = "dataresponsibility";
+	public static final String PROTOCOL_DATA_KEY = "datakey";
+	public static final String PROTOCOL_DATA_OBJECT = "dataobject";
+
+
 	//PREDECESSOR PINGING
 	public static final String PROTOCOL_CHECK_PREDECESSOR = "ckpred";
 	public static final String PROTOCOL_CHECK_PREDECESSOR_RESPONSE = "ckpredresp";

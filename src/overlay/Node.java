@@ -1,5 +1,7 @@
 package overlay;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,7 +23,7 @@ public class Node implements Protocol {
 	private long idSpace;
 	private PeerEntry self;
 	private String state;
-	/* Default value, self */
+
 	private PeerEntry predecessor;
 	private PeerEntry successor;
 	private PeerEntry successorlist[];
@@ -29,6 +31,7 @@ public class Node implements Protocol {
 	private long predecessorLastSeen = Long.MAX_VALUE;
 	
 	private Datastore datastore;
+	private boolean objectBufferIsSet;
 	private Object objectBuffer; /* Used to store retrieved objects during lookups (as lookups are done unblocking) */
 	
 	public static final int PRED_REQ_INTERVAL = 1000;
@@ -43,6 +46,7 @@ public class Node implements Protocol {
 		long localId = IDGenerator.getId(addr, idSpace);
 		datastore = new Datastore();
 		objectBuffer = null;
+		objectBufferIsSet = false;
 		self = new PeerEntry(addr, localId);
 		this.ft = new FingerTable(arity, idSpace, self);
 		this.successorlist = new PeerEntry[3];
@@ -137,10 +141,6 @@ public class Node implements Protocol {
 		msgSender.send(msg);
 	}
 	
-	public void sendToAll(Message msg){
-		//TODO: implement me ;D
-	}
-	
 	public void connect(Address addr)
 	{
 		state = STATE_CONNECTING;
@@ -170,6 +170,7 @@ public class Node implements Protocol {
 	}
 	
 	private void updatePredecessor(PeerEntry predecessor) {
+		Message msg;
 		predecessorLastSeen = System.currentTimeMillis();
 		if(this.predecessor == null)
 		{
@@ -177,9 +178,17 @@ public class Node implements Protocol {
 		}
 		else{
 			System.out.println("(" + self.getId() + ") changing predecessor from: " + this.predecessor.getId() +" to: " + predecessor.getId());
-
 		}
 		this.predecessor = predecessor;
+		//Send over any stored data which key's is not in between the predecessor and self in the ring to the predecessor.
+		for(Map.Entry<Long,Object> e : datastore.getAllEntriesNotBetween(predecessor.getId(), self.getId()).entrySet())
+		{
+			System.out.println("Assigning entry: " + e.getKey() + " to new predecessor");
+			msg = new Message();
+			msg.setKey(PROTOCOL_DATA_KEY, e.getKey());
+			msg.setKey(PROTOCOL_DATA_OBJECT, e.getValue());
+			send(predecessor.getAddress(), msg);
+		}
 	}
 	
 	public void updateSuccessor(PeerEntry successor)
@@ -279,6 +288,8 @@ public class Node implements Protocol {
 			handleFindSuccessor(msg);
 		} else if(command.equals(PROTOCOL_FIND_SUCCESSOR_RESPONSE)){
 			handleFindSuccessorResponse(msg);
+		} else if(command.equals(PROTOCOL_DATA_RESPONSIBILITY)){
+			handleDataresponsibility(msg);
 		}else
 		{
 			handleUnknownMessage(msg);
@@ -515,6 +526,8 @@ public class Node implements Protocol {
 					resp = new Message();
 					resp.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR_RESPONSE);
 					resp.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_GET);
+					resp.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
+
 					if(datastore.getEntry(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)) != null)
 					{
 						resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT, datastore.getEntry(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)).toString());
@@ -570,18 +583,26 @@ public class Node implements Protocol {
 					+ ">> node: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID));
 		} else if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_GET))
 		{
-			if(msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT).equals(PROTOCOL_NULL))
+			if(!msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT).equals(PROTOCOL_NULL))
 			{
-				System.out.println("GET result for key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)
-						+ ">> object: NULL");
-			} else
-			{
-				System.out.println("GET result for key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)
-						+ ">> object: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT));
+				objectBufferIsSet = true;
+				objectBuffer = msg.getString(PROTOCOL_FIND_SUCCESSOR_RESPONSE_OBJECT);
 			}
 		}
 	}
-	
+	/**
+     * Handle a received Dataresponsibility message
+     * @param msg The address of the sending node.
+     * @return void
+     */
+	private void handleDataresponsibility(Message msg){
+		//System.out.println("ID("+self.getId()+") Received find successor response");
+		if(msg.has(PROTOCOL_DATA_KEY) && msg.has(PROTOCOL_DATA_OBJECT))
+		{
+			System.out.println(self.getId() + ": Adding data with key: " + msg.getLong(PROTOCOL_DATA_KEY) + " to my storage");
+			datastore.addEntry(msg.getLong(PROTOCOL_DATA_KEY), msg.getString(PROTOCOL_DATA_OBJECT));
+		}
+	}
 	
 	/**
      * Handle a message with unknown syntax
@@ -683,6 +704,8 @@ public class Node implements Protocol {
 			return datastore.getEntry(key);
 		} else
 		{
+			objectBuffer = null;
+			objectBufferIsSet = false;
 			msg = new Message();
 			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
@@ -692,22 +715,21 @@ public class Node implements Protocol {
 			{
 				System.out.println(self.getId() + ": passing getObject-request to successor");
 				send(successor.getAddress(), msg);
-				for(int i=0;i<10;i++)
+				for(int i=0;i<2;i++)
 				{
-					if(objectBuffer != null)
+					if(objectBufferIsSet == true)
 					{
 						Object temp = objectBuffer;
 						objectBuffer = null;
+						objectBufferIsSet = false;
 						return temp;
 					}
-					else
+					try
 					{
-						try{
-							Thread.sleep(1000);
-						}catch(Exception e)
-						{
-							System.out.println("Couldn't sleep thread");
-						}
+						Thread.sleep(1000);
+					}catch(Exception e)
+					{
+						System.out.println("Couldn't sleep thread");
 					}
 				}
 				return null;
@@ -715,22 +737,21 @@ public class Node implements Protocol {
 			{
 				System.out.println(self.getId() + ": sending getObject-request a long");
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
-				for(int i=0;i<10;i++)
+				for(int i=0;i<5;i++)
 				{
-					if(objectBuffer != null)
+					if(objectBufferIsSet == true)
 					{
 						Object temp = objectBuffer;
 						objectBuffer = null;
+						objectBufferIsSet = false;
 						return temp;
 					}
-					else
+					try
 					{
-						try{
-							Thread.sleep(1000);
-						}catch(Exception e)
-						{
-							System.out.println("Couldn't sleep thread");
-						}
+						Thread.sleep(1000);
+					}catch(Exception e)
+					{
+						System.out.println("Couldn't sleep thread");
 					}
 				}
 				return null;
