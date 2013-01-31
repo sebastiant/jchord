@@ -85,7 +85,6 @@ public class FingerTable {
 				}
 			}
 		}
-		System.out.println("RETURNING SELF");
 		return self;
 	}
 	

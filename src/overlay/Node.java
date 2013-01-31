@@ -76,6 +76,7 @@ public class Node implements Protocol {
 			public void run() {
 				if(state == STATE_CONNECTED)
 				{
+					System.out.println(self.getId() + " checking predecessor. ");
 					sendCheckPredecessor();
 					sendPredRequest();
 				}
@@ -87,6 +88,7 @@ public class Node implements Protocol {
 			@Override
 			public void run() {
 				if(state == STATE_CONNECTED) {
+					System.out.println(self.getId() + " fixing fingers ");
 					fixFingers();
 				}
 			}
@@ -234,14 +236,14 @@ public class Node implements Protocol {
 		if(e.getSource().equals(successor.getAddress()))
 		{
 			System.out.println(self.getId()+": My successor has disconnected!");
-			if(successorlist[0] != null && !successor.equals(successorlist[0]))
+			if(successorlist[0] != null && !successor.equals(successorlist[0]) && !successorlist[0].equals(self))
 			{
 				System.out.println("Switching to next on list: "+successorlist[0].getId());
 				updateSuccessor(successorlist[0]);
 			}
 			else
 			{
-				System.out.println("("+self.getId()+") DISCONNECTED");
+				System.out.println(self.getId()+": DISCONNECTED");
 				state = STATE_DISCONNECTED;
 				successor = self;
 			}
@@ -482,7 +484,7 @@ public class Node implements Protocol {
 		Message resp;
 		if(msg.getSourceAddress().equals(self.getAddress()))
 		{
-			System.out.println("!!! ID("+self.getId()+") Received findsuccessor from self");
+			//System.out.println(self.getId()+": Received findsuccessor from self");
 			return;
 		} else if(successor == self) //Received findSuccessor when disconnected (Byzantine msg)
 		{

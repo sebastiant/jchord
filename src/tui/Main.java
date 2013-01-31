@@ -6,7 +6,7 @@ public class Main {
 		System.out.println("DHT User Interface");
 		int port = 8000;
 		int arity = 2;
-		long idSpace = 1024;
+		long idSpace = 2048;
 		
 		if(args.length >= 1) {
 			port = Integer.parseInt(args[0]);
