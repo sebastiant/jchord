@@ -12,6 +12,15 @@ import org.json.JSONObject;
 import org.json.JSONString;
 
 public class Message {
+	
+	/** This is a data structure for representing messages to be serialized to JSON.
+	 *  It wraps a JSONObject, implementing most relevant methods, and handles exceptions.
+	 *  
+	 *  It also implements some application specific features such as the ability to specify
+	 *  a source and destination address.
+	 *  
+	 *  All keys beginning with an underscore (_) is reserved for internal use.
+	 * */
 		
 	private JSONObject json;
 	
@@ -71,7 +80,7 @@ public class Message {
 		String ret = null;
 		try {
 			if(this.json.has("_Id")) {
-				ret = (String) this.json.get("_Id");
+				ret = (String) this.json.get("_id");
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -143,7 +152,7 @@ public class Message {
 	
 	public void setId(String id) {
 		try {
-			this.json.put("_Id", id);
+			this.json.put("_id", id);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

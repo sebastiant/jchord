@@ -8,10 +8,16 @@ import java.net.SocketTimeoutException;
 
 public class Server extends Observable<Socket> implements ServiceInterface {
 
+	/** This class wraps a tcp server socket with a thread that once started, 
+	 * continuously accepts new incoming connections, until the server is stopped.
+	 * Whenever a new connection is made to the Server, all registered observers are notified
+	 * with the accepted tcp socket.
+	 * */
+	
 	private ServerSocket serverSocket;
 	private Service service;
 	private int port;
-
+	
 	public Server(int port) {
 		this.port = port;
 		service = new Service(this);
@@ -35,6 +41,9 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		} 
 	}
 	
+	/** Start listening for new connections.
+	 * For safety, this should typically be called after all interested observers
+	 * have registered on this server. */
 	public synchronized void start() {
 		if(!service.isRunning()) {
 			try {
@@ -50,6 +59,7 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		}
 	}
 	
+	/** Stop this server, close the socket and terminate the thread. */
 	public synchronized void stop() {
 		if(service.isRunning()) {
 			service.stop();
@@ -63,14 +73,17 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		}
 	}
 	
+	/** Get the listening port for the server socket. */
 	public int getPort() {
 		return port;	
 	}
 	
+	/** Get a string representation of this server. */
 	public String toString() {
 		return "network.Server#" + serverSocket.getLocalPort();
 	}
 	
+	/** Check if the server is running */
 	public synchronized boolean isRunning() {
 		return service.isRunning();
 	}

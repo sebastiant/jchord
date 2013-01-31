@@ -14,6 +14,8 @@ import network.events.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/** This class encapsulates a tcp connection. */
+
 public class Connection {
 	
 	private Socket socket;
@@ -32,6 +34,7 @@ public class Connection {
 		setup(s);
 	}
 	
+	/** Setup readers and writers for this socket. */
 	private void setup(Socket s) {
 		this.socket = s;
 		// Address is changed by the upper layer uppon accept.
@@ -45,6 +48,8 @@ public class Connection {
 		}
 	}
 	
+	/** Sends a message instance.
+	 *  The message is serialized to a JSON string and sent over the connection.*/
 	public boolean send(Message message)  {
 		try {
 			if(!socket.isClosed()){
@@ -59,6 +64,8 @@ public class Connection {
 		}
 	}
 	
+	/** Receive a message object from this connection.
+	 *  The message is deserialized from a JSON string and converted back into a object.*/
 	public Message recieve() throws SocketException {
 		Message ret = null;
 		try {
@@ -80,30 +87,39 @@ public class Connection {
 		return ret;
 	}
 	
+	/** Get the remote port from the underlying socket. */
 	public int getPort() {
 		return socket.getPort();
 	}
 	
+	/** Get the InetAddress from the underlying socket. */
 	public InetAddress getInetAddress() {
 		return socket.getInetAddress();
 	}
 	
+	/** Get the remote address for this connection.
+	 * Note that this is always a host address with the official listening port
+	 * of that host, even if the underlying socket is actually originated from another port. */
 	public Address getAddress() {
 		return address;
 	}
 	
+	/** Get the local address from the underlying socket. */
 	public InetAddress getLocalAddress() {
 		return socket.getLocalAddress();
 	}
 	
+	/** Get the local port from the underlying socket. */
 	public int getLocalPort() {
 		return socket.getLocalPort();
 	}
 	
-	public void setAddress(Address address) {
+	/** Change the remote address of this connection. */
+	protected void setAddress(Address address) {
 		this.address = address;
 	}
 
+	/** Flush and close the underlying socket */
 	public synchronized void disconnect() {
 		try {
 		out.flush();
@@ -114,6 +130,7 @@ public class Connection {
 		}
 	}
 	
+	/** Checks if this connection is still connected. */
 	public synchronized boolean isConnected() {
 		return !closed;
 	}

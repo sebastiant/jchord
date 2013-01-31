@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Observable<T> {
+	/** An observable object, that notifies all registered observers
+	 * when notifyObservers is called*/
 	
 	protected List<Observer<T>> observers = new ArrayList<Observer<T>>();
 	

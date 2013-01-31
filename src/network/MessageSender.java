@@ -16,6 +16,25 @@ import network.events.ConnectionRefusedEvent;
 import network.events.ControlEvent;
 import network.events.Message;
 
+/**
+ * 
+ * @author Jakob Stengård
+ *
+ * This class sends messages over tcp. The underlying tcp connections is effectively hidden from the user.
+ * When a message sender is created, a tcp server is started on the given port to accept incoming connections.
+ * At the first time a message is sent, the connection table is first consulted, if no connection
+ * to the target host exists, a new connection is created, and the message is sent using that connection.
+ * Otherwise, an existing connection is used.
+ * 
+ * When a message arrives on a connection, a Message object, containing the message is sent to all 
+ * participants that have registered to receive messages from this MessageSender.
+ * Control events are sent when connections are lost, or when a connection to a host is refused.
+ * 
+ * To prevent duplicate connections, incoming connections are denied while a connection
+ * is being set up to another host. In this case, the refused host backs off for a random
+ * timeout before trying to connect again, unless a connection has already been established.
+ */
+
 public class MessageSender {
 	
 	private Server server;
@@ -30,6 +49,7 @@ public class MessageSender {
 	private Address localhost;
 	public static final int MAX_ATTEMPTS = 5;
 	public static final int MAX_BACKOFF = 3000;
+	
 	
 	public MessageSender(int port) {
 		try {
@@ -59,10 +79,12 @@ public class MessageSender {
 		};
 	}
 
+	/** Start this MessageSender */
 	public void start() {
 		server.start();
 	}
 	
+	/** Stop this MessageSender. This also disconnects and removes all underlying connections. */
 	public void stop() {
 		server.stop();
 		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
@@ -75,7 +97,7 @@ public class MessageSender {
 		cons.clear();
 	}
 	
-	/* Explicitly disconnect this address */
+	/** Explicitly disconnect any connection to the given address. */
 	public synchronized boolean disconnect(Address addr) {
 		if(cons.containsKey(addr)) {
 			return removeConnection(cons.get(addr));
@@ -84,6 +106,7 @@ public class MessageSender {
 		}
 	}
 	
+	/** Handle incoming connections from the server */
 	private void handleConnection(Socket s) {
 		Connection con  = new Connection(s);
 		Message msg = null;
@@ -115,6 +138,8 @@ public class MessageSender {
 		}
 	}
 	
+	/** Get a connection to the target address, if no
+	    if no connection exists, a new one is created. */
 	private Connection getConnection(Address address) {
 		lock.lock();
 		if(cons.containsKey(address)) {
@@ -161,6 +186,11 @@ public class MessageSender {
 		return cons.get(address);
 	}
 	
+	/** Sends the given message to the destination host specified in the message.
+	 * This method creates a connection to the host, or uses
+	 * an existing one, in case one already exists.
+	 * @return true if the message could be dispatched onto a socket without errors,
+	 * othrewise false.*/
 	public boolean send(Message m) {
 		if(!server.isRunning()) {
 			return false;
@@ -194,6 +224,7 @@ public class MessageSender {
 		}
 	}
 	
+	/** Add a message reciever to the given connection instance. */
 	private RecieverService addMessageReciever(Connection c) {
 		RecieverService mr = new RecieverService(c, this);
 		mr.register(applicationMessageObserver, "app");
@@ -201,6 +232,7 @@ public class MessageSender {
 		return mr;
 	}
 	
+	/** Remove the given connection from all tables and data structures. */
 	protected synchronized boolean removeConnection(Connection c) {
 		if(cons.contains(c)) {
 			System.out.println("Remove connection to " + c.getAddress());
@@ -213,18 +245,23 @@ public class MessageSender {
 		}
 	}
 	
+	/** Registers a message observer to receive incoming messages. */
 	public void registerMessageObserver(Observer<Message> obs) {
 		this.messageObservable.register(obs);
 	}
 	
+	/** Registers a control event observer to receive control events from this message sender.
+	 * Typical control events are DisconnectEvent and ConenctionRefused event. */
 	public void registerControlObserver(Observer<ControlEvent> evt) {
 		this.eventObservable.register(evt);
 	}
 	
+	/** Get the connection table for this message sender. */
 	public ConcurrentHashMap<Address, Connection> getConnections() {
 		return cons;
 	}
 	
+	/** Print all connections from and to this message sender. */
 	public void printConnections() {
 		System.out.println("Connections for message sender at " + server.getPort() + ":");
 		for(Entry<Address, Connection> e : cons.entrySet()) {
@@ -234,6 +271,9 @@ public class MessageSender {
 		}
 	}
 	
+	/** Get the host address used by this message sender.
+	 *  This is the address used by other hosts to send
+	 *  messages to this host. */
 	public Address getAddress() {
 		return this.hostadress;
 	}
