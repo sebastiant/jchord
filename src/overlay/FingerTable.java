@@ -28,7 +28,7 @@ public class FingerTable {
 				offset += n / k;
 				j = 0;
 			}
-			int key = (int) self.getId() + offset + (int)Math.pow(2, j);
+			long key = self.getId() + offset + (long)Math.pow(2, j);
 			if(key > n)
 				key -= n;
 			ft[i] = new FingerEntry(key, self);

@@ -1,14 +1,13 @@
 package tui;
 
 public enum Command {
-	CONNECT("connect ADRESS[:PORT] [IDSPACE] [ARITY]", "Join a dht network"),
+	CONNECT("connect ADDRESS[:PORT] [IDSPACE] [ARITY]", "Join a dht network"),
 	HELP("help", "Print this help"),
 	FINGERS("fingers", "Show fingers"),
-	PUT("put \"DATA STRING\"", "Insert data into the ring"),
-	PUTKEY("putkey KEY \"DATA STRING\"", "Insert data, use the provided key"),
-	GET("get KEY", "Retrieve data from the ring"),
-	RM("rm KEY", "Alias for remove"),
-	REMOVE("remove KEY", "Remove data with the given key from the ring"),
+	PUT("put \"KEY STRING\" \"DATA STRING\"", "Insert data into the ring"),
+	GET("get \"KEY STRING\"", "Retrieve data from the ring"),
+	RM("rm \"KEY STRING\"", "Alias for remove"),
+	REMOVE("remove \"KEY STRING\"", "Remove data with the given key from the ring"),
 	DISCONNECT("disconnect", "Disconnect from ring"),
 	QUIT("quit", "Exit");
 	

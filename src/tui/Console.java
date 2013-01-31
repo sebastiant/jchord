@@ -77,12 +77,12 @@ public class Console {
 			break;
 		}
 		case PUT: {
-			String input = getQuotes(line);
-			if(input != null) {
-				long key = dht.put(input);
+			String[] input = splitQuotes(line);
+			if(input != null && input.length >= 3) {
+				long key = dht.put(input[1], input[3]);
 				System.out.println("key = " + key); 
 			} else {
-				System.out.println("No data provied, (forgot quotes?)");
+				System.out.println("Invalid syntax");
 			}
 			break;
 		}	
@@ -92,42 +92,31 @@ public class Console {
 				break;
 			}
 			try {
-				long key = Long.parseLong(split[1]);
-				String data = dht.get(key);
-				System.out.println("data(" + key + ") = " + data);
+				String[] input = splitQuotes(line);
+				if(input == null) {
+					System.out.println("Invalid key");
+				} else {
+					DataEntry data = dht.get(input[1]);
+					System.out.println("data(" + data.key + ") = " + data.value);
+				}
 			} catch(NumberFormatException e) {
 				System.out.println("Invalid key");
 			}
 			break;
 		}
-		case RM:
-		case REMOVE: {
+		case RM: 
+		case REMOVE:
+		{
 			if(split.length < 2) {
 				System.out.println("No key provieded");
 				break;
 			}
 			try {
-				long key = Long.parseLong(split[1]);
-				dht.remove(key);
-				String data = dht.get(key);
-				System.out.println("data(" + key+ ") = " + data);
-			} catch(NumberFormatException e) {
-				System.out.println("Invalid key");
-			}
-			break;
-		}
-		case PUTKEY: {
-			if(split.length < 3) {
-				System.out.println("Too few arguments");
-				break;
-			}
-			try {
-				long key = Long.parseLong(split[1]);
-				String input = getQuotes(line);
-				if(input != null) {
-					dht.putKey(input, key);
+				String[] input = splitQuotes(line);
+				if(input == null) {
+					System.out.println("Invalid key");
 				} else {
-					System.out.println("No data provied, (forgot quotes?)");
+					dht.remove(input[1]);
 				}
 			} catch(NumberFormatException e) {
 				System.out.println("Invalid key");
@@ -150,12 +139,12 @@ public class Console {
 		running = false;
 	}
 
-	private String getQuotes(String line) {
+	private String[] splitQuotes(String line) {
 		String[] result = line.split("\"");
 		if(result.length < 2) {
 			return null;
 		}
-		return result[1];
+		return result;
 	}
 	
 	public void run() {

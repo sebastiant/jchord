@@ -32,27 +32,24 @@ public class DHT {
 		node = null;
 	}
 	
-	public long put(String data) {
-		long key = hash(data);
-		node.putObject(key, data);
-		return key;
+	public long put(String key, String data) {
+		long k = hash(key);
+		node.putObject(k, data);
+		return k;
 	}
 	
-	public void putKey(String data, long key) {
-		node.putObject(key, data);
-	}
-	
-	public String get(long key) {
-		Object o = node.getObject(key);
+	public DataEntry get(String key) {
+		long k = hash(key);
+		Object o = node.getObject(k);
 		String ret = "null";
 		if(o != null) {
 			ret = o.toString();
 		}
-		return ret;
+		return new DataEntry(ret, k);
 	}
 	
-	public void remove(long key) {
-		node.removeObject(key);
+	public void remove(String key) {
+		node.removeObject(hash(key));
 	}
 	
 	public boolean isConnected() {
@@ -64,7 +61,7 @@ public class DHT {
 	}
 	
 	
-	private long hash(String data) {
+	public long hash(String data) {
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("SHA-256");
