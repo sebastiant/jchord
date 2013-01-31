@@ -5,7 +5,7 @@ public enum Command {
 	HELP("help", "Print this help"),
 	FINGERS("fingers", "Show fingers"),
 	PUT("put \"DATA STRING\"", "Insert data into the ring"),
-	PUTKEY("put KEY \"DATA STRING\"", "Insert data, use the provided key"),
+	PUTKEY("putkey KEY \"DATA STRING\"", "Insert data, use the provided key"),
 	GET("get KEY", "Retrieve data from the ring"),
 	RM("rm KEY", "Alias for remove"),
 	REMOVE("remove KEY", "Remove data with the given key from the ring"),

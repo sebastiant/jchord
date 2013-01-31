@@ -3,6 +3,16 @@ package network;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+/**
+ * 
+ * @author Jakob Stengård
+ *
+ * The address class is used to represent ip-address and port pairs,
+ * and to convert between stings of the form ip:port and java's
+ * InetAddress class.
+ * 
+ */
+
 public class Address {
 	private InetAddress ip;
 	private int port;
