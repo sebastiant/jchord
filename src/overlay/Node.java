@@ -15,6 +15,10 @@ import network.events.ControlEvent;
 import network.events.DisconnectEvent;
 import network.events.Message;
 
+/*
+ * Node - The DHT-peer class
+ * Node objects are created with a passed Address (ip+port), a size of the id-space and an arity.
+ */
 public class Node implements Protocol {
 
 	private MessageSender msgSender;
@@ -34,8 +38,8 @@ public class Node implements Protocol {
 	private boolean objectBufferIsSet;
 	private Object objectBuffer; /* Used to store retrieved objects during lookups (as lookups are done unblocking) */
 	
-	public static final int PRED_REQ_INTERVAL = 1000;
-	public static final int FINGER_FIX_INTERVAL = 1000;
+	public static final int PRED_REQ_INTERVAL = 1000; /* intervals in ms between sent out predecessor requests */
+	public static final int FINGER_FIX_INTERVAL = 1000; /* intervals in ms between sent out fingertable-updates (findsuccessor-requests) */
 
 	private Timer checkPredecessorTimer = new Timer(true);
 	private Timer checkFingersTimer = new Timer(true);
@@ -54,6 +58,8 @@ public class Node implements Protocol {
 		successor = self;
 		state = STATE_DISCONNECTED;
 		msgSender = new MessageSender(addr.getPort());
+		
+		//Register Message and Control-observers to receive messages and disconnect/connectionrefused-events from the messagesender
 		msgSender.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message msg) {
@@ -71,6 +77,7 @@ public class Node implements Protocol {
 		});
 		msgSender.start();
 		
+		//Start Timertasks to periodically check successors predecessor and update fingertable entries.
 		checkPredecessorTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -83,7 +90,6 @@ public class Node implements Protocol {
 			}
 			
 		}, 1000, PRED_REQ_INTERVAL);
-		
 		checkFingersTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -125,6 +131,10 @@ public class Node implements Protocol {
 		return datastore;
 	}
 	
+	public FingerEntry[] getFingers() {
+		return ft.getEntries();
+	}
+	
 	public void shutdown()
 	{
 		if(running) {
@@ -137,12 +147,19 @@ public class Node implements Protocol {
 		}
 	}
 	
+	/*
+	 * Send
+	 * Send passed message to the passed Address. Does not return anything -errors on sends are handled by ConnectionRefused-events.
+	 */
 	public void send(Address addr, Message msg){
 		msg.setDestinationAddress(addr);
 	//	System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
 		msgSender.send(msg);
 	}
-	
+	/*
+	 * Connect
+	 * Connection to an address and update state to connecting.
+	 */
 	public void connect(Address addr)
 	{
 		state = STATE_CONNECTING;
@@ -153,7 +170,10 @@ public class Node implements Protocol {
 		msg.setKey(PROTOCOL_JOIN_ID, self.getId());
 		send(addr, msg);		
 	}
-	
+	/*
+	 * sendCheckPredecessor
+	 * Requests the successors predecessor to very that no node has joined in between.
+	 */
 	private void sendCheckPredecessor() {
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
@@ -170,7 +190,10 @@ public class Node implements Protocol {
 			System.out.println(self.getId() + ": Not pinging! pred = NULL");
 		}
 	}
-	
+	/*
+	 * updatePredecessor
+	 * Change current predecessor to the passed PeerEntry. If the new predecessor is owner of some existing objects in the data storage, it is sent aswell.
+	 */
 	private void updatePredecessor(PeerEntry predecessor) {
 		Message msg;
 		predecessorLastSeen = System.currentTimeMillis();
@@ -193,7 +216,10 @@ public class Node implements Protocol {
 			send(predecessor.getAddress(), msg);
 		}
 	}
-	
+	/*
+	 * updateSuccessor
+	 * Changes current successor to the passed PeerEntry and sends a SuccessorInform-message. Also, the list of successing-successors is cleaned.
+	 */
 	public void updateSuccessor(PeerEntry successor)
 	{
 		if(this.successor == null)
@@ -209,6 +235,10 @@ public class Node implements Protocol {
 		successorlist[0] = successorlist[1] = successorlist[2] = null;
 	}
 	
+	/*
+	 * sendPredRequest
+	 * If connected to a ring, send out a predecessor-request to the successor.
+	 */
 	private void sendPredRequest() {
 		if(!successor.equals(self)) {
 			Message msg = new Message();
@@ -217,6 +247,10 @@ public class Node implements Protocol {
 		}
 	}
 	
+	/*
+	 * sendSuccessorInform
+	 * If connected to a ring, inform the successor that it is our successor.
+	 */
 	private void sendSuccessorInform() {
 		if(!self.equals(successor)) {
 			Message msg = new Message();
@@ -226,11 +260,19 @@ public class Node implements Protocol {
 			send(successor.getAddress(), msg);
 		}
 	}
-	
+	/*
+	 * handleDisconnectEvent
+	 * Obsolete!
+	 */
 	public void handleDisconnectEvent(DisconnectEvent e) {
 		System.out.println(self.getId()+": Received DisconnectEvent from some host!");
 	}
 	
+	/*
+	 * handleConnectionRefusedEvent
+	 * Is triggered when the messageSender tries to send a message but the socket is closed (ping or overlay-message)
+	 * Triggers an update of the fingertable as well as a check if the disconneted node is our successor and predecessor.
+	 */
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
 		System.out.println(self.getId()+": Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
 		if(e.getSource().equals(successor.getAddress()))
@@ -261,6 +303,10 @@ public class Node implements Protocol {
 		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
 	}
 	
+	/*
+	 * handleMessage
+	 * forwards a received message to the appropriate handling-function, if message follows protocol.
+	 */
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
 		if(!msg.has(PROTOCOL_COMMAND))
@@ -299,7 +345,7 @@ public class Node implements Protocol {
 		}
 	}
 
-	/** Respond on predecessor pings */
+	/* Respond on predecessor pings */
 	public void handleCheckPredecessor(Message msg) {
 		//System.out.println(self.getId() + " responding to ping");
 		Message response = new Message();
@@ -307,7 +353,7 @@ public class Node implements Protocol {
 		send(msg.getSourceAddress(), response);
 	}
 	
-	/** Update predecessorLastSeen when a ping response is received.*/
+	/* Update predecessorLastSeen when a ping response is received.*/
 	public void handleCheckPredResponse(Message msg) {
 		predecessorLastSeen = System.currentTimeMillis();
 	}
@@ -632,10 +678,10 @@ public class Node implements Protocol {
 		return;
 	}
 	
-	public FingerEntry[] getFingers() {
-		return ft.getEntries();
-	}
-	
+	/*
+	 * fixFingers
+	 * Iterates through all entries in the fingertable and requests the key's successor.
+	 */
 	public void fixFingers()
 	{
 		for(FingerEntry e : ft.getEntries())
