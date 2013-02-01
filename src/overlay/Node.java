@@ -758,6 +758,10 @@ public class Node implements Protocol {
 		}
 	}
 	
+	/*
+	 * getObject
+	 * Sends a request to the node owning the passed key to return the object associated with the passed key.
+	 */
 	public Object getObject(long key)
 	{
 		Message msg;
@@ -774,7 +778,7 @@ public class Node implements Protocol {
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_GET);
 			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
-			if(isBetween(key, self.getId(), successor.getId()))
+			if(isBetween(key, self.getId(), successor.getId())) //our successor owns the item
 			{
 				System.out.println(self.getId() + ": passing getObject-request to successor");
 				send(successor.getAddress(), msg);
@@ -796,7 +800,7 @@ public class Node implements Protocol {
 					}
 				}
 				return null;
-			} else
+			} else //Route the request according to fingers
 			{
 				System.out.println(self.getId() + ": sending getObject-request a long");
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
@@ -822,6 +826,10 @@ public class Node implements Protocol {
 		}
 	}
 	
+	/*
+	 * putObject
+	 * Sends a request to the node owning the passed key to add the passed object with belonging key.
+	 */
 	public void putObject(long key, Object object)
 	{
 		Message msg;
@@ -848,6 +856,10 @@ public class Node implements Protocol {
 		}
 	}
 	
+	/*
+	 * removeObject
+	 * Sends a request to the node owning the passed key to remove the according object.
+	 */
 	public void removeObject(long key)
 	{
 		Message msg;
