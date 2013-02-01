@@ -79,7 +79,7 @@ public class Message {
 	public String getId() {
 		String ret = null;
 		try {
-			if(this.json.has("_Id")) {
+			if(this.json.has("_id")) {
 				ret = (String) this.json.get("_id");
 			}
 		} catch (JSONException e) {

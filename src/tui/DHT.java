@@ -15,6 +15,7 @@ public class DHT {
 	
 	public DHT(Address addr, long idSpace, int airity) {
 		node = new Node(addr, idSpace, airity);	
+		System.out.println("Node address: " + node.getAddress());
 	}
 
 	public void showFigers() {
