@@ -8,7 +8,9 @@ import java.util.Set;
 
 import overlay.Node;
 
-
+/*
+ * A storage-class. Stores a map containing hashed keys and objects.
+ */
 public class Datastore {
 	
 	private Map<Long, Object> store;
@@ -31,6 +33,9 @@ public class Datastore {
 	{
 		store.remove(key);
 	}
+	/* 
+	 * Returns all of the maps objects which do _not_ have a key between key_1 and key_2 in the a ring (see Node.isBetween for further information)
+	 */
 	public Map<Long,Object> getAllEntriesNotBetween(long key_1, long key_2)
 	{
 		Map<Long,Object> res = new HashMap<Long,Object>();

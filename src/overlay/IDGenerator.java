@@ -7,6 +7,9 @@ import java.security.NoSuchAlgorithmException;
 
 import network.Address;
 
+/*
+ * IDGenerator - generates an id by hasing the passed address and applying modulo(overlaySize) on the result.
+ */
 public class IDGenerator {
 	public static long getId(Address address, long overlaySize) {
 		MessageDigest md = null;

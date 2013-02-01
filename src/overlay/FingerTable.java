@@ -1,5 +1,10 @@
 package overlay;
 
+/*
+ * FingerTable
+ * Contains a list of FingerEntries that associates a finger to a FingerEntry
+ * The size is determined by the arity (k) and the idSpace-size (n)
+ */
 public class FingerTable {
 	private PeerEntry self;
 	private FingerEntry ft[];
@@ -58,6 +63,11 @@ public class FingerTable {
 		}
 		return null;
 	}
+	/*
+	 * Replace all occurences of <failedNode> with <successor>. This is done so that when a node is detected to be
+	 * offline, it is removed from the fingertable to not be recepient to any further requests. The successor is always
+	 * an option to route messages to, and is therefore used untill the fingerentry is updated.
+	 */
 	public void repairFingerTable(PeerEntry successor, PeerEntry failedNode)
 	{
 		for(FingerEntry f : ft)
@@ -88,6 +98,9 @@ public class FingerTable {
 		return self;
 	}
 	
+	/*
+	 *isPowerOfTwo -returns true if the passed value <num> is a power of two.
+	 */
 	public static boolean isPowerOfTwo(long num)
 	{
 		return ((Math.log10(num) / Math.log10(2)) - Math.rint(Math.log10(num) / Math.log10(2))) == 0;

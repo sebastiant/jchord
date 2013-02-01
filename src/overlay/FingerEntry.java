@@ -1,5 +1,8 @@
 package overlay;
 
+/*
+ * FingerEntry - represents an entry in the Fingertable which stores a key and its associated PeerEntry (successing node)
+ */
 public class FingerEntry {
 	private long key;
 	private PeerEntry pe;
