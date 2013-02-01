@@ -837,7 +837,7 @@ public class Node implements Protocol {
 		Message msg;
 		if(state != STATE_CONNECTED || isBetween(key, predecessor.getId(), self.getId()))
 		{
-			System.out.println(self.getId() + ": adding data from own storage");
+			System.out.println(self.getId() + ": adding data to own storage");
 			datastore.addEntry(key, object);
 		} else
 		{

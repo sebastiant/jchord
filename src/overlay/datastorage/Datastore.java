@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import overlay.Node;
 
@@ -17,7 +18,7 @@ public class Datastore {
 	
 	public Datastore()
 	{
-		store = new HashMap<Long, Object>();
+		store = new ConcurrentHashMap<Long, Object>();
 	}
 	
 	public void addEntry(long key, Object obj)
