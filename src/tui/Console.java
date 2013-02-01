@@ -123,6 +123,10 @@ public class Console {
 			}
 			break;
 		}
+		case STORE: {
+			dht.showStore();
+			break;
+		}
 		case QUIT: {
 			System.out.println("Bye...");
 			quit();

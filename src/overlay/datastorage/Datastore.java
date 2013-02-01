@@ -3,6 +3,7 @@ package overlay.datastorage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import overlay.Node;
@@ -52,5 +53,9 @@ public class Datastore {
 	public String toString()
 	{
 		return store.toString();
+	}
+	
+	public Set<Entry<Long, Object>> getEntries() {
+		return store.entrySet();
 	}
 }

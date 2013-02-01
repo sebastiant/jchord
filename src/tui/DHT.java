@@ -3,6 +3,7 @@ package tui;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map.Entry;
 
 import network.Address;
 import overlay.FingerEntry;
@@ -48,6 +49,11 @@ public class DHT {
 		return new DataEntry(ret, k);
 	}
 	
+	public void showStore() {
+		for(Entry<Long, Object> e: node.getDatastore().getEntries()) {
+			System.out.println(e.getKey() + ": " + e.getValue().toString());
+		}
+	}
 	public void remove(String key) {
 		node.removeObject(hash(key));
 	}

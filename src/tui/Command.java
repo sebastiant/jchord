@@ -9,6 +9,7 @@ public enum Command {
 	RM("rm \"KEY STRING\"", "Alias for remove"),
 	REMOVE("remove \"KEY STRING\"", "Remove data with the given key from the ring"),
 	DISCONNECT("disconnect", "Disconnect from ring"),
+	STORE("store", "List the store"),
 	QUIT("quit", "Exit");
 	
 	public static final int INDENT = 40;
