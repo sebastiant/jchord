@@ -85,11 +85,7 @@ public class TestStop {
 		assertTrue(recievedMessage1);
 		assertTrue(recievedMessage2);
 		assertTrue(recievedMessage4);
-		
-		// Stopped node has no connections
 		assertTrue(node2.getConnections().size() == 0);
-		
-		// No other nodes has connections to the stopped node
 		for(Entry<Address, Connection> e: node1.getConnections().entrySet()) {
 			assertEquals(e.getKey(), e.getValue().getAddress());
 			assertFalse(e.getKey().equals(node2.getAddress()));

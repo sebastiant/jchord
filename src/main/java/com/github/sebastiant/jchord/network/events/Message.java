@@ -28,11 +28,10 @@ public class Message {
 		this.json = json;
 	}
 	
-	public void setDestinationAddress(InetAddress addr, int port) {
+	public void setDestinationAddress(InetAddress address, int port) {
 		try {
-			this.json.put("_dest", addr.getHostAddress() + ":" + port);
+			this.json.put("_dest", address.getHostAddress() + ":" + port);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -41,21 +40,11 @@ public class Message {
 		 setDestinationAddress(addr.getInetAddress(), addr.getPort());
 	}
 	
-	public void setDestinationAddress(String addr) {
-		try {
-			this.json.put("_dest", addr);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	public Address getDestinationAddress() {
 		Address ret = null;
 		try {
 			ret = new Address((String)this.json.get("_dest"));		
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ret;
@@ -66,7 +55,6 @@ public class Message {
 		try {
 			ret = new Address((String)this.json.get("_src"));
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ret;
@@ -79,7 +67,6 @@ public class Message {
 				ret = (String) this.json.get("_id");
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ret;
@@ -90,7 +77,6 @@ public class Message {
 		try {
 			o = this.json.get(key);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return o;
@@ -101,7 +87,6 @@ public class Message {
 		try {
 			this.json.put(key, value);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -110,25 +95,14 @@ public class Message {
 		try {
 			this.json.put(key, value);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	public void setKey(String key, double value) {
-		try {
-			this.json.put(key, value);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+
 	public void setKey(String key, Object o) {
 		try {
 			this.json.put(key, o);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -141,7 +115,6 @@ public class Message {
 		try {
 			this.json.put("_src", source);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -150,7 +123,6 @@ public class Message {
 		try {
 			this.json.put("_id", id);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -164,7 +136,6 @@ public class Message {
 		try {
 			 str = this.json.getString(key);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return str;
@@ -175,7 +146,6 @@ public class Message {
 		try {
 			 l = this.json.getLong(key);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return l;
@@ -186,7 +156,6 @@ public class Message {
 		try {
 			b = this.json.getBoolean(key);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return b;
@@ -197,7 +166,6 @@ public class Message {
 		try {
 			i = this.json.getInt(key);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return i;

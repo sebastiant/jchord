@@ -69,8 +69,7 @@ public class MessageSender {
 				handleConnection(s);
 			}
 		});
-		
-		// relay messages to the application layer
+
 		applicationMessageObserver = new Observer<Message>() {
 			@Override
 			public void notifyObserver(Message e) {
@@ -79,12 +78,10 @@ public class MessageSender {
 		};
 	}
 
-	/** Start this MessageSender */
 	public void start() {
 		server.start();
 	}
-	
-	/** Stop this MessageSender. This also disconnects and removes all underlying connections. */
+
 	public void stop() {
 		server.stop();
 		for(Entry<Connection, RecieverService> r : recievers.entrySet()) {
@@ -96,8 +93,7 @@ public class MessageSender {
 		recievers.clear();
 		cons.clear();
 	}
-	
-	/** Explicitly disconnect any connection to the given address. */
+
 	public synchronized boolean disconnect(Address addr) {
 		if(cons.containsKey(addr)) {
 			return removeConnection(cons.get(addr));
@@ -105,11 +101,10 @@ public class MessageSender {
 			return false;
 		}
 	}
-	
-	/** Handle incoming connections from the server */
+
 	private void handleConnection(Socket s) {
 		Connection con  = new Connection(s);
-		Message msg = null;
+		Message msg;
 		try {
 			msg = con.recieve();
 		} catch (SocketException e1) {
@@ -134,12 +129,10 @@ public class MessageSender {
 			rsp.setKey("accept", accept);
 			con.send(rsp);
 		} else {
-			System.err.println("Unknonw message: " + msg);
+			System.err.println("Unknown message: " + msg);
 		}
 	}
-	
-	/** Get a connection to the target address, if no
-	    if no connection exists, a new one is created. */
+
 	private Connection getConnection(Address address) {
 		lock.lock();
 		if(cons.containsKey(address)) {
@@ -174,7 +167,6 @@ public class MessageSender {
 					Thread.sleep(random.nextInt(MAX_BACKOFF));
 					lock.lock();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 		
 				System.err.println("Retrying");
@@ -196,7 +188,6 @@ public class MessageSender {
 			return false;
 		} 
 		m.setId("app");
-		// Handle loopback
 		if(m.getDestinationAddress().equals(this.hostadress) ||
 		  m.getDestinationAddress().equals(this.localhost)) {
 			m.setSourceAddress(hostadress);
@@ -218,21 +209,18 @@ public class MessageSender {
 				}
 			}
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
 	}
-	
-	/** Add a message reciever to the given connection instance. */
+
 	private RecieverService addMessageReciever(Connection c) {
 		RecieverService mr = new RecieverService(c, this);
 		mr.register(applicationMessageObserver, "app");
 		recievers.put(c,mr);
 		return mr;
 	}
-	
-	/** Remove the given connection from all tables and data structures. */
+
 	protected synchronized boolean removeConnection(Connection c) {
 		if(cons.contains(c)) {
 			System.out.println("Remove connection to " + c.getAddress());
@@ -245,35 +233,18 @@ public class MessageSender {
 		}
 	}
 	
-	/** Registers a message observer to receive incoming messages. */
 	public void registerMessageObserver(Observer<Message> obs) {
 		this.messageObservable.register(obs);
 	}
-	
-	/** Registers a control event observer to receive control events from this message sender.
-	 * Typical control events are DisconnectEvent and ConenctionRefused event. */
+
 	public void registerControlObserver(Observer<ControlEvent> evt) {
 		this.eventObservable.register(evt);
 	}
-	
-	/** Get the connection table for this message sender. */
+
 	public ConcurrentHashMap<Address, Connection> getConnections() {
 		return cons;
 	}
-	
-	/** Print all connections from and to this message sender. */
-	public void printConnections() {
-		System.out.println("Connections for message sender at " + server.getPort() + ":");
-		for(Entry<Address, Connection> e : cons.entrySet()) {
-			Connection c = e.getValue();
-			System.out.println(c.getLocalAddress().getHostAddress() +  ":" + c.getLocalPort() + " - " + 
-			c.getInetAddress().getHostAddress() + ":" +c.getPort());
-		}
-	}
-	
-	/** Get the host address used by this message sender.
-	 *  This is the address used by other hosts to send
-	 *  messages to this host. */
+
 	public Address getAddress() {
 		return this.hostadress;
 	}

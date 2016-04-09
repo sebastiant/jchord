@@ -27,29 +27,20 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 			Socket socket = serverSocket.accept();
 			socket.setKeepAlive(true);
 			notifyObservers(socket);
-		//} catch(SocketTimeoutException e){
-			//Exception expected. To regularly check if we still should accept connections.
 		}catch(SocketException e) {
 			if(e.getMessage().equals("Socket closed")) {
-				//Silent ignore
 				stop();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
-	
-	/** Start listening for new connections.
-	 * For safety, this should typically be called after all interested observers
-	 * have registered on this server. */
+
 	public synchronized void start() {
 		if(!service.isRunning()) {
 			try {
 				serverSocket = new ServerSocket(port);
-			//	serverSocket.setSoTimeout(1000); //Throw SocketTimeoutException if no connection was accepted within 1sec.
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if(serverSocket != null) {
@@ -58,31 +49,25 @@ public class Server extends Observable<Socket> implements ServiceInterface {
 		}
 	}
 	
-	/** Stop this server, close the socket and terminate the thread. */
 	public synchronized void stop() {
 		if(service.isRunning()) {
 			service.stop();
 			try {
-				//Closes this socket. Any thread currently blocked in accept() will throw a SocketException.
 				serverSocket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	/** Get the listening port for the server socket. */
 	public int getPort() {
 		return port;	
 	}
 	
-	/** Get a string representation of this server. */
 	public String toString() {
 		return "Server#" + serverSocket.getLocalPort();
 	}
-	
-	/** Check if the server is running */
+
 	public synchronized boolean isRunning() {
 		return service.isRunning();
 	}

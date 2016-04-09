@@ -15,12 +15,11 @@ public class Console {
 	private DHT dht;
 
 	public Console(int port,  long idSpace, int airity) {
-		Address addr = null;
+		Address address;
 		try {
-			addr = new Address(InetAddress.getLocalHost(), port);
-			this.dht = new DHT(addr, idSpace, airity);
+			address = new Address(InetAddress.getLocalHost(), port);
+			this.dht = new DHT(address, idSpace, airity);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		running = true;
@@ -46,7 +45,7 @@ public class Console {
 			}
 			String input = split[1];
 			if(input.indexOf(":") == -1) {
-				input += ":8000"; // add default port
+				input += ":8000";
 			}
 			Address addr = new Address(input);
 			dht.connect(addr);
@@ -153,7 +152,6 @@ public class Console {
 			try {
 				commandLine();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				quit();
 			}

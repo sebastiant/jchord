@@ -64,13 +64,10 @@ public class TestSend {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		assertTrue(gotMessage1);
 		assertTrue(gotMessage2);
-		
-		// Only one connection was created
 		assertTrue(node1.getConnections().size() == 1);
 		assertTrue(node2.getConnections().size() == 1);
 	}

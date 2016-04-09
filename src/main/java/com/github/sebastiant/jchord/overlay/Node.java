@@ -5,21 +5,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.github.sebastiant.jchord.overlay.datastorage.Datastore;
-
-
 import com.github.sebastiant.jchord.network.Address;
 import com.github.sebastiant.jchord.network.ConcreteObserver;
 import com.github.sebastiant.jchord.network.MessageSender;
 import com.github.sebastiant.jchord.network.events.ConnectionRefusedEvent;
 import com.github.sebastiant.jchord.network.events.ControlEvent;
-import com.github.sebastiant.jchord.network.events.DisconnectEvent;
 import com.github.sebastiant.jchord.network.events.Message;
 
-/*
- * Node - The DHT-peer class
- * Node objects are created with a passed Address (ip+port), a size of the id-space and an arity.
- */
 public class Node implements Protocol {
+	public static final int PREDECESSOR_REQ_INTERVAL_IN_MS = 1000;
+	public static final int FINGER_FIX_INTERVAL_IN_MS = 1000;
 
 	private MessageSender msgSender;
 	private FingerTable ft;
@@ -27,20 +22,14 @@ public class Node implements Protocol {
 	private long idSpace;
 	private PeerEntry self;
 	private String state;
-
 	private PeerEntry predecessor;
 	private PeerEntry successor;
-	private PeerEntry successorlist[];
+	private PeerEntry successorList[];
 	private boolean running = true;
 	private long predecessorLastSeen = Long.MAX_VALUE;
-	
 	private Datastore datastore;
 	private boolean objectBufferIsSet;
-	private Object objectBuffer; /* Used to store retrieved objects during lookups (as lookups are done unblocking) */
-	
-	public static final int PRED_REQ_INTERVAL = 1000; /* intervals in ms between sent out predecessor requests */
-	public static final int FINGER_FIX_INTERVAL = 1000; /* intervals in ms between sent out fingertable-updates (findsuccessor-requests) */
-
+	private Object objectBuffer;
 	private Timer checkPredecessorTimer = new Timer(true);
 	private Timer checkFingersTimer = new Timer(true);
 	
@@ -53,13 +42,12 @@ public class Node implements Protocol {
 		objectBufferIsSet = false;
 		self = new PeerEntry(addr, localId);
 		this.ft = new FingerTable(arity, idSpace, self);
-		this.successorlist = new PeerEntry[3];
+		this.successorList = new PeerEntry[3];
 		predecessor = null;
 		successor = self;
 		state = STATE_DISCONNECTED;
 		msgSender = new MessageSender(addr.getPort());
 		
-		//Register Message and Control-observers to receive messages and disconnect/connectionrefused-events from the messagesender
 		msgSender.registerMessageObserver(new ConcreteObserver<Message>() {
 			@Override
 			public void notifyObserver(Message msg) {
@@ -69,36 +57,31 @@ public class Node implements Protocol {
 		msgSender.registerControlObserver(new ConcreteObserver<ControlEvent>() {
 			@Override
 			public void notifyObserver(ControlEvent e) {
-				if(e instanceof DisconnectEvent)
-					handleDisconnectEvent((DisconnectEvent) e);
 				if(e instanceof ConnectionRefusedEvent)
 					handleConnectionRefusedEvent((ConnectionRefusedEvent) e);
 			}	
 		});
 		msgSender.start();
-		
-		//Start Timertasks to periodically check successors predecessor and update fingertable entries.
+
 		checkPredecessorTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				if(state == STATE_CONNECTED)
 				{
-					//cSystem.out.println(self.getId() + " checking predecessor. ");
 					sendCheckPredecessor();
-					sendPredRequest();
+					sendPredecessorRequest();
 				}
 			}
 			
-		}, 1000, PRED_REQ_INTERVAL);
+		}, 1000, PREDECESSOR_REQ_INTERVAL_IN_MS);
 		checkFingersTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				if(state == STATE_CONNECTED) {
-					//System.out.println(self.getId() + " fixing fingers ");
 					fixFingers();
 				}
 			}
-		}, 1000, FINGER_FIX_INTERVAL); 
+		}, 1000, FINGER_FIX_INTERVAL_IN_MS);
 	}
 	
 	
@@ -131,12 +114,11 @@ public class Node implements Protocol {
 		return datastore;
 	}
 	
-	public FingerEntry[] getFingers() {
+	public FingerTableEntry[] getFingers() {
 		return ft.getEntries();
 	}
 	
-	public void shutdown()
-	{
+	public void shutdown() {
 		if(running) {
 			checkFingersTimer.cancel();
 			checkFingersTimer.purge();
@@ -146,22 +128,13 @@ public class Node implements Protocol {
 			running = false;
 		}
 	}
-	
-	/*
-	 * Send
-	 * Send passed message to the passed Address. Does not return anything -errors on sends are handled by ConnectionRefused-events.
-	 */
+
 	public void send(Address addr, Message msg){
 		msg.setDestinationAddress(addr);
-		//System.out.println("Sending msg: " + msg.toString() + ", to addr: " + addr);
 		msgSender.send(msg);
 	}
-	/*
-	 * Connect
-	 * Connection to an address and update state to connecting.
-	 */
-	public void connect(Address addr)
-	{
+
+	public void connect(Address addr) {
 		state = STATE_CONNECTING;
 		Message msg = new Message();
 		msg.setKey(PROTOCOL_COMMAND, PROTOCOL_JOIN);
@@ -170,18 +143,14 @@ public class Node implements Protocol {
 		msg.setKey(PROTOCOL_JOIN_ID, self.getId());
 		send(addr, msg);		
 	}
-	/*
-	 * sendCheckPredecessor
-	 * Requests the successors predecessor to very that no node has joined in between.
-	 */
+
 	private void sendCheckPredecessor() {
 		long now = System.currentTimeMillis();
 		if(predecessor != null) {
-			//System.out.println(self.getId() + "Pinging to addr: "+ predecessor.getAddress());
 			Message msg = new Message();
 			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR);
 			send(predecessor.getAddress(), msg);
-			if(now - predecessorLastSeen > PRED_REQ_INTERVAL*4) {
+			if(now - predecessorLastSeen > PREDECESSOR_REQ_INTERVAL_IN_MS *4) {
 				System.err.println(self + ": Predecessor (" + predecessor.getId() + ") timed out");
 				predecessor = null;
 			} 
@@ -190,10 +159,7 @@ public class Node implements Protocol {
 			System.out.println(self.getId() + ": Not pinging! pred = NULL");
 		}
 	}
-	/*
-	 * updatePredecessor
-	 * Change current predecessor to the passed PeerEntry. If the new predecessor is owner of some existing objects in the data storage, it is sent aswell.
-	 */
+
 	private void updatePredecessor(PeerEntry predecessor) {
 		Message msg;
 		predecessorLastSeen = System.currentTimeMillis();
@@ -205,7 +171,7 @@ public class Node implements Protocol {
 			System.out.println(self.getId() + ": changing predecessor from: " + this.predecessor.getId() +" to: " + predecessor.getId());
 		}
 		this.predecessor = predecessor;
-		//Send over any stored data which key's is not in between the predecessor and self in the ring to the predecessor.
+
 		for(Map.Entry<Long,Object> e : datastore.getAllEntriesNotBetween(predecessor.getId(), self.getId()).entrySet())
 		{
 			System.out.println("Assigning entry: " + e.getKey() + " to new predecessor");
@@ -216,10 +182,7 @@ public class Node implements Protocol {
 			send(predecessor.getAddress(), msg);
 		}
 	}
-	/*
-	 * updateSuccessor
-	 * Changes current successor to the passed PeerEntry and sends a SuccessorInform-message. Also, the list of successing-successors is cleaned.
-	 */
+
 	public void updateSuccessor(PeerEntry successor)
 	{
 		if(this.successor == null)
@@ -227,30 +190,22 @@ public class Node implements Protocol {
 			System.out.println(self.getId() + ": changing successor from: NULL to: " + successor.getId());
 		}
 		else{
-			System.out.println(self.getId() + ": changing successor from: " + this.successor.getId() +" to: " + successor.getId());
+			System.out.println(self.getId() + ": changing successor from: " + this.successor.getId() + " to: " + successor.getId());
 
 		}
 		this.successor = successor;
 		sendSuccessorInform();
-		successorlist[0] = successorlist[1] = successorlist[2] = null;
+		successorList[0] = successorList[1] = successorList[2] = null;
 	}
-	
-	/*
-	 * sendPredRequest
-	 * If connected to a ring, send out a predecessor-request to the successor.
-	 */
-	private void sendPredRequest() {
+
+	private void sendPredecessorRequest() {
 		if(!successor.equals(self)) {
 			Message msg = new Message();
 			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_PREDECESSOR_REQUEST);
 			send(successor.getAddress(), msg);
 		}
 	}
-	
-	/*
-	 * sendSuccessorInform
-	 * If connected to a ring, inform the successor that it is our successor.
-	 */
+
 	private void sendSuccessorInform() {
 		if(!self.equals(successor)) {
 			Message msg = new Message();
@@ -260,28 +215,16 @@ public class Node implements Protocol {
 			send(successor.getAddress(), msg);
 		}
 	}
-	/*
-	 * handleDisconnectEvent
-	 * Obsolete!
-	 */
-	public void handleDisconnectEvent(DisconnectEvent e) {
-		System.out.println(self.getId()+": Received DisconnectEvent from some host!");
-	}
-	
-	/*
-	 * handleConnectionRefusedEvent
-	 * Is triggered when the messageSender tries to send a message but the socket is closed (ping or overlay-message)
-	 * Triggers an update of the fingertable as well as a check if the disconneted node is our successor and predecessor.
-	 */
+
 	public void handleConnectionRefusedEvent(ConnectionRefusedEvent e) {
 		System.out.println(self.getId()+": Received ConnectionRefusedEvent when trying to connect to: " + e.getSource());
 		if(e.getSource().equals(successor.getAddress()))
 		{
 			System.out.println(self.getId()+": My successor has disconnected!");
-			if(successorlist[0] != null && !successor.equals(successorlist[0]) && !successorlist[0].equals(self))
+			if(successorList[0] != null && !successor.equals(successorList[0]) && !successorList[0].equals(self))
 			{
-				System.out.println("Switching to next on list: "+successorlist[0].getId());
-				updateSuccessor(successorlist[0]);
+				System.out.println("Switching to next on list: "+ successorList[0].getId());
+				updateSuccessor(successorList[0]);
 			}
 			else
 			{
@@ -289,9 +232,9 @@ public class Node implements Protocol {
 				state = STATE_DISCONNECTED;
 				successor = self;
 			}
-			successorlist[0] = null;
-			successorlist[1] = null;
-			successorlist[2] = null;
+			successorList[0] = null;
+			successorList[1] = null;
+			successorList[2] = null;
 		} if(predecessor != null)
 		{
 			if(e.getSource().equals(predecessor.getAddress()))
@@ -302,21 +245,15 @@ public class Node implements Protocol {
 		}
 		ft.repairFingerTable(successor, new PeerEntry(e.getSource(),IDGenerator.getId(e.getSource(), idSpace)));
 	}
-	
-	/*
-	 * handleMessage
-	 * forwards a received message to the appropriate handling-function, if message follows protocol.
-	 */
+
 	public void handleMessage(Message msg) {
 		Address src = msg.getSourceAddress();
 		if(!msg.has(PROTOCOL_COMMAND))
 		{
-			//Not following protocol, disregard it!
 			handleUnknownMessage(msg);
 			return;
 		}
 		String command = (String) msg.getKey(PROTOCOL_COMMAND);
-		//System.out.println(self.getId()+": Received command " + command + " from: " + src);
 
 		if(command.equals(PROTOCOL_JOIN))
 		{
@@ -345,25 +282,16 @@ public class Node implements Protocol {
 		}
 	}
 
-	/* Respond on predecessor pings */
 	public void handleCheckPredecessor(Message msg) {
-		//System.out.println(self.getId() + " responding to ping");
 		Message response = new Message();
 		response.setKey(PROTOCOL_COMMAND, PROTOCOL_CHECK_PREDECESSOR_RESPONSE);
 		send(msg.getSourceAddress(), response);
 	}
-	
-	/* Update predecessorLastSeen when a ping response is received.*/
+
 	public void handleCheckPredResponse(Message msg) {
 		predecessorLastSeen = System.currentTimeMillis();
 	}
-	
-	/* 
-	 * Protocol specific methods handling implemented protocol messages.
-	 * Methods are passed either the sender's address or if necessary, also the message received.
-	 * With the current state and the address/message as basis, the method acts accordingly.
-	 */
-	
+
 	/**
      * Handle a received Join message.
      * A Join message is received when the sending node is connecting (requesting to connect) to the receiving
@@ -387,7 +315,6 @@ public class Node implements Protocol {
 			if((msg.getInt(PROTOCOL_JOIN_ARITY) == arity)
 					&& (msg.getLong(PROTOCOL_JOIN_IDENTIFIERSPACE) == idSpace))
 			{
-				//Accept the join!
 				if(state.equals(STATE_DISCONNECTED))
 				{
 					state = STATE_CONNECTED;
@@ -410,7 +337,7 @@ public class Node implements Protocol {
 	}
 	
 	private void handleJoinDenied(Message msg){
-		if(state==STATE_CONNECTING)
+		if(state == STATE_CONNECTING)
 		{
 			System.out.println(self.getId()+": My connection was DENIED by (" + msg.getLong(PROTOCOL_JOIN_ID));
 			state = STATE_DISCONNECTED;
@@ -437,9 +364,9 @@ public class Node implements Protocol {
 			updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
 			return;
 		}
-		long predid = predecessor.getId();
-		if(sender != predid) {
-			if(isBetween(sender, predid, self.getId())) {
+		long predecessorId = predecessor.getId();
+		if(sender != predecessorId) {
+			if(isBetween(sender, predecessorId, self.getId())) {
 				updatePredecessor(new PeerEntry(msg.getSourceAddress(), sender));
 			}
 		}
@@ -469,16 +396,16 @@ public class Node implements Protocol {
 		response.setKey(PROTOCOL_SUCCESSORLIST_1_ADDR,successor.getAddress().toString());
 		response.setKey(PROTOCOL_SUCCESSORLIST_1_ID,successor.getId());
 
-		if(successorlist[0] != null)
+		if(successorList[0] != null)
 		{
-			response.setKey(PROTOCOL_SUCCESSORLIST_2_ADDR,successorlist[0].getAddress().toString());
-			response.setKey(PROTOCOL_SUCCESSORLIST_2_ID,successorlist[0].getId());
+			response.setKey(PROTOCOL_SUCCESSORLIST_2_ADDR, successorList[0].getAddress().toString());
+			response.setKey(PROTOCOL_SUCCESSORLIST_2_ID, successorList[0].getId());
 
 		}
-		if(successorlist[1] != null)
+		if(successorList[1] != null)
 		{
-			response.setKey(PROTOCOL_SUCCESSORLIST_3_ADDR,successorlist[1].getAddress().toString());
-			response.setKey(PROTOCOL_SUCCESSORLIST_3_ID,successorlist[1].getId());
+			response.setKey(PROTOCOL_SUCCESSORLIST_3_ADDR, successorList[1].getAddress().toString());
+			response.setKey(PROTOCOL_SUCCESSORLIST_3_ID, successorList[1].getId());
 
 		}
 		send(src,response);
@@ -501,21 +428,21 @@ public class Node implements Protocol {
 			
 			if(msg.has(PROTOCOL_SUCCESSORLIST_1_ID))
 			{
-				successorlist[0] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_1_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_1_ID));
+				successorList[0] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_1_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_1_ID));
 			} if(msg.has(PROTOCOL_SUCCESSORLIST_2_ID))
 			{
-				successorlist[1] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_2_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_2_ID));
+				successorList[1] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_2_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_2_ID));
 
 			} if(msg.has(PROTOCOL_SUCCESSORLIST_3_ID))
 			{
-				successorlist[2] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_3_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_3_ID));
+				successorList[2] = new PeerEntry(new Address(msg.getString(PROTOCOL_SUCCESSORLIST_3_ADDR)), msg.getLong(PROTOCOL_SUCCESSORLIST_3_ID));
 			}
 			return;
 		} else if (pid == -1)
 		{
 			sendSuccessorInform();
 			return;
-		}else { //(pid != self.getId())
+		}else {
 			Address addr = new Address(msg.getString(PROTOCOL_PREDECESSOR_ADDRESS));
 			updateSuccessor(new PeerEntry(addr, pid));
 		}
@@ -530,13 +457,12 @@ public class Node implements Protocol {
 		Message resp;
 		if(msg.getSourceAddress().equals(self.getAddress()))
 		{
-			//System.out.println(self.getId()+": Received findsuccessor from self");
 			return;
-		} else if(successor == self) //Received findSuccessor when disconnected (Byzantine msg)
+		} else if(successor == self)
 		{
 			return;
 		}
-		// If the request is a lookup, or fingertable-update:
+
 		if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_FINGERTABLE)
 				|| msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_LOOKUP))
 		{
@@ -556,16 +482,12 @@ public class Node implements Protocol {
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ADDR, successor.getAddress().toString());
 				resp.setKey(PROTOCOL_FIND_SUCCESSOR_RESPONSE_ID, successor.getId());
 				send(new Address(msg.getString(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR)), resp);
-			} else if(ft.closestPrecedingNode(key) == self) //Fingertable not built, unable to handle this request.
+			} else if (ft.closestPrecedingNode(key) != self)
 			{
-				//System.out.println("!!! ID("+self.getId()+") Fingertable broken. Returned null when looking for key: " + key);
-			} else //Send request along
-			{
-				//System.out.println("!!! ID("+self.getId()+") routing message to: " + ft.closestPrecedingNode(key).getId());
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
 			}
 			
-		}else //The request is a get / put /delete
+		} else
 		{
 			if(isBetween(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY), predecessor.getId(), self.getId())) //Our responsibility
 			{
@@ -595,22 +517,14 @@ public class Node implements Protocol {
 						datastore.removeEntry(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
 					}
 				}
-			} else //Pass request along
+			} else
 			{
 				if(isBetween(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY), self.getId(), successor.getId())) //Successor's responsibility
 				{
-					/*
-					System.out.println(self.getId()  + "Passing along: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND)
-							+ " from: " + msg.getSourceAddress().toString() + " with key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
-					*/
 					send(successor.getAddress(), msg);
 				}
 				else
 				{
-					/*
-					 System.out.println(self.getId()  + "Passing along: " + msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND)
-					 + " from: " + msg.getSourceAddress().toString() + " with key: " + msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY));
-					 */
 					send(ft.closestPrecedingNode(msg.getLong(PROTOCOL_FIND_SUCCESSOR_KEY)).getAddress(), msg);
 				}
 			}
@@ -624,7 +538,6 @@ public class Node implements Protocol {
      * @return void
      */
 	private void handleFindSuccessorResponse(Message msg){
-		//System.out.println(self.getId()+": Received find successor response");
 		if(msg.getString(PROTOCOL_FIND_SUCCESSOR_COMMAND).equals(PROTOCOL_FIND_SUCCESSOR_COMMAND_FINGERTABLE))
 		{
 			if(state == STATE_CONNECTING)
@@ -653,13 +566,13 @@ public class Node implements Protocol {
 			}
 		}
 	}
+
 	/**
      * Handle a received Dataresponsibility message
      * @param msg The address of the sending node.
      * @return void
      */
 	private void handleDataresponsibility(Message msg){
-		//System.out.println(self.getId()+": Received find successor response");
 		if(msg.has(PROTOCOL_DATA_KEY) && msg.has(PROTOCOL_DATA_OBJECT))
 		{
 			System.out.println(self.getId() + ": Adding data with key: " + msg.getLong(PROTOCOL_DATA_KEY) + " to my storage");
@@ -677,14 +590,10 @@ public class Node implements Protocol {
 		System.out.println(self.getId()+": Received unknown message: " +msg.toString());
 		return;
 	}
-	
-	/*
-	 * fixFingers
-	 * Iterates through all entries in the fingertable and requests the key's successor.
-	 */
+
 	public void fixFingers()
 	{
-		for(FingerEntry e : ft.getEntries())
+		for(FingerTableEntry e : ft.getEntries())
 		{
 			if(e.getPeerEntry() != null)
 			{
@@ -692,8 +601,7 @@ public class Node implements Protocol {
 			}	
 		}
 	}
-	
-	/* Recursive ring lookup */
+
 	public void findSuccessor(long key)
 	{
 		Message msg;
@@ -740,28 +648,7 @@ public class Node implements Protocol {
 			}
 		}
 	}
-	
-	public void lookup(long key)
-	{
-		if(isBetween(key,self.getId(), successor.getId()))
-		{
-			System.out.println("lookup(" + key + ") >> nodeId:" +successor.getId());
-		}
-		else if(ft.closestPrecedingNode(key) != null)
-		{
-			Message msg = new Message();
-			msg.setKey(PROTOCOL_COMMAND, PROTOCOL_FIND_SUCCESSOR);
-			msg.setKey(PROTOCOL_FIND_SUCCESSOR_KEY, key);
-			msg.setKey(PROTOCOL_FIND_SUCCESSOR_COMMAND, PROTOCOL_FIND_SUCCESSOR_COMMAND_LOOKUP);
-			msg.setKey(PROTOCOL_FIND_SUCCESSOR_SENDER_ADDR, self.getAddress().toString());
-			send(ft.closestPrecedingNode(key).getAddress(), msg);
-		}
-	}
-	
-	/*
-	 * getObject
-	 * Sends a request to the node owning the passed key to return the object associated with the passed key.
-	 */
+
 	public Object getObject(long key)
 	{
 		Message msg;
@@ -800,7 +687,7 @@ public class Node implements Protocol {
 					}
 				}
 				return null;
-			} else //Route the request according to fingers
+			} else
 			{
 				System.out.println(self.getId() + ": sending getObject-request a long");
 				send(ft.closestPrecedingNode(key).getAddress(), msg);
@@ -825,11 +712,7 @@ public class Node implements Protocol {
 			}
 		}
 	}
-	
-	/*
-	 * putObject
-	 * Sends a request to the node owning the passed key to add the passed object with belonging key.
-	 */
+
 	public void putObject(long key, Object object)
 	{
 		Message msg;
@@ -855,11 +738,7 @@ public class Node implements Protocol {
 			}
 		}
 	}
-	
-	/*
-	 * removeObject
-	 * Sends a request to the node owning the passed key to remove the according object.
-	 */
+
 	public void removeObject(long key)
 	{
 		Message msg;
@@ -884,11 +763,7 @@ public class Node implements Protocol {
 			}
 		}
 	}
-	
-	/* 
-	 * returns true if l1 is in between l2 and l3 (clockwise) in a ring space OR l_1 == l_3
-	 * second case due too the fact that we're looking for successors of values.
-	 */
+
 	public static boolean isBetween(long l_1, long l_2, long l_3)
 	{
 		if(l_1 == l_3)
@@ -901,16 +776,12 @@ public class Node implements Protocol {
 			return false;
 		else if(shifted_l2 < 0)
 			return true;
-		else //shifted_l2 > 0 && shifted_l3 > 0
+		else
 			return (shifted_l2 > shifted_l3);
 	}
 	
 	public long getIdSpace() {
 		return idSpace;
-	}
-	
-	public int getAirtiy() {
-		return arity;
 	}
 }
 

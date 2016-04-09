@@ -3,16 +3,6 @@ package com.github.sebastiant.jchord.network;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/**
- * 
- * @author Jakob Stengård
- *
- * The address class is used to represent ip-address and port pairs,
- * and to convert between stings of the form ip:port and java's
- * InetAddress class.
- * 
- */
-
 public class Address {
 	private InetAddress ip;
 	private int port;
@@ -23,7 +13,6 @@ public class Address {
 			this.ip =  InetAddress.getByName(split[0]);
 			this.port = Integer.valueOf(split[1]);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 	}

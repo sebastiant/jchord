@@ -83,7 +83,6 @@ public class TestSimultaneousConnect {
 		long timeout = System.currentTimeMillis() + 
 				(MessageSender.MAX_BACKOFF * MessageSender.MAX_ATTEMPTS);
 		
-		// Wait for timers to fire
 		try {
 			synchronized(signal){
 				while(!(receivedMessage1 && receivedMessage2) && 
@@ -113,6 +112,4 @@ public class TestSimultaneousConnect {
 		signal = null;
 		t1 = t2 = null;
 	}
-	
-
 }

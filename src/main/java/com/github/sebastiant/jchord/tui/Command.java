@@ -15,8 +15,8 @@ public enum Command {
 	public static final int INDENT = 40;
 	private String description;
 	private String invocation;
-	
-	private Command(String invocation, String description) {
+
+	Command(String invocation, String description) {
 		this.description = description;
 		this.invocation = invocation;
 	}

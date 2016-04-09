@@ -34,14 +34,12 @@ public class TestMessageSenderMisc {
 				startRcvMsg = true;
 			}		
 		});
-		// try starting twice
 		node2.start();
 		node2.start();
 		Message message = new Message();
 		message.setKey("content", "message1");
 		message.setDestinationAddress(node2.getAddress());
-		// send before started
-		assertFalse(node1.send(message));	
+		assertFalse(node1.send(message));
 		assertFalse(startRcvMsg);
 		node1.start();
 		assertTrue(node1.send(message));
@@ -78,7 +76,6 @@ public class TestMessageSenderMisc {
 		} catch (InterruptedException e) {
 			fail(e.getMessage());
 		}
-		//assertTrue(node2.getConnections().size() == 0);
 		assertFalse(node1.disconnect(addr));
 	}
 
@@ -102,7 +99,6 @@ public class TestMessageSenderMisc {
 		assertTrue(node1.getConnections().containsKey(node2.getAddress()));
 		assertTrue(node1.getConnections().containsKey(node3.getAddress()));
 		assertTrue(node1.getConnections().containsKey(node4.getAddress()));
-
 		assertTrue(node2.getConnections().containsKey(node1.getAddress()));
 		assertEquals(node2.getConnections().get(node1.getAddress()).getAddress(),node1.getAddress());
 

@@ -42,7 +42,6 @@ public class TestConnectionRefused {
 		});
 		Message message = new Message();
 		try {
-			// assume nothing is running on port 9020
 			message.setDestinationAddress(new Address(InetAddress.getLocalHost(), 9020));
 		} catch (UnknownHostException e1) {
 			fail(e1.getMessage());

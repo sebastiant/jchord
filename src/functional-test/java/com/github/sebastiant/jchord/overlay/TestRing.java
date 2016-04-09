@@ -34,12 +34,6 @@ public class TestRing {
 		}
 	}
 	
-
-	/*
-	 * Make two nodes, try to connect one to the other and check that they have updated their predecessors and successors
-	 * 
-	 */
-	
 	@Test
 	public void testRingSize2()
 	{
@@ -57,7 +51,6 @@ public class TestRing {
 				&& (node2.getSuccessor().getId() == node1_id)
 				&& (node1.getPredecessor().getId() == node2_id)
 				&& (node1.getSuccessor().getId() == node2_id));
-
 	}
 	
 	@Test
@@ -79,7 +72,7 @@ public class TestRing {
 		node1.shutdown();
 		System.out.println("node1 (id: "+ node1_id +") shutting down...");
 		try{
-			Thread.sleep(2 * Node.PRED_REQ_INTERVAL);
+			Thread.sleep(2 * Node.PREDECESSOR_REQ_INTERVAL_IN_MS);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -96,7 +89,7 @@ public class TestRing {
 		System.out.println("ID: "+ node1_id + " connecting to ID: " + node2_id);
 		node1.connect(node2.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 3);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -104,26 +97,26 @@ public class TestRing {
 		System.out.println("ID: "+ node3_id + " connecting to ID: " + node1_id);
 		node3.connect(node1.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 8);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
 		}
-		FingerEntry[] fe = node1.getFingers();
+		FingerTableEntry[] fe = node1.getFingers();
 		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
 		fe = node2.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
 		fe = node3.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
@@ -134,7 +127,7 @@ public class TestRing {
 					&& (node2.getSuccessor().getId() == node1_id)
 					&& (node3.getPredecessor().getId() == node1_id)
 					&& (node3.getSuccessor().getId() == node2_id));
-		} else /* Node.isBetween(node1_id, node3_id, node2_id) */
+		} else
 		{
 			assertTrue((node1.getPredecessor().getId() == node3_id)
 					&& (node1.getSuccessor().getId() == node2_id)
@@ -182,33 +175,32 @@ public class TestRing {
 					&& (node3.getSuccessor().getId() == node1_id)));
 		}
 		
-		FingerEntry[] fe = node1.getFingers();
+		FingerTableEntry[] fe = node1.getFingers();
 		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
 		fe = node2.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
 		fe = node3.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("----------------\n KILLING NODE 3 \n ----------------");
 		node3.shutdown();
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 4);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
 		}
-		//Check that node 1 and node 2 has updated the ring accordingly.
 		System.out.println("node: " + node1_id + " pred: " + node1.getPredecessor().getId());
 		System.out.println("node: " + node1_id + " succ: " + node1.getSuccessor().getId());
 		System.out.println("node: " + node2_id + " pred: " + node2.getPredecessor().getId());
@@ -224,7 +216,7 @@ public class TestRing {
 	@Test
 	public void testRingSize4()
 	{
-		FingerEntry[] fe;
+		FingerTableEntry[] fe;
 		long node1_id = node1.getId();
 		long node2_id = node2.getId();
 		long node3_id = node3.getId();
@@ -232,7 +224,7 @@ public class TestRing {
 		System.out.println("ID: "+ node1_id + " connecting to ID: " + node2_id);
 		node1.connect(node2.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 3);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -240,7 +232,7 @@ public class TestRing {
 		System.out.println("ID: "+ node3_id + " connecting to ID: " + node4_id);
 		node3.connect(node4.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 8);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -248,7 +240,7 @@ public class TestRing {
 		System.out.println("ID: "+ node1_id + " connecting to ID: " + node3_id);
 		node1.connect(node3.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 8);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 8);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -256,25 +248,25 @@ public class TestRing {
 		
 		fe = node1.getFingers();
 		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
 		fe = node2.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
 		fe = node3.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node4 ("+node4.getId()+") finger table\n-----------");
 		fe = node4.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
@@ -346,7 +338,7 @@ public class TestRing {
 	@Test
 	public void testRingSize4_disconnect()
 	{
-		FingerEntry[] fe;
+		FingerTableEntry[] fe;
 		long node1_id = node1.getId();
 		long node2_id = node2.getId();
 		long node3_id = node3.getId();
@@ -354,7 +346,7 @@ public class TestRing {
 		System.out.println("ID: "+ node1_id + " connecting to ID: " + node2_id);
 		node1.connect(node2.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 3);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 3);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -362,7 +354,7 @@ public class TestRing {
 		System.out.println("ID: "+ node3_id + " connecting to ID: " + node4_id);
 		node3.connect(node4.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 4);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -370,7 +362,7 @@ public class TestRing {
 		System.out.println("ID: "+ node1_id + " connecting to ID: " + node3_id);
 		node1.connect(node3.getAddress());
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 4);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -378,7 +370,7 @@ public class TestRing {
 		System.out.println("Killing node 4!");
 		node4.shutdown();
 		try{
-			Thread.sleep(Node.PRED_REQ_INTERVAL * 4);
+			Thread.sleep(Node.PREDECESSOR_REQ_INTERVAL_IN_MS * 4);
 		} catch(Exception e)
 		{
 			System.err.println("Couldn't sleep!");
@@ -386,19 +378,19 @@ public class TestRing {
 		
 		fe = node1.getFingers();
 		System.out.println("node1 ("+node1.getId()+") finger table\n-----------");
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node2 ("+node2.getId()+") finger table\n-----------");
 		fe = node2.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
 		System.out.println("node3 ("+node3.getId()+") finger table\n-----------");
 		fe = node3.getFingers();
-		for(FingerEntry e : fe)
+		for(FingerTableEntry e : fe)
 		{
 			System.out.println(""+e.getKey()+" -> " +e.getPeerEntry().getId());
 		}
@@ -430,6 +422,4 @@ public class TestRing {
 		node5.shutdown();
 		node1 = node2 = node3 = node4 = node5 = null;
 	}
-	
-
 }

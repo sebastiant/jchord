@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map.Entry;
 
 import com.github.sebastiant.jchord.network.Address;
-import com.github.sebastiant.jchord.overlay.FingerEntry;
+import com.github.sebastiant.jchord.overlay.FingerTableEntry;
 import com.github.sebastiant.jchord.overlay.Node;
 
 public class DHT {
@@ -19,8 +19,8 @@ public class DHT {
 	}
 
 	public void showFigers() {
-		FingerEntry fe[]  = node.getFingers();
-		for(FingerEntry e: fe) {
+		FingerTableEntry fe[]  = node.getFingers();
+		for(FingerTableEntry e: fe) {
 			System.out.println(e.getKey() + " -> " + e.getPeerEntry());
 		}
 	}
@@ -73,10 +73,9 @@ public class DHT {
 		try {
 			md = MessageDigest.getInstance("SHA-256");
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		BigInteger hash = null;
+		BigInteger hash;
 		byte[] raw = md.digest(data.getBytes());
 		hash = new BigInteger(1, raw);
 		return hash.mod(new BigInteger(Long.toString(node.getIdSpace()))).longValue();

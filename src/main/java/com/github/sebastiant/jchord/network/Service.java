@@ -1,16 +1,11 @@
 package com.github.sebastiant.jchord.network;
 
 public class Service {
-	
-	/** This is a generic class used as a base for implementing services. */
-	
+
 	private boolean running = false;
 	private Thread thread;
 	private ServiceInterface interf;
-	
-	
-	public Service() {}
-	
+
 	public Service(ServiceInterface si) {
 		this.interf = si;
 	}
