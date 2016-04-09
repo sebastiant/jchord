@@ -1,4 +1,4 @@
-package com.github.sebastiant.jchord.junit.network;
+package com.github.sebastiant.jchord.network;
 import static org.junit.Assert.*;
 
 import java.util.Calendar;
@@ -6,8 +6,6 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.github.sebastiant.jchord.network.ConcreteObserver;
-import com.github.sebastiant.jchord.network.MessageSender;
 import com.github.sebastiant.jchord.network.events.Message;
 
 import org.junit.*;

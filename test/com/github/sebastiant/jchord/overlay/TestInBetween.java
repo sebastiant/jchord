@@ -1,10 +1,8 @@
-package com.github.sebastiant.jchord.junit.overlay;
+package com.github.sebastiant.jchord.overlay;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
-import com.github.sebastiant.jchord.overlay.Node;
 
 public class TestInBetween {
 

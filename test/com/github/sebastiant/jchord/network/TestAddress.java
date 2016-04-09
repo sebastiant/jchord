@@ -1,14 +1,10 @@
-package com.github.sebastiant.jchord.junit.network;
+package com.github.sebastiant.jchord.network;
 
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import com.github.sebastiant.jchord.network.Address;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class TestAddress {

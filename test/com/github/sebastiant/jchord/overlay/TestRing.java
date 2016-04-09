@@ -1,4 +1,4 @@
-package com.github.sebastiant.jchord.junit.overlay;
+package com.github.sebastiant.jchord.overlay;
 import static org.junit.Assert.*;
 
 import java.net.InetAddress;
@@ -6,9 +6,6 @@ import java.net.InetAddress;
 import com.github.sebastiant.jchord.network.Address;
 
 import org.junit.*;
-
-import com.github.sebastiant.jchord.overlay.FingerEntry;
-import com.github.sebastiant.jchord.overlay.Node;
 
 public class TestRing {
 	private Node node1, node2, node3, node4, node5;

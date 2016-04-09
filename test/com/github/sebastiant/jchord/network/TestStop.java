@@ -1,13 +1,9 @@
-package com.github.sebastiant.jchord.junit.network;
+package com.github.sebastiant.jchord.network;
 
 import static org.junit.Assert.*;
 
 import java.util.Map.Entry;
 
-import com.github.sebastiant.jchord.network.Address;
-import com.github.sebastiant.jchord.network.ConcreteObserver;
-import com.github.sebastiant.jchord.network.Connection;
-import com.github.sebastiant.jchord.network.MessageSender;
 import com.github.sebastiant.jchord.network.events.Message;
 
 import org.junit.*;

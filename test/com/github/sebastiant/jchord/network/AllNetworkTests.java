@@ -1,4 +1,4 @@
-package com.github.sebastiant.jchord.junit.network;
+package com.github.sebastiant.jchord.network;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

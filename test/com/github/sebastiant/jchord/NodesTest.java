@@ -1,10 +1,10 @@
-package com.github.sebastiant.jchord.testing;
+package com.github.sebastiant.jchord;
 
 import com.github.sebastiant.jchord.network.Address;
 
 import com.github.sebastiant.jchord.overlay.Node;
 
-public class BunchOfNodes {
+public class NodesTest {
 
 	private static Node[] node = new Node[100];
 	public static final int PORT = 9000;

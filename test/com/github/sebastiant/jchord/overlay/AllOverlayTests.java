@@ -1,4 +1,4 @@
-package com.github.sebastiant.jchord.junit.overlay;
+package com.github.sebastiant.jchord.overlay;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

@@ -1,12 +1,9 @@
-package com.github.sebastiant.jchord.junit.network;
+package com.github.sebastiant.jchord.network;
 
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import com.github.sebastiant.jchord.network.Address;
-import com.github.sebastiant.jchord.network.ConcreteObserver;
-import com.github.sebastiant.jchord.network.MessageSender;
 import com.github.sebastiant.jchord.network.events.Message;
 
 import static org.junit.Assert.*;
