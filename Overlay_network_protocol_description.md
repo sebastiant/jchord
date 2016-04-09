@@ -1,23 +1,13 @@
-Constructor:
-Node(InetAddress inetAddr, int port, int overlaySize, int arity): Creates a node for the network overlay. Node will
-    listen for incoming tcp-connections on the passed address and port combination. The specified overlaySize and arity
-    is used to define the overlay structure. The former needs to be equal for all peers in the overlay.
+## A brief description of the protocol
 
-Public methods:
-void  join(InetAddress inetAddr, int port): Connects to a peer and asks to join its overlay network.
-void disconnect(): Disconnects from current overlay network.
-
-
-Behind the curtains:
-
-How we cope with churn and nodes not known to be disconnected:
+###How we cope with churn and nodes not known to be disconnected:
 All forwards are assured to be to connected nodes. That is, a peer A geting information of peer C about peer B, can rely
     on that C is connected to B. If B suddenly disconnects in between these moments, A is responsible to get in touch with
     C again to get a new peer's ip/port. As predecessors periodically inform their successors of their existence and
     requests their predecessor's information, disconnected predecessors are replaced-, and newly joined predecessors
     are included in the ring in finite time.
 
-Messaging protocol:
+###Messaging protocol:
 PING: Used as keep-alive, a ping is sent from every peer to all of its connected peers in a constant interval.
     Each peer waits for twice that interval before disconnecting from another (probably dead) peer.
 JOIN#port#overlaySize: Used to request to join a network. A JOIN message is the first message sent from a new peer. It
@@ -34,7 +24,7 @@ PREDREQUEST: Sent by a peer to receive information of who is the receiving peers
 PRED#ip#port: A response to a SUCC or PREDREQUEST, informing the receiving peer who is the sending peers predecessor.
  
 
-Example scenario:
+###Example scenario:
 *A connects to B.
 
 *A asks B to join its network by supplying its listening port and overlay size (JOIN#port#overlaySize)
