@@ -9,13 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.sebastiant.jchord.overlay.Node;
 
 
-public class Datastore {
+public class DataStore {
 	
 	private Map<Long, Object> store;
 	
-	public Datastore()
+	public DataStore()
 	{
-		store = new ConcurrentHashMap<Long, Object>();
+		store = new ConcurrentHashMap<>();
 	}
 	
 	public void addEntry(long key, Object obj)
@@ -34,7 +34,7 @@ public class Datastore {
 
 	public Map<Long,Object> getAllEntriesNotBetween(long key_1, long key_2)
 	{
-		Map<Long,Object> res = new HashMap<Long,Object>();
+		Map<Long,Object> res = new HashMap<>();
 		for(Map.Entry<Long,Object> e : store.entrySet())
 		{
 			if(!Node.isBetween(e.getKey(), key_1, key_2))

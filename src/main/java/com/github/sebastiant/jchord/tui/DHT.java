@@ -51,7 +51,7 @@ public class DHT {
 	}
 	
 	public void showStore() {
-		for(Entry<Long, Object> e: node.getDatastore().getEntries()) {
+		for(Entry<Long, Object> e: node.getDataStore().getEntries()) {
 			System.out.println(e.getKey() + ": " + e.getValue().toString());
 		}
 	}
